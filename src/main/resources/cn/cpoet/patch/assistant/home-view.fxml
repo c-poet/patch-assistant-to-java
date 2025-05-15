@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox alignment="CENTER" spacing="20.0" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="cn.cpoet.patch.assistant.controller.HomeController">
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+    </padding>
+    <HBox>
+        <CheckBox text="镜像模式"/>
+    </HBox>
+    <SplitPane>
+        <VBox>
+            <HBox>
+                <Label text="应用包："/>
+                <TextField text="123"/>
+            </HBox>
+            <ScrollPane>
+                <TreeView/>
+            </ScrollPane>
+        </VBox>
+        <VBox>
+            <HBox>
+                <Label text="补丁包："/>
+                <TextField text="123"/>
+            </HBox>
+            <ScrollPane>
+                <TreeView/>
+            </ScrollPane>
+        </VBox>
+    </SplitPane>
+    <HBox>
+        <Label text="结果路径：" />
+        <TextField />
+        <Button text="生成" />
+    </HBox>
+</VBox>
