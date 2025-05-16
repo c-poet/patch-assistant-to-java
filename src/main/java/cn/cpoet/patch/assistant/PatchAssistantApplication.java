@@ -1,18 +1,18 @@
 package cn.cpoet.patch.assistant;
 
-import cn.cpoet.patch.assistant.controller.HomeController;
+import cn.cpoet.patch.assistant.view.HomeView;
 import javafx.application.Application;
+import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
-import java.io.IOException;
-
 public class PatchAssistantApplication extends Application {
     @Override
-    public void start(Stage stage) throws IOException {
+    public void start(Stage stage) {
+        Scene scene = new Scene(new HomeView(stage).build(), 720, 600);
         stage.setTitle("补丁助手 By CPoet");
         stage.getIcons().add(new Image("icon.png"));
-        stage.setScene(HomeController.getView());
+        stage.setScene(scene);
         stage.show();
     }
 
