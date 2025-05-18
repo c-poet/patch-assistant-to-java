@@ -9,7 +9,7 @@ public interface AppConst {
     /**
      * 配置文件名
      */
-    String CONFIG_FILE_NAME = "config.properties";
+    String CONFIG_FILE_NAME = "application.xml";
 
     /**
      * Dockerfile模板文件名

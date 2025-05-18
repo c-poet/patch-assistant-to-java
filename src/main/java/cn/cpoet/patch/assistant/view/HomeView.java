@@ -1,5 +1,7 @@
 package cn.cpoet.patch.assistant.view;
 
+import cn.cpoet.patch.assistant.core.Application;
+import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.util.FileNameUtil;
 import cn.cpoet.patch.assistant.view.tree.*;
 import javafx.geometry.Pos;
@@ -27,12 +29,19 @@ public class HomeView {
     }
 
     protected Node buildHeader() {
+
+        Configuration configuration = Application.getInstance().getConfiguration();
+
         HBox headerBox = new HBox();
         headerBox.setSpacing(10);
         CheckBox checkScrollLink = new CheckBox("文件联动");
+        checkScrollLink.setSelected(Boolean.TRUE.equals(configuration.getIsScrollLinked()));
+        checkScrollLink.setOnAction(e -> configuration.setIsScrollLinked(!Boolean.TRUE.equals(configuration.getIsScrollLinked())));
         headerBox.getChildren().add(checkScrollLink);
 
         CheckBox checkDockerImage = new CheckBox("Docker镜像");
+        checkDockerImage.setSelected(Boolean.TRUE.equals(configuration.getIsDockerImage()));
+        checkDockerImage.setOnAction(e -> configuration.setIsDockerImage(!Boolean.TRUE.equals(configuration.getIsDockerImage())));
         headerBox.getChildren().add(checkDockerImage);
 
         Region region = new Region();
