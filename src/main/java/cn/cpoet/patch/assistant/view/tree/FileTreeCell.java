@@ -14,8 +14,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 
-import java.util.zip.ZipEntry;
-
 /**
  * @author CPoet
  */
@@ -26,6 +24,7 @@ public class FileTreeCell<T> extends TreeCell<T> {
 
     public FileTreeCell(HomeContext homeContext) {
         this.homeContext = homeContext;
+       setPickOnBounds(true);
     }
 
     @Override
@@ -35,35 +34,42 @@ public class FileTreeCell<T> extends TreeCell<T> {
             setGraphic(null);
         } else {
             box = new HBox();
-            ImageView icon = new ImageView();
-            icon.setFitWidth(16);
-            icon.setFitHeight(16);
-            String name = ((TreeNode) item).getName();
-            if (homeContext.isPatchCustomRoot((TreeNode) item)) {
-                icon.setImage(ImageUtil.loadImage(IConConst.FILE_MARK));
-            } else {
-                Image image = IConUtil.loadIconByFileExt(name);
-                if (image != null) {
-                    icon.setImage(image);
-                } else if (item instanceof ZipEntryNode && ((ZipEntryNode) item).getEntry().isDirectory()) {
-                    icon.setImage(ImageUtil.loadImage(IConConst.DIRECTORY));
-                } else {
-                    icon.setImage(ImageUtil.loadImage(IConConst.FILE));
-                }
-            }
-            box.getChildren().add(icon);
-            box.getChildren().add(new Label(name));
-            if (Boolean.TRUE.equals(Configuration.getInstance().getIsShowFileDetail())) {
-                if (item instanceof ZipEntryNode && !((ZipEntryNode) item).getEntry().isDirectory()) {
-                    ZipEntry entry = ((ZipEntryNode) item).getEntry();
-                    String sizeReadability = FileUtil.getSizeReadability(entry.getSize());
-                    String dateTime = DateUtil.formatDateTime(entry.getTimeLocal());
-                    Label fileDetailLbl = new Label("\t" + dateTime + "  " + sizeReadability + "  " + ((ZipEntryNode) item).getMd5());
-                    fileDetailLbl.setTextFill(Color.valueOf("#6c707e"));
-                    box.getChildren().add(fileDetailLbl);
-                }
-            }
+            addIcon(item);
+            box.getChildren().add(new Label(((TreeNode) item).getName()));
+            addFileDetail(item);
             setGraphic(box);
+        }
+    }
+
+    protected void addIcon(T item) {
+        ImageView icon = new ImageView();
+        icon.setFitWidth(16);
+        icon.setFitHeight(16);
+        if (homeContext.isPatchCustomRoot((TreeNode) item)) {
+            icon.setImage(ImageUtil.loadImage(IConConst.FILE_MARK));
+        } else {
+            Image image = IConUtil.loadIconByFileExt(((TreeNode) item).getName());
+            if (image != null) {
+                icon.setImage(image);
+            } else if (item instanceof ZipEntryNode && ((ZipEntryNode) item).getEntry().isDirectory()) {
+                icon.setImage(ImageUtil.loadImage(IConConst.DIRECTORY));
+            } else {
+                icon.setImage(ImageUtil.loadImage(IConConst.FILE));
+            }
+        }
+        box.getChildren().add(icon);
+    }
+
+    protected void addFileDetail(T item) {
+        if (Boolean.TRUE.equals(Configuration.getInstance().getIsShowFileDetail())) {
+            if (item instanceof ZipEntryNode && !((ZipEntryNode) item).getEntry().isDirectory()) {
+                ZipEntryNode zipEntryNode = (ZipEntryNode) item;
+                String sizeReadability = FileUtil.getSizeReadability(zipEntryNode.getEntry().getSize());
+                String dateTime = DateUtil.formatDateTime(zipEntryNode.getEntry().getTimeLocal());
+                Label fileDetailLbl = new Label("\t" + dateTime + "  " + sizeReadability + "  " + zipEntryNode.initAndGetMd5());
+                fileDetailLbl.setTextFill(Color.valueOf("#6c707e"));
+                box.getChildren().add(fileDetailLbl);
+            }
         }
     }
 }

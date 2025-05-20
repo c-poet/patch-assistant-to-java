@@ -47,7 +47,6 @@ public abstract class BasePackService {
             zipEntryNode.setEntry(zipEntry);
             if (!zipEntry.isDirectory()) {
                 zipEntryNode.setBytes(zin.readAllBytes());
-                zipEntryNode.setMd5(HashUtil.md5(zipEntryNode.getBytes()));
             }
             TreeNode parentNode = treeNodeMap.getOrDefault(FileNameUtil.getDirPath(zipEntry.getName()), rootNode);
             if (parentNode.getChildren() == null) {

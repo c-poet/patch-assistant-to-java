@@ -1,5 +1,7 @@
 package cn.cpoet.patch.assistant.view.tree;
 
+import cn.cpoet.patch.assistant.util.HashUtil;
+
 /**
  * 文件树形节点
  *
@@ -45,6 +47,13 @@ public class FileNode extends TreeNode {
 
     public String getMd5() {
         return md5;
+    }
+
+    public String initAndGetMd5() {
+        if (md5 != null) {
+            return md5;
+        }
+        return bytes == null ? "" : (md5 = HashUtil.md5(bytes));
     }
 
     public void setMd5(String md5) {

@@ -90,24 +90,17 @@ public class HomeView extends HomeContext {
     }
 
     protected void selectedLink(TreeView<TreeNode> originTree, TreeView<TreeNode> targetTree) {
-        TreeItem<TreeNode> selectedItem = originTree.getSelectionModel().getSelectedItem();
-        if (selectedItem == null) {
+        TreeItem<TreeNode> originItem = originTree.getSelectionModel().getSelectedItem();
+        if (originItem == null) {
             return;
         }
-        TreeNode appNode = selectedItem.getValue();
+        TreeNode appNode = originItem.getValue();
         if (appNode.getMappedNode() == null) {
             return;
         }
-        TreeItem<TreeNode> treeItem = appNode.getMappedNode().getTreeItem();
-        targetTree.getSelectionModel().select(treeItem);
-        // int originItemIndex = originTree.getRow(selectedItem);
-        TreeItem<TreeNode> pre;
-        while ((pre = treeItem.previousSibling()) != null && pre.getGraphic() != null) {
-            System.out.println(pre);
-            System.out.println(pre.getGraphic());
-        }
-        int targetItemIndex = targetTree.getRow(treeItem);
-        // TODO BY CPoet 无法对齐数据
+        TreeItem<TreeNode> targetItem = appNode.getMappedNode().getTreeItem();
+        targetTree.getSelectionModel().select(targetItem);
+        int targetItemIndex = targetTree.getRow(targetItem);
         targetTree.scrollTo(targetItemIndex);
     }
 
@@ -155,10 +148,10 @@ public class HomeView extends HomeContext {
         appTree = new TreeView<>(rootItem);
         appTree.setCellFactory(treeView -> new FileTreeCell<>(this));
         buildAppTreeContextMenu();
+        appTree.getSelectionModel().selectedItemProperty().addListener((observableValue, oldVal, newVal) -> {
+            selectedLink(appTree, patchTree);
+        });
         appTree.setOnMouseClicked(e -> {
-            if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 1) {
-                selectedLink(appTree, patchTree);
-            }
             if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 2) {
                 TreeItem<TreeNode> selectedItem = appTree.getSelectionModel().getSelectedItem();
                 TreeNode selectedTreeNode = selectedItem.getValue();
@@ -268,10 +261,10 @@ public class HomeView extends HomeContext {
         patchTree = new TreeView<>(rootItem);
         patchTree.setCellFactory(v -> new FileCheckBoxTreeCell<>(this));
         buildPatchTreeContextMenu();
+        patchTree.getSelectionModel().selectedItemProperty().addListener((observableValue, oldVal, newVal) -> {
+            selectedLink(patchTree, appTree);
+        });
         patchTree.setOnMouseClicked(e -> {
-            if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 1) {
-                selectedLink(patchTree, appTree);
-            }
             if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 2) {
                 TreeItem<TreeNode> selectedItem = patchTree.getSelectionModel().getSelectedItem();
                 TreeNode selectedTreeNode = selectedItem.getValue();
@@ -350,7 +343,18 @@ public class HomeView extends HomeContext {
         HBox footerBox = new HBox(
                 generateDetailLbl,
                 FXUtil.pre(new Region(), node -> HBox.setHgrow(node, Priority.ALWAYS)),
-                new Button("保存")
+                FXUtil.pre(new Button("保存"), btn -> {
+                    btn.setOnAction(e -> {
+                        FileChooser fileChooser = new FileChooser();
+                        fileChooser.setTitle("保存应用包");
+                        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("应用包", "*.jar"));
+                        File file = fileChooser.showSaveDialog(stage);
+                        if (file == null) {
+                            return;
+                        }
+                        AppPackService.getInstance().savePack(file, appTreeInfo);
+                    });
+                })
         );
         footerBox.setAlignment(Pos.CENTER);
         footerBox.setSpacing(3);
