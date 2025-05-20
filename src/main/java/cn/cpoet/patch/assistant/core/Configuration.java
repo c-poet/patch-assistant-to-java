@@ -24,10 +24,10 @@ public class Configuration {
     private Double homeHeight = 600D;
 
     /**
-     * 滚动联动
+     * 选中联动
      */
     @JacksonXmlProperty
-    private Boolean isScrollLinked;
+    private Boolean isSelectedLinked;
 
     /**
      * Docker镜像模式
@@ -35,7 +35,35 @@ public class Configuration {
     @JacksonXmlProperty
     private Boolean isDockerImage;
 
+    /**
+     * 仅看变化的文件
+     */
+    @JacksonXmlProperty
+    private Boolean isOnlyChanges;
+
+    /**
+     * 显示文件的详细信息
+     */
+    @JacksonXmlProperty
+    private Boolean isShowFileDetail;
+
+    /**
+     * 最后的应用包路径
+     */
+    @JacksonXmlProperty
+    private String lastAppPackPath;
+
+    /**
+     * 最后的补丁包路径
+     */
+    @JacksonXmlProperty
+    private String lastPatchPackPath;
+
     Configuration() {
+    }
+
+    public static Configuration getInstance() {
+        return AppContext.getInstance().getConfiguration();
     }
 
     public Double getHomeWidth() {
@@ -54,12 +82,12 @@ public class Configuration {
         this.homeHeight = homeHeight;
     }
 
-    public Boolean getIsScrollLinked() {
-        return isScrollLinked;
+    public Boolean getIsSelectedLinked() {
+        return isSelectedLinked;
     }
 
-    public void setIsScrollLinked(Boolean isScrollLinked) {
-        this.isScrollLinked = isScrollLinked;
+    public void setIsSelectedLinked(Boolean isSelectedLinked) {
+        this.isSelectedLinked = isSelectedLinked;
     }
 
     public Boolean getIsDockerImage() {
@@ -68,5 +96,37 @@ public class Configuration {
 
     public void setIsDockerImage(Boolean isDockerImage) {
         this.isDockerImage = isDockerImage;
+    }
+
+    public Boolean getIsOnlyChanges() {
+        return isOnlyChanges;
+    }
+
+    public void setIsOnlyChanges(Boolean isOnlyChanges) {
+        this.isOnlyChanges = isOnlyChanges;
+    }
+
+    public Boolean getIsShowFileDetail() {
+        return isShowFileDetail;
+    }
+
+    public void setIsShowFileDetail(Boolean isShowFileDetail) {
+        this.isShowFileDetail = isShowFileDetail;
+    }
+
+    public String getLastAppPackPath() {
+        return lastAppPackPath;
+    }
+
+    public void setLastAppPackPath(String lastAppPackPath) {
+        this.lastAppPackPath = lastAppPackPath;
+    }
+
+    public String getLastPatchPackPath() {
+        return lastPatchPackPath;
+    }
+
+    public void setLastPatchPackPath(String lastPatchPackPath) {
+        this.lastPatchPackPath = lastPatchPackPath;
     }
 }

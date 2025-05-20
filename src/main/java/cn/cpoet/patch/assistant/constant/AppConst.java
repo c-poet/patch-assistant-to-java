@@ -12,6 +12,11 @@ public interface AppConst {
     String CONFIG_FILE_NAME = "application.xml";
 
     /**
+     * 样式文件名
+     */
+    String STYLE_FILE_NAME = "style.css";
+
+    /**
      * Dockerfile模板文件名
      */
     String DOCKERFILE_FILE_NAME = "Dockerfile";

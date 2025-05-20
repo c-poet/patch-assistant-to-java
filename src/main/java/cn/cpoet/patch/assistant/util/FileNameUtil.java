@@ -6,6 +6,17 @@ package cn.cpoet.patch.assistant.util;
  * @author CPoet
  */
 public abstract class FileNameUtil {
+
+    /**
+     * 统一分隔符
+     */
+    public final static char C_SEPARATOR = '/';
+
+    /**
+     * 统一分隔符
+     */
+    public final static String SEPARATOR = Character.toString(C_SEPARATOR);
+
     private FileNameUtil() {
     }
 
@@ -19,10 +30,10 @@ public abstract class FileNameUtil {
         if (path == null || path.isBlank()) {
             return path;
         }
-        if (path.charAt(path.length() - 1) == '/') {
+        if (path.charAt(path.length() - 1) == C_SEPARATOR) {
             path = path.substring(0, path.length() - 1);
         }
-        int i = path.lastIndexOf("/");
+        int i = path.lastIndexOf(C_SEPARATOR);
         return i == -1 ? path : path.substring(i + 1);
     }
 
@@ -36,10 +47,10 @@ public abstract class FileNameUtil {
         if (path == null || path.isBlank()) {
             return path;
         }
-        if (path.charAt(path.length() - 1) == '/') {
+        if (path.charAt(path.length() - 1) == C_SEPARATOR) {
             path = path.substring(0, path.length() - 1);
         }
-        int i = path.lastIndexOf('/');
+        int i = path.lastIndexOf(C_SEPARATOR);
         return i == -1 ? "" : path.substring(0, i);
     }
 }

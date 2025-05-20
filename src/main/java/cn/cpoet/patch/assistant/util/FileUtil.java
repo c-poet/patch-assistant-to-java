@@ -3,6 +3,7 @@ package cn.cpoet.patch.assistant.util;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 /**
  * 文件工具
@@ -11,17 +12,65 @@ import java.io.InputStream;
  */
 public abstract class FileUtil {
 
+    public final static String[] SIZE_UNITS = {"B", "K", "M", "G"};
+
     private FileUtil() {
     }
 
+    /**
+     * 获取可读性大小值
+     *
+     * @param byteSize 字节大小
+     * @return 大小值
+     */
+    public static String getSizeReadability(long byteSize) {
+        int i = 0;
+        float next, cur = (float) byteSize;
+        while (i < SIZE_UNITS.length) {
+            next = cur / 1024;
+            if (next < 1) {
+                break;
+            }
+            cur = next;
+            ++i;
+        }
+        return String.format("%.2f", cur) + SIZE_UNITS[i < SIZE_UNITS.length ? i : i - 1];
+    }
+
+    /**
+     * 读取文件并转换为{@link  String}
+     *
+     * @param path 文件路径
+     * @return 文件内容
+     */
     public static String readFileAsString(String path) {
-        return "";
+        byte[] bytes = readFile(path);
+        return bytes == null ? null : new String(bytes, StandardCharsets.UTF_8);
     }
 
+    /**
+     * 读取文件
+     *
+     * @param path 文件路径
+     * @return 文件内容
+     */
     public static byte[] readFile(String path) {
-        return "".getBytes();
+        try (InputStream in = getFileAsStream(path)) {
+            if (in == null) {
+                return null;
+            }
+            return in.readAllBytes();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
+    /**
+     * 获取文件输入流
+     *
+     * @param path 路径
+     * @return 文件输入流
+     */
     public static InputStream getFileAsStream(String path) {
         File file = new File(path);
         try {
@@ -30,6 +79,20 @@ public abstract class FileUtil {
             }
         } catch (Exception ignored) {
         }
-        return FileUtil.class.getResourceAsStream(path);
+        if (path.startsWith(FileNameUtil.SEPARATOR)) {
+            return FileUtil.class.getResourceAsStream(path);
+        }
+        return FileUtil.class.getResourceAsStream(FileNameUtil.SEPARATOR + path);
+    }
+
+    /**
+     * 根据路径判断是否存在，并返回文件实例
+     *
+     * @param path 路径
+     * @return 文件实例
+     */
+    public static File getExistsFile(String path) {
+        File file = new File(path);
+        return file.exists() && file.isFile() ? file : null;
     }
 }

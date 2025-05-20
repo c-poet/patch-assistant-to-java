@@ -14,20 +14,20 @@ import java.io.InputStream;
  *
  * @author CPoet
  */
-public class Application {
+public class AppContext extends ServiceFactory {
 
-    private static Application INSTANCE;
+    private static AppContext INSTANCE;
 
     private Configuration configuration;
 
-    private Application() {
+    private AppContext() {
     }
 
     public Configuration getConfiguration() {
         return configuration;
     }
 
-    public Application reload() {
+    public AppContext reload() {
         try (InputStream in = FileUtil.getFileAsStream(AppConst.CONFIG_FILE_NAME)) {
             if (in == null) {
                 configuration = new Configuration();
@@ -57,9 +57,14 @@ public class Application {
                 .build();
     }
 
-    public static Application getInstance() {
+    public void destroy() {
+        super.destroy();
+        this.syncConf2File();
+    }
+
+    public static AppContext getInstance() {
         if (INSTANCE == null) {
-            INSTANCE = new Application().reload();
+            INSTANCE = new AppContext().reload();
         }
         return INSTANCE;
     }

@@ -1,28 +1,31 @@
 package cn.cpoet.patch.assistant.view;
 
-import cn.cpoet.patch.assistant.core.Application;
+import cn.cpoet.patch.assistant.component.OnlyChangeFilter;
+import cn.cpoet.patch.assistant.constant.FileExtConst;
 import cn.cpoet.patch.assistant.core.Configuration;
-import cn.cpoet.patch.assistant.util.FileNameUtil;
+import cn.cpoet.patch.assistant.service.AppPackService;
+import cn.cpoet.patch.assistant.service.PatchPackService;
+import cn.cpoet.patch.assistant.util.FXUtil;
+import cn.cpoet.patch.assistant.util.FileUtil;
+import cn.cpoet.patch.assistant.util.TreeNodeUtil;
 import cn.cpoet.patch.assistant.view.tree.*;
+import javafx.geometry.Insets;
+import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
+import java.util.Objects;
 
-public class HomeView {
+public class HomeView extends HomeContext {
 
-    protected final Stage stage;
+    private final Stage stage;
 
     public HomeView(Stage stage) {
         this.stage = stage;
@@ -30,23 +33,40 @@ public class HomeView {
 
     protected Node buildHeader() {
 
-        Configuration configuration = Application.getInstance().getConfiguration();
+        Configuration configuration = Configuration.getInstance();
 
         HBox headerBox = new HBox();
         headerBox.setSpacing(10);
-        CheckBox checkScrollLink = new CheckBox("文件联动");
-        checkScrollLink.setSelected(Boolean.TRUE.equals(configuration.getIsScrollLinked()));
-        checkScrollLink.setOnAction(e -> configuration.setIsScrollLinked(!Boolean.TRUE.equals(configuration.getIsScrollLinked())));
-        headerBox.getChildren().add(checkScrollLink);
+        CheckBox checkSelectedLink = new CheckBox("选中联动");
+        checkSelectedLink.setSelected(Boolean.TRUE.equals(configuration.getIsSelectedLinked()));
+        checkSelectedLink.setOnAction(e -> configuration.setIsSelectedLinked(!Boolean.TRUE.equals(configuration.getIsSelectedLinked())));
+        headerBox.getChildren().add(checkSelectedLink);
+
+        CheckBox showFileDetail = new CheckBox("文件详情");
+        showFileDetail.setSelected(Boolean.TRUE.equals(configuration.getIsShowFileDetail()));
+        showFileDetail.setOnAction(e -> {
+            configuration.setIsShowFileDetail(!Boolean.TRUE.equals(configuration.getIsShowFileDetail()));
+            appTree.refresh();
+            patchTree.refresh();
+        });
+        headerBox.getChildren().add(showFileDetail);
+
+        CheckBox onlyChanges = new CheckBox("仅看变动");
+        onlyChanges.setSelected(Boolean.TRUE.equals(configuration.getIsOnlyChanges()));
+        onlyChanges.setOnAction(e -> {
+            configuration.setIsOnlyChanges(!Boolean.TRUE.equals(configuration.getIsOnlyChanges()));
+            appTree.getRoot().getChildren().clear();
+            TreeNodeUtil.buildNode(appTree.getRoot(), appTree.getRoot().getValue(), OnlyChangeFilter.INSTANCE);
+            appTree.refresh();
+        });
+        headerBox.getChildren().add(onlyChanges);
 
         CheckBox checkDockerImage = new CheckBox("Docker镜像");
         checkDockerImage.setSelected(Boolean.TRUE.equals(configuration.getIsDockerImage()));
         checkDockerImage.setOnAction(e -> configuration.setIsDockerImage(!Boolean.TRUE.equals(configuration.getIsDockerImage())));
         headerBox.getChildren().add(checkDockerImage);
 
-        Region region = new Region();
-        HBox.setHgrow(region, Priority.ALWAYS);
-        headerBox.getChildren().add(region);
+        headerBox.getChildren().add(FXUtil.pre(new Region(), node -> HBox.setHgrow(node, Priority.ALWAYS)));
 
         Button configBtn = new Button("配置");
         configBtn.setOnAction(e -> {
@@ -61,147 +81,286 @@ public class HomeView {
 
         Button aboutBtn = new Button("关于");
         headerBox.getChildren().add(aboutBtn);
-        return headerBox;
+        headerBox.setPadding(new Insets(3, 8, 3, 8));
+        headerBox.setAlignment(Pos.CENTER);
+
+        TitledPane titledPane = new TitledPane("选项", headerBox);
+        titledPane.setCollapsible(false);
+        return titledPane;
+    }
+
+    protected void selectedLink(TreeView<TreeNode> originTree, TreeView<TreeNode> targetTree) {
+        TreeItem<TreeNode> selectedItem = originTree.getSelectionModel().getSelectedItem();
+        if (selectedItem == null) {
+            return;
+        }
+        TreeNode appNode = selectedItem.getValue();
+        if (appNode.getMappedNode() == null) {
+            return;
+        }
+        TreeItem<TreeNode> treeItem = appNode.getMappedNode().getTreeItem();
+        targetTree.getSelectionModel().select(treeItem);
+        // int originItemIndex = originTree.getRow(selectedItem);
+        TreeItem<TreeNode> pre;
+        while ((pre = treeItem.previousSibling()) != null && pre.getGraphic() != null) {
+            System.out.println(pre);
+            System.out.println(pre.getGraphic());
+        }
+        int targetItemIndex = targetTree.getRow(treeItem);
+        // TODO BY CPoet 无法对齐数据
+        targetTree.scrollTo(targetItemIndex);
+    }
+
+    protected void buildAppTreeContextMenu() {
+        ContextMenu contextMenu = new ContextMenu();
+        MenuItem markDelMenuItem = new MenuItem();
+        markDelMenuItem.setOnAction(e -> {
+            TreeItem<TreeNode> selectedItem = appTree.getSelectionModel().getSelectedItem();
+            FileNode selectedNode = (FileNode) selectedItem.getValue();
+            selectedNode.setStatus(selectedNode.getStatus() == FileNodeStatus.NONE ? FileNodeStatus.MARK_DEL : FileNodeStatus.NONE);
+        });
+        contextMenu.getItems().add(markDelMenuItem);
+        contextMenu.setOnShowing(e -> {
+            TreeItem<TreeNode> selectedItem = appTree.getSelectionModel().getSelectedItem();
+            TreeNode selectedNode = selectedItem.getValue();
+            if (selectedNode instanceof FileNode) {
+                FileNodeStatus status = ((FileNode) selectedNode).getStatus();
+                if (status == FileNodeStatus.NONE) {
+                    markDelMenuItem.setText("标记删除");
+                    markDelMenuItem.setVisible(true);
+                } else if (status == FileNodeStatus.MARK_DEL) {
+                    markDelMenuItem.setText("取消标记删除");
+                    markDelMenuItem.setVisible(true);
+                } else {
+                    markDelMenuItem.setVisible(false);
+                }
+            } else {
+                markDelMenuItem.setVisible(false);
+            }
+        });
+        appTree.setContextMenu(contextMenu);
+    }
+
+    protected void refreshAppTree(File file) {
+        TreeItem<TreeNode> rootItem = appTree.getRoot();
+        appTreeInfo = AppPackService.getInstance().getTreeNode(file);
+        rootItem.getChildren().clear();
+        TreeNodeUtil.buildNode(rootItem, appTreeInfo.getRootNode(), OnlyChangeFilter.INSTANCE);
+        appPathTextField.setText(file.getPath());
+        Configuration.getInstance().setLastAppPackPath(file.getPath());
+    }
+
+    protected void buildAppTree() {
+        TreeItem<TreeNode> rootItem = new TreeItem<>();
+        appTree = new TreeView<>(rootItem);
+        appTree.setCellFactory(treeView -> new FileTreeCell<>(this));
+        buildAppTreeContextMenu();
+        appTree.setOnMouseClicked(e -> {
+            if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 1) {
+                selectedLink(appTree, patchTree);
+            }
+            if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 2) {
+                TreeItem<TreeNode> selectedItem = appTree.getSelectionModel().getSelectedItem();
+                TreeNode selectedTreeNode = selectedItem.getValue();
+                if (!selectedTreeNode.getName().endsWith(FileExtConst.DOT_JAR)) {
+                    return;
+                }
+                if (AppPackService.getInstance().buildNodeChildrenWithZip(selectedTreeNode)) {
+                    TreeNodeUtil.buildNodeChildren(selectedItem, selectedTreeNode, OnlyChangeFilter.INSTANCE);
+                }
+            }
+        });
+        String lastAppPackPath = Configuration.getInstance().getLastAppPackPath();
+        if (lastAppPackPath == null || lastAppPackPath.isBlank()) {
+            return;
+        }
+        File file = FileUtil.getExistsFile(lastAppPackPath);
+        if (file == null) {
+            return;
+        }
+        refreshAppTree(file);
     }
 
     protected Node buildLeftCentre() {
-        HBox appPackPathBox = new HBox(
-                new Label("应用包:")
-        );
-        appPackPathBox.setAlignment(Pos.CENTER);
+        HBox appPackPathBox = FXUtil.pre(new HBox(), node -> {
+            node.setAlignment(Pos.CENTER);
+            node.setPadding(new Insets(3, 8, 3, 8));
+            node.setSpacing(3);
+        });
+        appPackPathBox.getChildren().add(FXUtil.pre(appPathTextField = new TextField(), node -> {
+            node.setEditable(false);
+            HBox.setHgrow(node, Priority.ALWAYS);
+        }));
+        appPackPathBox.getChildren().add(new Label("应用包:"));
+        appPackPathBox.getChildren().add(FXUtil.pre(new Button("选择"), node -> {
+            node.setOnAction(e -> {
+                FileChooser fileChooser = new FileChooser();
+                if (!appPathTextField.getText().isBlank()) {
+                    fileChooser.setInitialFileName(appPathTextField.getText());
+                }
+                fileChooser.setTitle("选择应用包");
+                fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("应用包", "*.jar"));
+                File file = fileChooser.showOpenDialog(stage);
+                if (file == null) {
+                    return;
+                }
+                refreshAppTree(file);
+            });
+        }));
+        buildAppTree();
+        VBox.setVgrow(appTree, Priority.ALWAYS);
+        return new VBox(appPackPathBox, appTree);
+    }
 
-        TextField appPackPathTextField = new TextField();
-        appPackPathTextField.setEditable(false);
-        HBox.setHgrow(appPackPathTextField, Priority.ALWAYS);
-        appPackPathBox.getChildren().add(appPackPathTextField);
-
-        TreeItem<TreeNode> rootItem = new TreeItem<>();
-        TreeView<TreeNode> appPackTree = new TreeView<>(rootItem);
-        appPackTree.setCellFactory(treeView -> new FileTreeCell<>());
-
-        Button appPackPathBtn = new Button("选择");
-        appPackPathBtn.setOnAction(e -> {
-            FileChooser fileChooser = new FileChooser();
-            if (!appPackPathTextField.getText().isBlank()) {
-                fileChooser.setInitialFileName(appPackPathTextField.getText());
+    protected void buildPatchTreeContextMenu() {
+        ContextMenu contextMenu = new ContextMenu();
+        MenuItem markRootMenuItem = new MenuItem();
+        markRootMenuItem.setOnAction(e -> {
+            TreeItem<TreeNode> selectedItem = patchTree.getSelectionModel().getSelectedItem();
+            TreeNode customRootNode = patchTreeInfo.getCustomRootNode();
+            if (Objects.equals(customRootNode, selectedItem.getValue())) {
+                patchTreeInfo.setCustomRootNode(null);
+            } else {
+                patchTreeInfo.setCustomRootNode(selectedItem.getValue());
             }
-            fileChooser.setTitle("选择应用包");
-            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("应用包", "*.jar"));
-            File file = fileChooser.showOpenDialog(stage);
-            if (file != null) {
-                FileNode rootNode = new FileNode();
-                rootNode.setName(file.getName());
-                rootNode.setPath(file.getPath());
-                rootItem.setValue(rootNode);
-                appPackPathTextField.setText(file.getPath());
-                try (InputStream in = new FileInputStream(file);
-                     ZipInputStream jis = new ZipInputStream(in)) {
-                    ZipEntry zipEntry;
-                    Map<String, TreeItem<TreeNode>> treeItemMap = new HashMap<>();
-                    while ((zipEntry = jis.getNextEntry()) != null) {
-                        ZipEntryNode zipEntryNode = new ZipEntryNode();
-                        zipEntryNode.setName(FileNameUtil.getFileName(zipEntry.getName()));
-                        zipEntryNode.setPath(zipEntry.getName());
-                        zipEntryNode.setEntry(zipEntry);
-                        if (!zipEntry.isDirectory()) {
-                            zipEntryNode.setBytes(jis.readAllBytes());
-                        }
-                        TreeItem<TreeNode> newItem = new TreeItem<>(zipEntryNode);
-                        TreeItem<TreeNode> parentItem = treeItemMap.getOrDefault(FileNameUtil.getDirPath(zipEntry.getName()), rootItem);
-                        parentItem.getChildren().add(newItem);
-                        if (zipEntry.isDirectory()) {
-                            treeItemMap.put(zipEntry.getName().substring(0, zipEntry.getName().length() - 1), newItem);
-                        }
-                    }
-                } catch (IOException ex) {
-                    throw new RuntimeException(ex);
+            PatchPackService patchPackService = PatchPackService.getInstance();
+            patchPackService.refreshReadmeNode(patchTreeInfo);
+            patchPackService.refreshPatchMappedNode(appTreeInfo, patchTreeInfo);
+            readMeTextArea.setText(patchTreeInfo.getReadMeText());
+            patchTree.refresh();
+        });
+        contextMenu.getItems().addAll(markRootMenuItem);
+        contextMenu.setOnShowing(e -> {
+            TreeItem<TreeNode> selectedItem = patchTree.getSelectionModel().getSelectedItem();
+            TreeNode selectedNode = selectedItem.getValue();
+            if (selectedNode instanceof ZipEntryNode && ((ZipEntryNode) selectedNode).getEntry().isDirectory()) {
+                markRootMenuItem.setVisible(true);
+                if (Objects.equals(selectedNode, patchTreeInfo.getCustomRootNode())) {
+                    markRootMenuItem.setText("取消根节点标记");
+                } else {
+                    markRootMenuItem.setText("标记为根节点");
+                }
+            } else {
+                markRootMenuItem.setVisible(false);
+            }
+        });
+        patchTree.setContextMenu(contextMenu);
+    }
+
+    protected void refreshPatchTree(File file) {
+        TreeItem<TreeNode> rootItem = patchTree.getRoot();
+        PatchPackService patchPackService = PatchPackService.getInstance();
+        patchTreeInfo = patchPackService.getTreeNode(file);
+        patchPackService.refreshReadmeNode(patchTreeInfo);
+        rootItem.getChildren().clear();
+        TreeNodeUtil.buildNode(rootItem, patchTreeInfo.getRootNode());
+        patchPackService.refreshPatchMappedNode(appTreeInfo, patchTreeInfo);
+        TreeNodeUtil.expandedAllNode(rootItem);
+        patchPathTextField.setText(file.getPath());
+        Configuration.getInstance().setLastPatchPackPath(file.getPath());
+        if (readMeTextArea != null) {
+            readMeTextArea.setText(patchTreeInfo.getReadMeText());
+        }
+    }
+
+    protected void buildPatchTree() {
+        TreeItem<TreeNode> rootItem = new CheckBoxTreeItem<>();
+        patchTree = new TreeView<>(rootItem);
+        patchTree.setCellFactory(v -> new FileCheckBoxTreeCell<>(this));
+        buildPatchTreeContextMenu();
+        patchTree.setOnMouseClicked(e -> {
+            if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 1) {
+                selectedLink(patchTree, appTree);
+            }
+            if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 2) {
+                TreeItem<TreeNode> selectedItem = patchTree.getSelectionModel().getSelectedItem();
+                TreeNode selectedTreeNode = selectedItem.getValue();
+                if (!selectedTreeNode.getName().endsWith(FileExtConst.DOT_ZIP)) {
+                    return;
+                }
+                if (PatchPackService.getInstance().buildNodeChildrenWithZip(selectedTreeNode)) {
+                    TreeNodeUtil.buildNodeChildren(selectedItem, selectedTreeNode);
                 }
             }
         });
-        appPackPathBox.getChildren().add(appPackPathBtn);
-        VBox.setVgrow(appPackTree, Priority.ALWAYS);
-        return new VBox(appPackPathBox, appPackTree);
+        String lastPatchPackPath = Configuration.getInstance().getLastPatchPackPath();
+        if (lastPatchPackPath == null || lastPatchPackPath.isBlank()) {
+            return;
+        }
+        File file = FileUtil.getExistsFile(lastPatchPackPath);
+        if (file == null) {
+            return;
+        }
+        refreshPatchTree(file);
     }
 
     protected Node buildRightCentre() {
-        TextField patchPackPathTextField = new TextField();
-        HBox.setHgrow(patchPackPathTextField, Priority.ALWAYS);
-
-        TreeItem<TreeNode> rootItem = new CheckBoxTreeItem<>();
-        TreeView<TreeNode> patchPackTree = new TreeView<>(rootItem);
-        patchPackTree.setCellFactory(v -> new FileCheckBoxTreeCell<>());
-
-        Button patchPackPathBtn = new Button("选择");
-        patchPackPathBtn.setOnAction(e -> {
-            FileChooser fileChooser = new FileChooser();
-            if (!patchPackPathTextField.getText().isBlank()) {
-                fileChooser.setInitialFileName(patchPackPathTextField.getText());
-            }
-            fileChooser.setTitle("选择补丁包");
-            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("补丁包", "*.zip"));
-            File file = fileChooser.showOpenDialog(stage);
-            if (file != null) {
-                FileNode rootNode = new FileNode();
-                rootNode.setName(file.getName());
-                rootNode.setPath(file.getPath());
-                rootItem.setValue(rootNode);
-                patchPackPathTextField.setText(file.getPath());
-
-                try (InputStream in = new FileInputStream(file);
-                     ZipInputStream jis = new ZipInputStream(in)) {
-                    ZipEntry zipEntry;
-                    Map<String, TreeItem<TreeNode>> treeItemMap = new HashMap<>();
-                    while ((zipEntry = jis.getNextEntry()) != null) {
-                        ZipEntryNode zipEntryNode = new ZipEntryNode();
-                        zipEntryNode.setName(FileNameUtil.getFileName(zipEntry.getName()));
-                        zipEntryNode.setPath(zipEntry.getName());
-                        zipEntryNode.setEntry(zipEntry);
-                        if (!zipEntry.isDirectory()) {
-                            zipEntryNode.setBytes(jis.readAllBytes());
-                        }
-                        TreeItem<TreeNode> newItem = new CheckBoxTreeItem<>(zipEntryNode);
-                        TreeItem<TreeNode> parentItem = treeItemMap.getOrDefault(FileNameUtil.getDirPath(zipEntry.getName()), rootItem);
-                        parentItem.getChildren().add(newItem);
-                        if (zipEntry.isDirectory()) {
-                            treeItemMap.put(zipEntry.getName().substring(0, zipEntry.getName().length() - 1), newItem);
-                        }
-                    }
-                } catch (IOException ex) {
-                    throw new RuntimeException(ex);
-                }
-            }
+        HBox patchPackPathBox = FXUtil.pre(new HBox(), node -> {
+            node.setAlignment(Pos.CENTER);
+            node.setPadding(new Insets(3, 8, 3, 8));
+            node.setSpacing(3);
         });
-        HBox patchPackPathBox = new HBox(
-                new Label("补丁包:"),
-                patchPackPathTextField,
-                patchPackPathBtn
-        );
-        patchPackPathBox.setAlignment(Pos.CENTER);
+        patchPackPathBox.getChildren().add(new Label("补丁包:"));
+        patchPackPathBox.getChildren().add(FXUtil.pre(patchPathTextField = new TextField(), node -> {
+            node.setEditable(false);
+            HBox.setHgrow(node, Priority.ALWAYS);
+        }));
+        patchPackPathBox.getChildren().add(FXUtil.pre(new Button("选择"), node -> {
+            node.setOnAction(e -> {
+                FileChooser fileChooser = new FileChooser();
+                if (!patchPathTextField.getText().isBlank()) {
+                    fileChooser.setInitialFileName(patchPathTextField.getText());
+                }
+                fileChooser.setTitle("选择补丁包");
+                fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("补丁包", "*.zip"));
+                File file = fileChooser.showOpenDialog(stage);
+                if (file != null) {
+                    refreshPatchTree(file);
+                }
+            });
+        }));
+        buildPatchTree();
+        VBox.setVgrow(patchTree, Priority.ALWAYS);
+        return new VBox(patchPackPathBox, patchTree);
+    }
 
-        VBox.setVgrow(patchPackTree, Priority.ALWAYS);
-        return new VBox(patchPackPathBox, patchPackTree);
+    protected Node buildBottomCentre() {
+        readMeTextArea = new TextArea();
+        readMeTextArea.setEditable(false);
+        if (patchTreeInfo != null) {
+            readMeTextArea.setText(patchTreeInfo.getReadMeText());
+        }
+        TitledPane titledPane = new TitledPane("补丁信息", readMeTextArea);
+        titledPane.setCollapsible(false);
+        return titledPane;
     }
 
     protected Node buildCentre() {
-        return new SplitPane(buildLeftCentre(), buildRightCentre());
+        SplitPane topPane = new SplitPane(buildLeftCentre(), buildRightCentre());
+        SplitPane centrePane = new SplitPane(topPane, buildBottomCentre());
+        centrePane.setOrientation(Orientation.VERTICAL);
+        centrePane.setDividerPositions(0.7);
+        return centrePane;
     }
 
     protected Node buildFooter() {
-        TextField outputPathTextField = new TextField();
-        outputPathTextField.setEditable(false);
-        HBox.setHgrow(outputPathTextField, Priority.ALWAYS);
+        Label generateDetailLbl = new Label("新增：2 更新：3 删除：4 标记删除：5");
+        generateDetailLbl.setTextFill(Color.RED);
+        generateDetailLbl.setStyle("-fx-font-weight: bold;");
         HBox footerBox = new HBox(
-                new Label("路径:"),
-                outputPathTextField,
-                new Button("选择"),
-                new Button("生成")
+                generateDetailLbl,
+                FXUtil.pre(new Region(), node -> HBox.setHgrow(node, Priority.ALWAYS)),
+                new Button("保存")
         );
         footerBox.setAlignment(Pos.CENTER);
+        footerBox.setSpacing(3);
+        footerBox.setPadding(new Insets(5, 3, 0, 3));
         return footerBox;
     }
 
     public Pane build() {
         BorderPane rootPane = new BorderPane();
+        rootPane.setPadding(new Insets(1, 2, 4, 2));
         rootPane.setTop(buildHeader());
         rootPane.setCenter(buildCentre());
         rootPane.setBottom(buildFooter());
