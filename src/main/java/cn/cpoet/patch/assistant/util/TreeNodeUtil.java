@@ -1,6 +1,7 @@
 package cn.cpoet.patch.assistant.util;
 
 import cn.cpoet.patch.assistant.view.tree.FileNode;
+import cn.cpoet.patch.assistant.view.tree.FileTreeItem;
 import cn.cpoet.patch.assistant.view.tree.TreeNode;
 import javafx.scene.control.TreeItem;
 
@@ -88,7 +89,7 @@ public abstract class TreeNodeUtil {
             buildChildNode(parent, node, filter);
             return;
         }
-        TreeItem<TreeNode> childItem = new TreeItem<>();
+        TreeItem<TreeNode> childItem = new FileTreeItem();
         childItem.setValue(node);
         node.setTreeItem(childItem);
         if (node.getChildren() != null && !node.getChildren().isEmpty()) {
