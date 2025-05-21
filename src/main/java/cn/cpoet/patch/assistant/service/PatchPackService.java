@@ -13,6 +13,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipInputStream;
@@ -94,7 +95,9 @@ public class PatchPackService extends BasePackService {
         TreeNode rootNode = patchTreeInfo.getRootNode();
         if (patchTreeInfo.getCustomRootNode() != null) {
             rootNode = patchTreeInfo.getCustomRootNode();
-            pathPrefix = rootNode instanceof FileNode ? ((FileNode) rootNode).getPath() : null;
+            pathPrefix = rootNode instanceof TreeKindNode ? ((TreeKindNode) rootNode).getPath() : null;
+        } else if (rootNode instanceof FileNode) {
+            pathPrefix = ((FileNode) rootNode).getPath() + FileNameUtil.SEPARATOR;
         }
         Matcher matcher = pattern.matcher(readMeText);
         while (matcher.find()) {
@@ -110,7 +113,7 @@ public class PatchPackService extends BasePackService {
             TreeNode dirNode = TreeNodeUtil.findNodeByPath(appTreeInfo.getRootNode(), dirPath);
             if (dirNode != null && dirNode.getChildren() != null && !dirNode.getChildren().isEmpty()) {
                 for (TreeNode child : dirNode.getChildren()) {
-                    if (((FileNode) child).getPath().startsWith(firstPath)) {
+                    if (((TreeKindNode) child).getPath().startsWith(firstPath)) {
                         firstNode = child;
                         break;
                     }
@@ -152,13 +155,42 @@ public class PatchPackService extends BasePackService {
         FileNode rootNode = new FileNode();
         rootNode.setName(file.getName());
         rootNode.setPath(file.getPath());
+        rootNode.setFile(file);
         treeInfo.setRootNode(rootNode);
+        if (file.isDirectory()) {
+            doGetTreeNodeWithDir(file, rootNode);
+        } else {
+            doGetTreeNodeWithZip(file, rootNode);
+        }
+        return treeInfo;
+    }
+
+    protected void doGetTreeNodeWithDir(File file, TreeKindNode parentNode) {
+        File[] files = file.listFiles();
+        if (files != null) {
+            for (File childFile : files) {
+                FileNode fileNode = new FileNode();
+                fileNode.setName(childFile.getName());
+                fileNode.setPath(childFile.getPath());
+                fileNode.setFile(childFile);
+                fileNode.setParent(parentNode);
+                if (parentNode.getChildren() == null) {
+                    parentNode.setChildren(new ArrayList<>());
+                }
+                parentNode.getChildren().add(fileNode);
+                if (childFile.isDirectory()) {
+                    doGetTreeNodeWithDir(childFile, fileNode);
+                }
+            }
+        }
+    }
+
+    protected void doGetTreeNodeWithZip(File file, TreeKindNode rootNode) {
         try (InputStream in = new FileInputStream(file);
              ZipInputStream zin = new ZipInputStream(in, Charset.forName("GBK"))) {
             doReadZipEntry(rootNode, zin);
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
-        return treeInfo;
     }
 }

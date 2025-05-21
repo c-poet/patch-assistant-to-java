@@ -5,7 +5,7 @@ package cn.cpoet.patch.assistant.view.tree;
  *
  * @author CPoet
  */
-public enum FileNodeStatus {
+public enum TreeNodeStatus {
     /**
      * 新增
      */

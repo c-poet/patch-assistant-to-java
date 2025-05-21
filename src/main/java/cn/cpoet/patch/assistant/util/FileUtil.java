@@ -51,6 +51,20 @@ public abstract class FileUtil {
     /**
      * 读取文件
      *
+     * @param file 文件
+     * @return 文件内容
+     */
+    public static byte[] readFile(File file) {
+        try (InputStream in = new FileInputStream(file)) {
+            return in.readAllBytes();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * 读取文件
+     *
      * @param path 文件路径
      * @return 文件内容
      */
@@ -94,5 +108,16 @@ public abstract class FileUtil {
     public static File getExistsFile(String path) {
         File file = new File(path);
         return file.exists() && file.isFile() ? file : null;
+    }
+
+    /**
+     * 根据路径判断是否存在，并返回文件实例
+     *
+     * @param path 路径
+     * @return 文件实例
+     */
+    public static File getExistsDirOrFile(String path) {
+        File file = new File(path);
+        return file.exists() ? file : null;
     }
 }

@@ -15,12 +15,15 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
+import java.util.List;
 import java.util.Objects;
 
 public class HomeView extends HomeContext {
@@ -109,19 +112,19 @@ public class HomeView extends HomeContext {
         MenuItem markDelMenuItem = new MenuItem();
         markDelMenuItem.setOnAction(e -> {
             TreeItem<TreeNode> selectedItem = appTree.getSelectionModel().getSelectedItem();
-            FileNode selectedNode = (FileNode) selectedItem.getValue();
-            selectedNode.setStatus(selectedNode.getStatus() == FileNodeStatus.NONE ? FileNodeStatus.MARK_DEL : FileNodeStatus.NONE);
+            TreeKindNode selectedNode = (TreeKindNode) selectedItem.getValue();
+            selectedNode.setStatus(selectedNode.getStatus() == TreeNodeStatus.NONE ? TreeNodeStatus.MARK_DEL : TreeNodeStatus.NONE);
         });
         contextMenu.getItems().add(markDelMenuItem);
         contextMenu.setOnShowing(e -> {
             TreeItem<TreeNode> selectedItem = appTree.getSelectionModel().getSelectedItem();
             TreeNode selectedNode = selectedItem.getValue();
-            if (selectedNode instanceof FileNode) {
-                FileNodeStatus status = ((FileNode) selectedNode).getStatus();
-                if (status == FileNodeStatus.NONE) {
+            if (selectedNode instanceof TreeKindNode) {
+                TreeNodeStatus status = ((TreeKindNode) selectedNode).getStatus();
+                if (status == TreeNodeStatus.NONE) {
                     markDelMenuItem.setText("标记删除");
                     markDelMenuItem.setVisible(true);
-                } else if (status == FileNodeStatus.MARK_DEL) {
+                } else if (status == TreeNodeStatus.MARK_DEL) {
                     markDelMenuItem.setText("取消标记删除");
                     markDelMenuItem.setVisible(true);
                 } else {
@@ -141,6 +144,20 @@ public class HomeView extends HomeContext {
         TreeNodeUtil.buildNode(rootItem, appTreeInfo.getRootNode(), OnlyChangeFilter.INSTANCE);
         appPathTextField.setText(file.getPath());
         Configuration.getInstance().setLastAppPackPath(file.getPath());
+    }
+
+    protected void setAppTreeDrag() {
+        appTree.setOnDragOver(e -> {
+            List<File> files = e.getDragboard().getFiles();
+            if (files.size() == 1 && files.get(0).getName().endsWith(FileExtConst.DOT_JAR)) {
+                e.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+            }
+            e.consume();
+        });
+        appTree.setOnDragDropped(e -> {
+            List<File> files = e.getDragboard().getFiles();
+            refreshAppTree(files.get(0));
+        });
     }
 
     protected void buildAppTree() {
@@ -163,6 +180,7 @@ public class HomeView extends HomeContext {
                 }
             }
         });
+        setAppTreeDrag();
         String lastAppPackPath = Configuration.getInstance().getLastAppPackPath();
         if (lastAppPackPath == null || lastAppPackPath.isBlank()) {
             return;
@@ -180,11 +198,11 @@ public class HomeView extends HomeContext {
             node.setPadding(new Insets(3, 8, 3, 8));
             node.setSpacing(3);
         });
+        appPackPathBox.getChildren().add(new Label("应用包:"));
         appPackPathBox.getChildren().add(FXUtil.pre(appPathTextField = new TextField(), node -> {
             node.setEditable(false);
             HBox.setHgrow(node, Priority.ALWAYS);
         }));
-        appPackPathBox.getChildren().add(new Label("应用包:"));
         appPackPathBox.getChildren().add(FXUtil.pre(new Button("选择"), node -> {
             node.setOnAction(e -> {
                 FileChooser fileChooser = new FileChooser();
@@ -226,7 +244,7 @@ public class HomeView extends HomeContext {
         contextMenu.setOnShowing(e -> {
             TreeItem<TreeNode> selectedItem = patchTree.getSelectionModel().getSelectedItem();
             TreeNode selectedNode = selectedItem.getValue();
-            if (selectedNode instanceof ZipEntryNode && ((ZipEntryNode) selectedNode).getEntry().isDirectory()) {
+            if (selectedNode instanceof TreeKindNode && ((TreeKindNode) selectedNode).isDir()) {
                 markRootMenuItem.setVisible(true);
                 if (Objects.equals(selectedNode, patchTreeInfo.getCustomRootNode())) {
                     markRootMenuItem.setText("取消根节点标记");
@@ -256,6 +274,21 @@ public class HomeView extends HomeContext {
         }
     }
 
+    protected void setPatchTreeDrag() {
+        patchTree.setOnDragOver(e -> {
+            List<File> files = e.getDragboard().getFiles();
+            if (files.size() == 1 && (files.get(0).isDirectory() ||
+                    files.get(0).getName().endsWith(FileExtConst.DOT_ZIP))) {
+                e.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+            }
+            e.consume();
+        });
+        patchTree.setOnDragDropped(e -> {
+            List<File> files = e.getDragboard().getFiles();
+            refreshPatchTree(files.get(0));
+        });
+    }
+
     protected void buildPatchTree() {
         TreeItem<TreeNode> rootItem = new CheckBoxTreeItem<>();
         patchTree = new TreeView<>(rootItem);
@@ -276,11 +309,12 @@ public class HomeView extends HomeContext {
                 }
             }
         });
+        setPatchTreeDrag();
         String lastPatchPackPath = Configuration.getInstance().getLastPatchPackPath();
         if (lastPatchPackPath == null || lastPatchPackPath.isBlank()) {
             return;
         }
-        File file = FileUtil.getExistsFile(lastPatchPackPath);
+        File file = FileUtil.getExistsDirOrFile(lastPatchPackPath);
         if (file == null) {
             return;
         }
@@ -307,6 +341,16 @@ public class HomeView extends HomeContext {
                 fileChooser.setTitle("选择补丁包");
                 fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("补丁包", "*.zip"));
                 File file = fileChooser.showOpenDialog(stage);
+                if (file != null) {
+                    refreshPatchTree(file);
+                }
+            });
+        }));
+        patchPackPathBox.getChildren().add(FXUtil.pre(new Button("目录"), node -> {
+            node.setOnAction(e -> {
+                DirectoryChooser directoryChooser = new DirectoryChooser();
+                directoryChooser.setTitle("选择补丁目录");
+                File file = directoryChooser.showDialog(stage);
                 if (file != null) {
                     refreshPatchTree(file);
                 }

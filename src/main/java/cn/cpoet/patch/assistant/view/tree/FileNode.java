@@ -1,70 +1,67 @@
 package cn.cpoet.patch.assistant.view.tree;
 
+import cn.cpoet.patch.assistant.util.FileUtil;
 import cn.cpoet.patch.assistant.util.HashUtil;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Locale;
+
 /**
- * 文件树形节点
+ * 文件节点
  *
  * @author CPoet
  */
-public class FileNode extends TreeNode {
+public class FileNode extends TreeKindNode {
 
     /**
-     * 路径
+     * 关联的文件
      */
-    private String path;
+    private File file;
 
-    /**
-     * 内容
-     */
-    private byte[] bytes;
-
-    /**
-     * 内容md5值
-     */
-    private String md5;
-
-    /**
-     * 文件状态
-     */
-    private FileNodeStatus status = FileNodeStatus.NONE;
-
-    public String getPath() {
-        return path;
+    public File getFile() {
+        return file;
     }
 
-    public void setPath(String path) {
-        this.path = path;
+    public void setFile(File file) {
+        this.file = file;
     }
 
+    @Override
     public byte[] getBytes() {
-        return bytes;
+        return bytes == null ? initFileBaseInfo() : bytes;
     }
 
-    public void setBytes(byte[] bytes) {
-        this.bytes = bytes;
-    }
-
-    public String getMd5() {
-        return md5;
-    }
-
-    public String initAndGetMd5() {
-        if (md5 != null) {
-            return md5;
+    @Override
+    public long getSize() {
+        if (size == 0 && bytes == null) {
+            initFileBaseInfo();
         }
-        return bytes == null ? "" : (md5 = HashUtil.md5(bytes));
+        return size;
     }
 
-    public void setMd5(String md5) {
-        this.md5 = md5;
+    @Override
+    public boolean isDir() {
+        return file.isDirectory();
     }
 
-    public FileNodeStatus getStatus() {
-        return status;
+    @Override
+    public LocalDateTime getModifyTime() {
+        long lastModified = file.lastModified();
+        return LocalDateTime.ofInstant(Instant.ofEpochMilli(lastModified), ZoneId.systemDefault());
     }
 
-    public void setStatus(FileNodeStatus status) {
-        this.status = status;
+    protected byte[] initFileBaseInfo() {
+        byte[] data = FileUtil.readFile(file);
+        size = data.length;
+        if (size > 10 * 1024 * 1024) {
+            md5 = HashUtil.md5(data);
+        } else {
+            bytes = data;
+        }
+        return data;
     }
 }

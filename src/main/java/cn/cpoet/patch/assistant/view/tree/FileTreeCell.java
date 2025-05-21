@@ -9,7 +9,6 @@ import cn.cpoet.patch.assistant.util.ImageUtil;
 import cn.cpoet.patch.assistant.view.HomeContext;
 import javafx.scene.control.Label;
 import javafx.scene.control.TreeCell;
-import javafx.scene.control.TreeItem;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
@@ -51,7 +50,7 @@ public class FileTreeCell<T> extends TreeCell<T> {
             Image image = IConUtil.loadIconByFileExt(((TreeNode) item).getName());
             if (image != null) {
                 icon.setImage(image);
-            } else if (item instanceof ZipEntryNode && ((ZipEntryNode) item).getEntry().isDirectory()) {
+            } else if (item instanceof TreeKindNode && ((TreeKindNode) item).isDir()) {
                 icon.setImage(ImageUtil.loadImage(IConConst.DIRECTORY));
             } else {
                 icon.setImage(ImageUtil.loadImage(IConConst.FILE));
@@ -62,11 +61,14 @@ public class FileTreeCell<T> extends TreeCell<T> {
 
     protected void addFileDetail(T item) {
         if (Boolean.TRUE.equals(Configuration.getInstance().getIsShowFileDetail())) {
-            if (item instanceof ZipEntryNode && !((ZipEntryNode) item).getEntry().isDirectory()) {
-                ZipEntryNode zipEntryNode = (ZipEntryNode) item;
-                String sizeReadability = FileUtil.getSizeReadability(zipEntryNode.getEntry().getSize());
-                String dateTime = DateUtil.formatDateTime(zipEntryNode.getEntry().getTimeLocal());
-                Label fileDetailLbl = new Label("\t" + dateTime + "  " + sizeReadability + "  " + zipEntryNode.initAndGetMd5());
+            if (item instanceof TreeKindNode) {
+                TreeKindNode kindNode = (TreeKindNode) item;
+                if (kindNode.isDir()) {
+                    return;
+                }
+                String sizeReadability = FileUtil.getSizeReadability(kindNode.getSize());
+                String dateTime = DateUtil.formatDateTime(kindNode.getModifyTime());
+                Label fileDetailLbl = new Label("\t" + dateTime + "  " + sizeReadability + "  " + kindNode.getMd5());
                 fileDetailLbl.setTextFill(Color.valueOf("#6c707e"));
                 box.getChildren().add(fileDetailLbl);
             }

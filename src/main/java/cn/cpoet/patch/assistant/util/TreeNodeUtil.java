@@ -1,7 +1,7 @@
 package cn.cpoet.patch.assistant.util;
 
-import cn.cpoet.patch.assistant.view.tree.FileNode;
 import cn.cpoet.patch.assistant.view.tree.FileTreeItem;
+import cn.cpoet.patch.assistant.view.tree.TreeKindNode;
 import cn.cpoet.patch.assistant.view.tree.TreeNode;
 import javafx.scene.control.TreeItem;
 
@@ -110,10 +110,11 @@ public abstract class TreeNodeUtil {
      * @return 查询到的节点信息
      */
     public static TreeNode findNodeByPath(TreeNode node, String path) {
-        if (!(node instanceof FileNode)) {
+        if (!(node instanceof TreeKindNode)) {
             return null;
         }
-        if (path.equals(((FileNode) node).getPath())) {
+        if (path.replaceAll("\\\\", FileNameUtil.SEPARATOR).equals(((TreeKindNode) node)
+                .getPath().replaceAll("\\\\", FileNameUtil.SEPARATOR))) {
             return node;
         }
         if (node.getChildren() != null && !node.getChildren().isEmpty()) {

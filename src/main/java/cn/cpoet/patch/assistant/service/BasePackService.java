@@ -1,13 +1,13 @@
 package cn.cpoet.patch.assistant.service;
 
 import cn.cpoet.patch.assistant.util.FileNameUtil;
-import cn.cpoet.patch.assistant.util.HashUtil;
-import cn.cpoet.patch.assistant.view.tree.FileNode;
+import cn.cpoet.patch.assistant.view.tree.TreeKindNode;
 import cn.cpoet.patch.assistant.view.tree.TreeNode;
 import cn.cpoet.patch.assistant.view.tree.ZipEntryNode;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,14 +22,14 @@ import java.util.zip.ZipInputStream;
 public abstract class BasePackService {
 
     public boolean buildNodeChildrenWithZip(TreeNode rootNode) {
-        if (!(rootNode instanceof FileNode)) {
+        if (!(rootNode instanceof TreeKindNode)) {
             return false;
         }
         if (rootNode.getChildren() != null && !rootNode.getChildren().isEmpty()) {
             return false;
         }
-        try (ByteArrayInputStream in = new ByteArrayInputStream(((FileNode) rootNode).getBytes());
-             ZipInputStream zin = new ZipInputStream(in)) {
+        try (ByteArrayInputStream in = new ByteArrayInputStream(((TreeKindNode) rootNode).getBytes());
+             ZipInputStream zin = new ZipInputStream(in, Charset.forName("GBK"))) {
             doReadZipEntry(rootNode, zin);
             return true;
         } catch (IOException ex) {
@@ -46,6 +46,7 @@ public abstract class BasePackService {
             zipEntryNode.setPath(zipEntry.getName());
             zipEntryNode.setEntry(zipEntry);
             if (!zipEntry.isDirectory()) {
+                zipEntryNode.setSize(zipEntry.getSize());
                 zipEntryNode.setBytes(zin.readAllBytes());
             }
             TreeNode parentNode = treeNodeMap.getOrDefault(FileNameUtil.getDirPath(zipEntry.getName()), rootNode);

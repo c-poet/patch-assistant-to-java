@@ -14,32 +14,32 @@ public class TreeNode {
     /**
      * 节点名称
      */
-    private String name;
+    protected String name;
 
     /**
      * 映射的节点信息
      */
-    private TreeNode mappedNode;
+    protected TreeNode mappedNode;
 
     /**
      * 是否选中
      */
-    private Boolean checked = Boolean.TRUE;
+    protected Boolean checked = Boolean.TRUE;
 
     /**
      * 父级节点
      */
-    private TreeNode parent;
+    protected TreeNode parent;
 
     /**
      * 子级节点列表
      */
-    private List<TreeNode> children;
+    protected List<TreeNode> children;
 
     /**
      * 对应的节点项
      */
-    private TreeItem<TreeNode> treeItem;
+    protected TreeItem<TreeNode> treeItem;
 
     public String getName() {
         return name;

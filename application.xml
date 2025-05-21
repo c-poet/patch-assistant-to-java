@@ -1,11 +1,11 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <Configuration>
-  <homeWidth>988.0</homeWidth>
-  <homeHeight>711.3333129882812</homeHeight>
+  <homeWidth>1164.0</homeWidth>
+  <homeHeight>663.3333129882812</homeHeight>
   <isSelectedLinked>true</isSelectedLinked>
   <isDockerImage>false</isDockerImage>
-  <isOnlyChanges>false</isOnlyChanges>
+  <isOnlyChanges>true</isOnlyChanges>
   <isShowFileDetail>true</isShowFileDetail>
-  <lastAppPackPath>C:\Users\CPoet\Desktop\account-server-3.1.0-SNAPSHOT-springcloud.jar</lastAppPackPath>
-  <lastPatchPackPath>C:\Users\CPoet\Desktop\20250326_account_账户支持多章退回和甘肃支持判断流程退回.zip</lastPatchPackPath>
+  <lastAppPackPath>C:\Users\CPoet\Desktop\account-server-3.1.0-SNAPSHOT-springcloud - 副本.jar</lastAppPackPath>
+  <lastPatchPackPath>C:\Users\CPoet\Desktop\20250326_account_账户支持多章退回和甘肃支持判断流程退回\20250326_account_账户支持多章退回和甘肃支持判断流程退回\account-server</lastPatchPackPath>
 </Configuration>

@@ -41,6 +41,6 @@ public class PatchTreeInfo extends TreeInfo {
      * @return Read文本内容
      */
     public String getReadMeText() {
-        return readMeNode instanceof ZipEntryNode ? new String(((ZipEntryNode) readMeNode).getBytes(), StandardCharsets.UTF_8) : null;
+        return readMeNode instanceof TreeKindNode ? new String(((TreeKindNode) readMeNode).getBytes(), StandardCharsets.UTF_8) : null;
     }
 }

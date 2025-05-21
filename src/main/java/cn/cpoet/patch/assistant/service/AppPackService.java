@@ -1,10 +1,7 @@
 package cn.cpoet.patch.assistant.service;
 
 import cn.cpoet.patch.assistant.core.AppContext;
-import cn.cpoet.patch.assistant.view.tree.FileNode;
-import cn.cpoet.patch.assistant.view.tree.TreeInfo;
-import cn.cpoet.patch.assistant.view.tree.TreeNode;
-import cn.cpoet.patch.assistant.view.tree.ZipEntryNode;
+import cn.cpoet.patch.assistant.view.tree.*;
 
 import java.io.*;
 import java.util.zip.ZipInputStream;
@@ -32,6 +29,7 @@ public class AppPackService extends BasePackService {
         FileNode rootNode = new FileNode();
         rootNode.setName(file.getName());
         rootNode.setPath(file.getPath());
+        rootNode.setFile(file);
         treeInfo.setRootNode(rootNode);
         try (InputStream in = new FileInputStream(file);
              ZipInputStream zin = new ZipInputStream(in)) {
