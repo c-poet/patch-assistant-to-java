@@ -172,11 +172,12 @@ public class HomeView extends HomeContext {
             if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 2) {
                 TreeItem<TreeNode> selectedItem = appTree.getSelectionModel().getSelectedItem();
                 TreeNode selectedTreeNode = selectedItem.getValue();
-                if (!selectedTreeNode.getName().endsWith(FileExtConst.DOT_JAR)) {
-                    return;
-                }
-                if (AppPackService.getInstance().buildNodeChildrenWithZip(selectedTreeNode)) {
-                    TreeNodeUtil.buildNodeChildren(selectedItem, selectedTreeNode, OnlyChangeFilter.INSTANCE);
+                if (selectedTreeNode.getName().endsWith(FileExtConst.DOT_JAR)) {
+                    if (AppPackService.getInstance().buildNodeChildrenWithZip(selectedTreeNode)) {
+                        TreeNodeUtil.buildNodeChildren(selectedItem, selectedTreeNode, OnlyChangeFilter.INSTANCE);
+                    }
+                } else if (selectedTreeNode.getName().endsWith(FileExtConst.DOT_CLASS)) {
+
                 }
             }
         });

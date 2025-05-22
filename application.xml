@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <Configuration>
-  <homeWidth>1164.0</homeWidth>
-  <homeHeight>663.3333129882812</homeHeight>
+  <homeWidth>1178.6666259765625</homeWidth>
+  <homeHeight>700.6666870117188</homeHeight>
   <isSelectedLinked>true</isSelectedLinked>
   <isDockerImage>false</isDockerImage>
   <isOnlyChanges>true</isOnlyChanges>
