@@ -4,6 +4,7 @@ import cn.cpoet.patch.assistant.component.OnlyChangeFilter;
 import cn.cpoet.patch.assistant.constant.AppConst;
 import cn.cpoet.patch.assistant.constant.FileExtConst;
 import cn.cpoet.patch.assistant.core.AppContext;
+import cn.cpoet.patch.assistant.exception.AppException;
 import cn.cpoet.patch.assistant.util.FileNameUtil;
 import cn.cpoet.patch.assistant.util.TreeNodeUtil;
 import cn.cpoet.patch.assistant.view.tree.*;
@@ -190,7 +191,7 @@ public class PatchPackService extends BasePackService {
              ZipInputStream zin = new ZipInputStream(in, Charset.forName("GBK"))) {
             doReadZipEntry(rootNode, zin);
         } catch (IOException ex) {
-            throw new RuntimeException(ex);
+            throw new AppException("写入文件到压缩包失败", ex);
         }
     }
 }

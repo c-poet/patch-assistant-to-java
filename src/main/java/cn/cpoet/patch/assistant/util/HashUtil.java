@@ -1,5 +1,7 @@
 package cn.cpoet.patch.assistant.util;
 
+import cn.cpoet.patch.assistant.exception.AppException;
+
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -41,7 +43,7 @@ public abstract class HashUtil {
             byte[] digest = messageDigest.digest(bytes);
             return toHexString(digest);
         } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
+            throw new AppException("未支持MD5算法", e);
         }
     }
 }

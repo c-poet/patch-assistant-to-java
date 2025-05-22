@@ -1,6 +1,7 @@
 package cn.cpoet.patch.assistant.core;
 
 import cn.cpoet.patch.assistant.constant.AppConst;
+import cn.cpoet.patch.assistant.exception.AppException;
 import cn.cpoet.patch.assistant.util.FileUtil;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
@@ -36,7 +37,7 @@ public class AppContext extends ServiceFactory {
                 configuration = buildXmlMapper().readValue(in, Configuration.class);
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new AppException("配置文件读取失败", e);
         }
         return this;
     }
@@ -45,7 +46,7 @@ public class AppContext extends ServiceFactory {
         try {
             buildXmlMapper().writeValue(new File(AppConst.CONFIG_FILE_NAME), configuration);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new AppException("配置文件写入失败", e);
         }
     }
 

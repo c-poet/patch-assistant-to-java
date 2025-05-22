@@ -1,7 +1,11 @@
 package cn.cpoet.patch.assistant.service;
 
 import cn.cpoet.patch.assistant.core.AppContext;
-import cn.cpoet.patch.assistant.view.tree.*;
+import cn.cpoet.patch.assistant.exception.AppException;
+import cn.cpoet.patch.assistant.view.tree.FileNode;
+import cn.cpoet.patch.assistant.view.tree.TreeInfo;
+import cn.cpoet.patch.assistant.view.tree.TreeNode;
+import cn.cpoet.patch.assistant.view.tree.ZipEntryNode;
 
 import java.io.*;
 import java.util.zip.ZipInputStream;
@@ -35,7 +39,7 @@ public class AppPackService extends BasePackService {
              ZipInputStream zin = new ZipInputStream(in)) {
             doReadZipEntry(rootNode, zin);
         } catch (IOException ex) {
-            throw new RuntimeException(ex);
+            throw new AppException("读取文件失败", ex);
         }
         return treeInfo;
     }
@@ -51,7 +55,7 @@ public class AppPackService extends BasePackService {
                 rootNode.getChildren().forEach(node -> writeTreeNode2Pack(zipOut, node));
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new AppException("写入应用包失败", e);
         }
     }
 
@@ -72,7 +76,7 @@ public class AppPackService extends BasePackService {
                 }
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new AppException("写入压缩文件失败", e);
         }
         if (node.getChildren() != null) {
             node.getChildren().forEach(child -> writeTreeNode2Pack(zipOut, child));

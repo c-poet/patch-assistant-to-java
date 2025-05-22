@@ -1,5 +1,7 @@
 package cn.cpoet.patch.assistant.util;
 
+import cn.cpoet.patch.assistant.exception.AppException;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -58,7 +60,7 @@ public abstract class FileUtil {
         try (InputStream in = new FileInputStream(file)) {
             return in.readAllBytes();
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new AppException("读取文件失败", e);
         }
     }
 
@@ -75,7 +77,7 @@ public abstract class FileUtil {
             }
             return in.readAllBytes();
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new AppException("读取文件失败", e);
         }
     }
 

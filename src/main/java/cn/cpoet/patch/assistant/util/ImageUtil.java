@@ -1,5 +1,6 @@
 package cn.cpoet.patch.assistant.util;
 
+import cn.cpoet.patch.assistant.exception.AppException;
 import javafx.scene.image.Image;
 
 import java.io.InputStream;
@@ -21,7 +22,7 @@ public abstract class ImageUtil {
             }
             return new Image(in);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new AppException("读取图片失败", e);
         }
     }
 }

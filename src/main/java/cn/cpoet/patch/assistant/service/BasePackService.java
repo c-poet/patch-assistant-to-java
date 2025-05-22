@@ -1,5 +1,6 @@
 package cn.cpoet.patch.assistant.service;
 
+import cn.cpoet.patch.assistant.exception.AppException;
 import cn.cpoet.patch.assistant.util.FileNameUtil;
 import cn.cpoet.patch.assistant.view.tree.TreeKindNode;
 import cn.cpoet.patch.assistant.view.tree.TreeNode;
@@ -33,7 +34,7 @@ public abstract class BasePackService {
             doReadZipEntry(rootNode, zin);
             return true;
         } catch (IOException ex) {
-            throw new RuntimeException(ex);
+            throw new AppException("读取压缩文件失败", ex);
         }
     }
 
