@@ -1,11 +1,11 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <Configuration>
-  <homeWidth>1178.6666259765625</homeWidth>
-  <homeHeight>700.6666870117188</homeHeight>
+  <homeWidth>1029.3333740234375</homeWidth>
+  <homeHeight>790.0</homeHeight>
   <isSelectedLinked>true</isSelectedLinked>
   <isDockerImage>false</isDockerImage>
-  <isOnlyChanges>true</isOnlyChanges>
+  <isOnlyChanges>false</isOnlyChanges>
   <isShowFileDetail>true</isShowFileDetail>
-  <lastAppPackPath>C:\Users\CPoet\Desktop\account-server-3.1.0-SNAPSHOT-springcloud - 副本.jar</lastAppPackPath>
-  <lastPatchPackPath>C:\Users\CPoet\Desktop\20250326_account_账户支持多章退回和甘肃支持判断流程退回\20250326_account_账户支持多章退回和甘肃支持判断流程退回\account-server</lastPatchPackPath>
+  <lastAppPackPath>C:\Users\llzer\Desktop\account-server-3.1.0-SNAPSHOT-springcloud.jar</lastAppPackPath>
+  <lastPatchPackPath>C:\Users\llzer\Desktop\20250423_account-server_年检过滤未上报或者未确认完毕的单位.zip</lastPatchPackPath>
 </Configuration>

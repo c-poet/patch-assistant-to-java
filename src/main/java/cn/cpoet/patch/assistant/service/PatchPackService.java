@@ -96,7 +96,7 @@ public class PatchPackService extends BasePackService {
         if (patchTreeInfo.getCustomRootNode() != null) {
             rootNode = patchTreeInfo.getCustomRootNode();
             pathPrefix = rootNode instanceof TreeKindNode ? ((TreeKindNode) rootNode).getPath() : null;
-        } else if (rootNode instanceof FileNode) {
+        } else if (rootNode instanceof FileNode && ((FileNode) rootNode).isDir()) {
             pathPrefix = ((FileNode) rootNode).getPath() + FileNameUtil.SEPARATOR;
         }
         Matcher matcher = pattern.matcher(readMeText);

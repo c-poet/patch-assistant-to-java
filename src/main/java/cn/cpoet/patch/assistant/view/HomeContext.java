@@ -6,6 +6,7 @@ import cn.cpoet.patch.assistant.view.tree.TreeNode;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TreeView;
+import javafx.scene.layout.StackPane;
 
 import java.util.Objects;
 
@@ -17,6 +18,7 @@ import java.util.Objects;
 public class HomeContext {
 
     protected TreeInfo appTreeInfo;
+    protected StackPane treeStackPane;
     protected TextField appPathTextField;
     protected TreeView<TreeNode> appTree;
     protected PatchTreeInfo patchTreeInfo;
@@ -42,6 +44,10 @@ public class HomeContext {
 
     public TreeView<TreeNode> getPatchTree() {
         return patchTree;
+    }
+
+    public StackPane getTreeStackPane() {
+        return treeStackPane;
     }
 
     public TextField getAppPathTextField() {

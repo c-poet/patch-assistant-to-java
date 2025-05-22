@@ -163,7 +163,7 @@ public class HomeView extends HomeContext {
     protected void buildAppTree() {
         TreeItem<TreeNode> rootItem = new TreeItem<>();
         appTree = new TreeView<>(rootItem);
-        appTree.setCellFactory(treeView -> new FileTreeCell<>(this));
+        appTree.setCellFactory(treeView -> new FileTreeCell(this));
         buildAppTreeContextMenu();
         appTree.getSelectionModel().selectedItemProperty().addListener((observableValue, oldVal, newVal) -> {
             selectedLink(appTree, patchTree);
@@ -293,7 +293,7 @@ public class HomeView extends HomeContext {
     protected void buildPatchTree() {
         TreeItem<TreeNode> rootItem = new CheckBoxTreeItem<>();
         patchTree = new TreeView<>(rootItem);
-        patchTree.setCellFactory(v -> new FileCheckBoxTreeCell<>(this));
+        patchTree.setCellFactory(v -> new FileCheckBoxTreeCell(this));
         buildPatchTreeContextMenu();
         patchTree.getSelectionModel().selectedItemProperty().addListener((observableValue, oldVal, newVal) -> {
             selectedLink(patchTree, appTree);
@@ -374,8 +374,11 @@ public class HomeView extends HomeContext {
     }
 
     protected Node buildCentre() {
+        treeStackPane = new StackPane();
         SplitPane topPane = new SplitPane(buildLeftCentre(), buildRightCentre());
-        SplitPane centrePane = new SplitPane(topPane, buildBottomCentre());
+        treeStackPane.getChildren().add(topPane);
+
+        SplitPane centrePane = new SplitPane(treeStackPane, buildBottomCentre());
         centrePane.setOrientation(Orientation.VERTICAL);
         centrePane.setDividerPositions(0.7);
         return centrePane;

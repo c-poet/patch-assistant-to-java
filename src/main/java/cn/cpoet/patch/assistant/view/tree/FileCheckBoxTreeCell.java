@@ -7,20 +7,20 @@ import javafx.scene.control.CheckBox;
 /**
  * @author CPoet
  */
-public class FileCheckBoxTreeCell<T> extends FileTreeCell<T> {
+public class FileCheckBoxTreeCell extends FileTreeCell {
 
     public FileCheckBoxTreeCell(HomeContext homeContext) {
         super(homeContext);
     }
 
     @Override
-    public void updateItem(T item, boolean empty) {
-        super.updateItem(item, empty);
+    public void updateItem(TreeNode node, boolean empty) {
+        super.updateItem(node, empty);
         if (box != null) {
-            if (item != null && ((TreeNode) item).getMappedNode() != null) {
+            if (node != null && node.getMappedNode() != null) {
                 CheckBox checkBox = new CheckBox();
-                checkBox.setSelected(Boolean.TRUE.equals(((TreeNode) item).getChecked()));
-                checkBox.setOnAction(e -> ((TreeNode) item).setChecked(!Boolean.TRUE.equals(((TreeNode) item).getChecked())));
+                checkBox.setSelected(Boolean.TRUE.equals(node.getChecked()));
+                checkBox.setOnAction(e -> node.setChecked(!Boolean.TRUE.equals(node.getChecked())));
                 checkBox.setPadding(new Insets(0, 5, 0, 0));
                 box.getChildren().add(0, checkBox);
             }
