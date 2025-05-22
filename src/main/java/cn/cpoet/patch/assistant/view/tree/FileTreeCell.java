@@ -9,7 +9,6 @@ import cn.cpoet.patch.assistant.util.ImageUtil;
 import cn.cpoet.patch.assistant.view.HomeContext;
 import javafx.scene.control.Label;
 import javafx.scene.control.TreeCell;
-import javafx.scene.control.TreeItem;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
@@ -25,13 +24,6 @@ public class FileTreeCell extends TreeCell<TreeNode> {
 
     public FileTreeCell(HomeContext homeContext) {
         this.homeContext = homeContext;
-        boundsInParentProperty().addListener((observableValue, oldVal, newVal) -> {
-            TreeItem<TreeNode> treeItem = getTreeItem();
-            if (treeItem instanceof FileTreeItem) {
-                ((FileTreeItem) treeItem).setPosX(newVal.getMaxX());
-                ((FileTreeItem) treeItem).setPosY(newVal.getMaxY());
-            }
-        });
     }
 
     @Override
