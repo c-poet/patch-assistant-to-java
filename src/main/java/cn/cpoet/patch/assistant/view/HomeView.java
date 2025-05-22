@@ -245,7 +245,8 @@ public class HomeView extends HomeContext {
         contextMenu.setOnShowing(e -> {
             TreeItem<TreeNode> selectedItem = patchTree.getSelectionModel().getSelectedItem();
             TreeNode selectedNode = selectedItem.getValue();
-            if (selectedNode instanceof TreeKindNode && ((TreeKindNode) selectedNode).isDir()) {
+            if (selectedNode != patchTreeInfo.getRootNode() &&
+                    selectedNode.getChildren() != null && !selectedNode.getChildren().isEmpty()) {
                 markRootMenuItem.setVisible(true);
                 if (Objects.equals(selectedNode, patchTreeInfo.getCustomRootNode())) {
                     markRootMenuItem.setText("取消根节点标记");
