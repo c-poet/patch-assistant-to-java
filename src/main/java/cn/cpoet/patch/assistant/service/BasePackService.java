@@ -9,7 +9,6 @@ import cn.cpoet.patch.assistant.view.tree.ZipEntryNode;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.zip.ZipEntry;
@@ -26,7 +25,7 @@ public abstract class BasePackService {
         if (!(rootNode instanceof TreeKindNode)) {
             return false;
         }
-        if (rootNode.getChildren() != null && !rootNode.getChildren().isEmpty()) {
+        if (rootNode.getChildren() != null) {
             return false;
         }
         try (ByteArrayInputStream in = new ByteArrayInputStream(((TreeKindNode) rootNode).getBytes());
@@ -40,6 +39,7 @@ public abstract class BasePackService {
 
     protected void doReadZipEntry(TreeNode rootNode, ZipInputStream zin) throws IOException {
         ZipEntry zipEntry;
+        TreeNode manifestNode = null;
         Map<String, TreeNode> treeNodeMap = new HashMap<>();
         while ((zipEntry = zin.getNextEntry()) != null) {
             ZipEntryNode zipEntryNode = new ZipEntryNode();
@@ -50,16 +50,22 @@ public abstract class BasePackService {
                 zipEntryNode.setSize(zipEntry.getSize());
                 zipEntryNode.setBytes(zin.readAllBytes());
             }
-            TreeNode parentNode = treeNodeMap.getOrDefault(FileNameUtil.getDirPath(zipEntry.getName()), rootNode);
-            if (parentNode.getChildren() == null) {
-                parentNode.setChildren(new ArrayList<>());
+            if ("META-INF/MANIFEST.MF".equals(zipEntry.getName())) {
+                manifestNode = zipEntryNode;
+                continue;
             }
+            if ("META-INF/".equals(zipEntry.getName())) {
+                if (manifestNode != null) {
+                    manifestNode.setParent(zipEntryNode);
+                    zipEntryNode.getAndInitChildren().add(manifestNode);
+                }
+            }
+            TreeNode parentNode = treeNodeMap.getOrDefault(FileNameUtil.getDirPath(zipEntry.getName()), rootNode);
             zipEntryNode.setParent(parentNode);
-            parentNode.getChildren().add(zipEntryNode);
+            parentNode.getAndInitChildren().add(zipEntryNode);
             if (zipEntry.isDirectory()) {
                 treeNodeMap.put(zipEntry.getName().substring(0, zipEntry.getName().length() - 1), zipEntryNode);
             }
-            zin.closeEntry();
         }
     }
 }

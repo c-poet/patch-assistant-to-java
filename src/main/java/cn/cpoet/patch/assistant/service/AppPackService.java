@@ -7,7 +7,6 @@ import cn.cpoet.patch.assistant.view.tree.*;
 
 import java.io.*;
 import java.time.LocalDateTime;
-import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -68,16 +67,16 @@ public class AppPackService extends BasePackService {
             return;
         }
         if (node.getMappedNode() == null) {
-            jarOut.putNextEntry(getJarEntryWithZipEntry(node.getEntry()));
+            jarOut.putNextEntry(getNewEntryWithZipEntry(node.getEntry()));
             if (!node.isDir()) {
                 jarOut.write(node.getBytes());
             }
         } else {
             TreeKindNode mappedNode = (TreeKindNode) node.getMappedNode();
-            JarEntry jarEntry = getJarEntryWithZipEntry(node.getEntry());
-            jarEntry.setTimeLocal(mappedNode.getModifyTime());
-            jarOut.putNextEntry(jarEntry);
-            if (!jarEntry.isDirectory()) {
+            ZipEntry zipEntry = getNewEntryWithZipEntry(node.getEntry());
+            zipEntry.setTimeLocal(mappedNode.getModifyTime());
+            jarOut.putNextEntry(zipEntry);
+            if (!zipEntry.isDirectory()) {
                 jarOut.write(mappedNode.getBytes());
             }
         }
@@ -90,14 +89,16 @@ public class AppPackService extends BasePackService {
 
     protected void writeTreeNode2PackWithJar(JarOutputStream jarOut, ZipEntryNode node) throws IOException {
         if (node.getChildren() == null || node.getChildren().isEmpty()) {
-            jarOut.putNextEntry(getJarEntryWithZipEntry(node.getEntry()));
+            jarOut.putNextEntry(getNewEntryWithZipEntry(node.getEntry()));
             jarOut.write(node.getBytes());
             return;
         }
         byte[] bytes = getBytesWithJarNode(node);
-        JarEntry jarEntry = getJarEntryWithZipEntry(node.getEntry());
-        jarEntry.setTimeLocal(LocalDateTime.now());
-        jarOut.putNextEntry(jarEntry);
+        ZipEntry zipEntry = getNewEntryWithZipEntry(node.getEntry());
+        zipEntry.setSize(bytes.length);
+//        zipEntry.setCrc(jarOut.);
+        zipEntry.setTimeLocal(LocalDateTime.now());
+        jarOut.putNextEntry(zipEntry);
         jarOut.write(bytes);
     }
 
@@ -111,16 +112,25 @@ public class AppPackService extends BasePackService {
         }
     }
 
-    protected JarEntry getJarEntryWithZipEntry(ZipEntry zipEntry) {
-        JarEntry jarEntry = new JarEntry(zipEntry.getName());
-        jarEntry.setComment(zipEntry.getComment());
+    protected ZipEntry getNewEntryWithZipEntry(ZipEntry zipEntry) {
+        String name = zipEntry.getName();
+        ZipEntry newEntry = new ZipEntry(name);
+        newEntry.setComment(zipEntry.getComment());
         if (zipEntry.getCreationTime() != null) {
-            jarEntry.setCreationTime(zipEntry.getCreationTime());
+            newEntry.setCreationTime(zipEntry.getCreationTime());
         }
         if (zipEntry.getLastAccessTime() != null) {
-            jarEntry.setLastAccessTime(zipEntry.getLastAccessTime());
+            newEntry.setLastAccessTime(zipEntry.getLastAccessTime());
         }
-        jarEntry.setLastModifiedTime(zipEntry.getLastModifiedTime());
-        return jarEntry;
+        newEntry.setLastModifiedTime(zipEntry.getLastModifiedTime());
+        newEntry.setExtra(zipEntry.getExtra());
+        if (name.endsWith(FileExtConst.DOT_JAR)) {
+            newEntry.setMethod(ZipEntry.STORED);
+            newEntry.setSize(zipEntry.getSize());
+            newEntry.setCrc(zipEntry.getCrc());
+        } else {
+            newEntry.setMethod(ZipEntry.DEFLATED);
+        }
+        return newEntry;
     }
 }

@@ -175,10 +175,7 @@ public class PatchPackService extends BasePackService {
                 fileNode.setPath(childFile.getPath());
                 fileNode.setFile(childFile);
                 fileNode.setParent(parentNode);
-                if (parentNode.getChildren() == null) {
-                    parentNode.setChildren(new ArrayList<>());
-                }
-                parentNode.getChildren().add(fileNode);
+                parentNode.getAndInitChildren().add(fileNode);
                 if (childFile.isDirectory()) {
                     doGetTreeNodeWithDir(childFile, fileNode);
                 }

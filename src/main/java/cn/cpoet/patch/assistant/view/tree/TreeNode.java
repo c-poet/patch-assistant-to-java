@@ -2,6 +2,7 @@ package cn.cpoet.patch.assistant.view.tree;
 
 import javafx.scene.control.TreeItem;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -75,6 +76,10 @@ public class TreeNode {
 
     public List<TreeNode> getChildren() {
         return children;
+    }
+
+    public List<TreeNode> getAndInitChildren() {
+        return children == null ? (children = new ArrayList<>()) : children;
     }
 
     public void setChildren(List<TreeNode> children) {
