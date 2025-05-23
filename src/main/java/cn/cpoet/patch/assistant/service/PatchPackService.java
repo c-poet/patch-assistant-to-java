@@ -14,7 +14,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipInputStream;
@@ -70,24 +69,26 @@ public class PatchPackService extends BasePackService {
     /**
      * 刷新补丁文件映射信息
      *
+     * @param totalInfo     统计信息
      * @param appTreeInfo   应用树形信息
      * @param patchTreeInfo 补丁树形信息
      */
-    public void refreshPatchMappedNode(TreeInfo appTreeInfo, PatchTreeInfo patchTreeInfo) {
+    public void refreshPatchMappedNode(TotalInfo totalInfo, TreeInfo appTreeInfo, PatchTreeInfo patchTreeInfo) {
         if (appTreeInfo != null) {
             cleanMappedNode(appTreeInfo.getRootNode());
         }
         if (patchTreeInfo != null) {
             cleanMappedNode(patchTreeInfo.getRootNode());
         }
+        totalInfo.rest();
         if (appTreeInfo == null || patchTreeInfo == null) {
             return;
         }
-        doPatchMappedNodeWithReadme(appTreeInfo, patchTreeInfo);
-        doPatchMappedNodeWithPath(appTreeInfo, patchTreeInfo);
+        doPatchMappedNodeWithReadme(totalInfo, appTreeInfo, patchTreeInfo);
+        doPatchMappedNodeWithPath(totalInfo, appTreeInfo, patchTreeInfo);
     }
 
-    protected void doPatchMappedNodeWithReadme(TreeInfo appTreeInfo, PatchTreeInfo patchTreeInfo) {
+    protected void doPatchMappedNodeWithReadme(TotalInfo totalInfo, TreeInfo appTreeInfo, PatchTreeInfo patchTreeInfo) {
         String readMeText = patchTreeInfo.getReadMeText();
         if (readMeText == null || readMeText.isBlank()) {
             return;
@@ -134,6 +135,8 @@ public class PatchPackService extends BasePackService {
                     if (fileName.equals(appNode.getName())) {
                         patchNode.setMappedNode(appNode);
                         appNode.setMappedNode(patchNode);
+                        // BY CPoet 后续处理删除和新增的情况
+                        totalInfo.setModTotal(totalInfo.getModTotal() + 1);
                         break;
                     }
                 }
@@ -141,7 +144,7 @@ public class PatchPackService extends BasePackService {
         }
     }
 
-    protected void doPatchMappedNodeWithPath(TreeInfo appTreeInfo, PatchTreeInfo patchTreeInfo) {
+    protected void doPatchMappedNodeWithPath(TotalInfo totalInfo, TreeInfo appTreeInfo, PatchTreeInfo patchTreeInfo) {
 
     }
 

@@ -7,9 +7,10 @@ import cn.cpoet.patch.assistant.view.tree.*;
 
 import java.io.*;
 import java.time.LocalDateTime;
-import java.util.jar.JarOutputStream;
+import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 /**
  * 应用包处理
@@ -50,64 +51,68 @@ public class AppPackService extends BasePackService {
     public void savePack(File file, TreeInfo appTree) {
         TreeNode rootNode = appTree.getRootNode();
         try (OutputStream out = new FileOutputStream(file);
-             JarOutputStream jarOut = new JarOutputStream(out)) {
+             ZipOutputStream zipOut = new ZipOutputStream(out)) {
             if (rootNode.getChildren() != null) {
                 for (TreeNode child : rootNode.getChildren()) {
-                    writeTreeNode2Pack(jarOut, (ZipEntryNode) child);
+                    writeTreeNode2Pack(zipOut, (ZipEntryNode) child);
                 }
             }
+            zipOut.finish();
         } catch (Exception e) {
             throw new AppException("写入应用包失败", e);
         }
     }
 
-    protected void writeTreeNode2Pack(JarOutputStream jarOut, ZipEntryNode node) throws IOException {
+    protected void writeTreeNode2Pack(ZipOutputStream zipOut, ZipEntryNode node) throws IOException {
         if (!node.isDir() && node.getName().endsWith(FileExtConst.DOT_JAR)) {
-            writeTreeNode2PackWithJar(jarOut, node);
+            writeTreeNode2PackWithJar(zipOut, node);
             return;
         }
         if (node.getMappedNode() == null) {
-            jarOut.putNextEntry(getNewEntryWithZipEntry(node.getEntry()));
+            zipOut.putNextEntry(getNewEntryWithZipEntry(node.getEntry()));
             if (!node.isDir()) {
-                jarOut.write(node.getBytes());
+                zipOut.write(node.getBytes());
             }
         } else {
             TreeKindNode mappedNode = (TreeKindNode) node.getMappedNode();
             ZipEntry zipEntry = getNewEntryWithZipEntry(node.getEntry());
             zipEntry.setTimeLocal(mappedNode.getModifyTime());
-            jarOut.putNextEntry(zipEntry);
+            zipOut.putNextEntry(zipEntry);
             if (!zipEntry.isDirectory()) {
-                jarOut.write(mappedNode.getBytes());
+                zipOut.write(mappedNode.getBytes());
             }
         }
         if (node.getChildren() != null) {
             for (TreeNode child : node.getChildren()) {
-                writeTreeNode2Pack(jarOut, (ZipEntryNode) child);
+                writeTreeNode2Pack(zipOut, (ZipEntryNode) child);
             }
         }
     }
 
-    protected void writeTreeNode2PackWithJar(JarOutputStream jarOut, ZipEntryNode node) throws IOException {
+    protected void writeTreeNode2PackWithJar(ZipOutputStream zipOut, ZipEntryNode node) throws IOException {
         if (node.getChildren() == null || node.getChildren().isEmpty()) {
-            jarOut.putNextEntry(getNewEntryWithZipEntry(node.getEntry()));
-            jarOut.write(node.getBytes());
+            zipOut.putNextEntry(getNewEntryWithZipEntry(node.getEntry()));
+            zipOut.write(node.getBytes());
             return;
         }
         byte[] bytes = getBytesWithJarNode(node);
         ZipEntry zipEntry = getNewEntryWithZipEntry(node.getEntry());
         zipEntry.setSize(bytes.length);
-//        zipEntry.setCrc(jarOut.);
+        CRC32 crc32 = new CRC32();
+        crc32.update(bytes);
+        zipEntry.setCrc(crc32.getValue());
         zipEntry.setTimeLocal(LocalDateTime.now());
-        jarOut.putNextEntry(zipEntry);
-        jarOut.write(bytes);
+        zipOut.putNextEntry(zipEntry);
+        zipOut.write(bytes);
     }
 
     protected byte[] getBytesWithJarNode(ZipEntryNode jarNode) throws IOException {
         try (ByteArrayOutputStream out = new ByteArrayOutputStream();
-             JarOutputStream jarOut = new JarOutputStream(out)) {
+             ZipOutputStream zipOut = new ZipOutputStream(out)) {
             for (TreeNode child : jarNode.getChildren()) {
-                writeTreeNode2Pack(jarOut, (ZipEntryNode) child);
+                writeTreeNode2Pack(zipOut, (ZipEntryNode) child);
             }
+            zipOut.finish();
             return out.toByteArray();
         }
     }

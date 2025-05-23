@@ -142,6 +142,7 @@ public class HomeView extends HomeContext {
         appTreeInfo = AppPackService.getInstance().getTreeNode(file);
         rootItem.getChildren().clear();
         TreeNodeUtil.buildNode(rootItem, appTreeInfo.getRootNode(), OnlyChangeFilter.INSTANCE);
+        PatchPackService.getInstance().refreshPatchMappedNode(totalInfo, appTreeInfo, patchTreeInfo);
         appPathTextField.setText(file.getPath());
         Configuration.getInstance().setLastAppPackPath(file.getPath());
     }
@@ -237,13 +238,17 @@ public class HomeView extends HomeContext {
             }
             PatchPackService patchPackService = PatchPackService.getInstance();
             patchPackService.refreshReadmeNode(patchTreeInfo);
-            patchPackService.refreshPatchMappedNode(appTreeInfo, patchTreeInfo);
+            patchPackService.refreshPatchMappedNode(totalInfo, appTreeInfo, patchTreeInfo);
+            TreeNodeUtil.expendedMappedOrAllNode(totalInfo, patchTree.getRoot());
             readMeTextArea.setText(patchTreeInfo.getReadMeText());
             patchTree.refresh();
         });
         contextMenu.getItems().addAll(markRootMenuItem);
         contextMenu.setOnShowing(e -> {
             TreeItem<TreeNode> selectedItem = patchTree.getSelectionModel().getSelectedItem();
+            if (selectedItem == null) {
+                return;
+            }
             TreeNode selectedNode = selectedItem.getValue();
             if (selectedNode != patchTreeInfo.getRootNode() &&
                     selectedNode.getChildren() != null && !selectedNode.getChildren().isEmpty()) {
@@ -267,8 +272,8 @@ public class HomeView extends HomeContext {
         patchPackService.refreshReadmeNode(patchTreeInfo);
         rootItem.getChildren().clear();
         TreeNodeUtil.buildNode(rootItem, patchTreeInfo.getRootNode());
-        patchPackService.refreshPatchMappedNode(appTreeInfo, patchTreeInfo);
-        TreeNodeUtil.expandedAllNode(rootItem);
+        patchPackService.refreshPatchMappedNode(totalInfo, appTreeInfo, patchTreeInfo);
+        TreeNodeUtil.expendedMappedOrAllNode(totalInfo, rootItem);
         patchPathTextField.setText(file.getPath());
         Configuration.getInstance().setLastPatchPackPath(file.getPath());
         if (readMeTextArea != null) {
@@ -385,12 +390,23 @@ public class HomeView extends HomeContext {
         return centrePane;
     }
 
+    protected void updateTotalInfoLbl(Label totalInfoLbl) {
+        String sb = "新增: " + totalInfo.getAddTotal() +
+                "\t更新: " + totalInfo.getModTotal() +
+                "\t删除: " + totalInfo.getDelTotal() +
+                "\t标记删除: " + totalInfo.getMarkDelTotal();
+        totalInfoLbl.setText(sb);
+    }
+
     protected Node buildFooter() {
-        Label generateDetailLbl = new Label("新增：2 更新：3 删除：4 标记删除：5");
-        generateDetailLbl.setTextFill(Color.RED);
-        generateDetailLbl.setStyle("-fx-font-weight: bold;");
+        Label totalInfoLbl = new Label();
+        updateTotalInfoLbl(totalInfoLbl);
+        totalInfo.changeTotalProperty().addListener((observableValue, oldVal, newVal) -> {
+            updateTotalInfoLbl(totalInfoLbl);
+        });
+        totalInfoLbl.setStyle("-fx-font-weight: bold;");
         HBox footerBox = new HBox(
-                generateDetailLbl,
+                totalInfoLbl,
                 FXUtil.pre(new Region(), node -> HBox.setHgrow(node, Priority.ALWAYS)),
                 FXUtil.pre(new Button("保存"), btn -> {
                     btn.setOnAction(e -> {

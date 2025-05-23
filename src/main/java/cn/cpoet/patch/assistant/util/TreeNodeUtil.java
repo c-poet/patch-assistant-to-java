@@ -1,6 +1,7 @@
 package cn.cpoet.patch.assistant.util;
 
 import cn.cpoet.patch.assistant.view.tree.FileTreeItem;
+import cn.cpoet.patch.assistant.view.tree.TotalInfo;
 import cn.cpoet.patch.assistant.view.tree.TreeKindNode;
 import cn.cpoet.patch.assistant.view.tree.TreeNode;
 import javafx.scene.control.TreeItem;
@@ -137,6 +138,41 @@ public abstract class TreeNodeUtil {
         rootItem.setExpanded(true);
         if (rootItem.getChildren() != null && !rootItem.getChildren().isEmpty()) {
             rootItem.getChildren().forEach(TreeNodeUtil::expandedAllNode);
+        }
+    }
+
+    /**
+     * 展开绑定的节点
+     *
+     * @param rootItem 根节点
+     */
+    public static boolean expandedMappedNode(TreeItem<TreeNode> rootItem) {
+        boolean childExpanded = false;
+        if (rootItem.getChildren() != null) {
+            for (TreeItem<TreeNode> child : rootItem.getChildren()) {
+                if (expandedMappedNode(child)) {
+                    childExpanded = true;
+                }
+            }
+        }
+        if (childExpanded || rootItem.getValue().getMappedNode() != null) {
+            rootItem.setExpanded(true);
+            return true;
+        }
+        rootItem.setExpanded(false);
+        return false;
+    }
+
+    /**
+     * 存在绑定的节点时仅展开绑定的节点否则那个全部
+     *
+     * @param rootItem 根节点
+     */
+    public static void expendedMappedOrAllNode(TotalInfo totalInfo, TreeItem<TreeNode> rootItem) {
+        if (totalInfo.isMappedAddOrModNode()) {
+            expandedMappedNode(rootItem);
+        } else {
+            expandedAllNode(rootItem);
         }
     }
 }
