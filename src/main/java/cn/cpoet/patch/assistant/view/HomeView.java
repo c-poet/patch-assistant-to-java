@@ -17,7 +17,6 @@ import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -72,17 +71,11 @@ public class HomeView extends HomeContext {
         headerBox.getChildren().add(FXUtil.pre(new Region(), node -> HBox.setHgrow(node, Priority.ALWAYS)));
 
         Button configBtn = new Button("配置");
-        configBtn.setOnAction(e -> {
-            Dialog<ConfigView> configViewDialog = new Dialog<>();
-            configViewDialog.initOwner(stage);
-            configViewDialog.setDialogPane(ConfigView.build());
-            configViewDialog.setTitle("配置");
-            configViewDialog.setResizable(true);
-            configViewDialog.show();
-        });
+        configBtn.setOnAction(e -> new ConfigView().showDialog(stage));
         headerBox.getChildren().add(configBtn);
 
         Button aboutBtn = new Button("关于");
+        aboutBtn.setOnAction(e -> new AboutView().showDialog(stage));
         headerBox.getChildren().add(aboutBtn);
         headerBox.setPadding(new Insets(3, 8, 3, 8));
         headerBox.setAlignment(Pos.CENTER);

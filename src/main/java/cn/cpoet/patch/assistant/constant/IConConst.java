@@ -6,6 +6,12 @@ package cn.cpoet.patch.assistant.constant;
  * @author CPoet
  */
 public interface IConConst {
+
+    /**
+     * 应用图标
+     */
+    String APP_ICON = "/icon.png";
+
     /**
      * 目录
      */

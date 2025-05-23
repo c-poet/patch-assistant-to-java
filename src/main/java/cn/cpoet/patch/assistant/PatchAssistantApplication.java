@@ -1,13 +1,14 @@
 package cn.cpoet.patch.assistant;
 
 import cn.cpoet.patch.assistant.constant.AppConst;
+import cn.cpoet.patch.assistant.constant.IConConst;
 import cn.cpoet.patch.assistant.core.AppContext;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.util.FileUtil;
+import cn.cpoet.patch.assistant.util.ImageUtil;
 import cn.cpoet.patch.assistant.view.HomeView;
 import javafx.application.Application;
 import javafx.scene.Scene;
-import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 public class PatchAssistantApplication extends Application {
@@ -31,7 +32,7 @@ public class PatchAssistantApplication extends Application {
             configuration.setHomeHeight(newVal.doubleValue());
         });
         stage.setTitle("补丁助手 By CPoet");
-        stage.getIcons().add(new Image("icon.png"));
+        stage.getIcons().add(ImageUtil.loadImage(IConConst.APP_ICON));
         stage.setScene(scene);
         stage.show();
     }
