@@ -131,9 +131,14 @@ public class HomeView extends HomeContext {
     }
 
     protected void refreshAppTree(File file) {
-        TreeItem<TreeNode> rootItem = appTree.getRoot();
         appTreeInfo = AppPackService.getInstance().getTreeNode(file);
-        rootItem.getChildren().clear();
+        TreeItem<TreeNode> rootItem = appTree.getRoot();
+        if (rootItem == null) {
+            rootItem = new TreeItem<>();
+            appTree.setRoot(rootItem);
+        } else {
+            rootItem.getChildren().clear();
+        }
         TreeNodeUtil.buildNode(rootItem, appTreeInfo.getRootNode(), OnlyChangeFilter.INSTANCE);
         PatchPackService.getInstance().refreshPatchMappedNode(totalInfo, appTreeInfo, patchTreeInfo);
         appPathTextField.setText(file.getPath());
@@ -155,8 +160,7 @@ public class HomeView extends HomeContext {
     }
 
     protected void buildAppTree() {
-        TreeItem<TreeNode> rootItem = new TreeItem<>();
-        appTree = new TreeView<>(rootItem);
+        appTree = new TreeView<>();
         appTree.setCellFactory(treeView -> new FileTreeCell(this));
         buildAppTreeContextMenu();
         appTree.getSelectionModel().selectedItemProperty().addListener((observableValue, oldVal, newVal) -> {
@@ -165,13 +169,15 @@ public class HomeView extends HomeContext {
         appTree.setOnMouseClicked(e -> {
             if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 2) {
                 TreeItem<TreeNode> selectedItem = appTree.getSelectionModel().getSelectedItem();
-                TreeNode selectedTreeNode = selectedItem.getValue();
-                if (selectedTreeNode.getName().endsWith(FileExtConst.DOT_JAR)) {
-                    if (AppPackService.getInstance().buildNodeChildrenWithZip(selectedTreeNode)) {
-                        TreeNodeUtil.buildNodeChildren(selectedItem, selectedTreeNode, OnlyChangeFilter.INSTANCE);
-                    }
-                } else if (selectedTreeNode.getName().endsWith(FileExtConst.DOT_CLASS)) {
+                if (selectedItem != null) {
+                    TreeNode selectedTreeNode = selectedItem.getValue();
+                    if (selectedTreeNode.getName().endsWith(FileExtConst.DOT_JAR)) {
+                        if (AppPackService.getInstance().buildNodeChildrenWithZip(selectedTreeNode)) {
+                            TreeNodeUtil.buildNodeChildren(selectedItem, selectedTreeNode, OnlyChangeFilter.INSTANCE);
+                        }
+                    } else if (selectedTreeNode.getName().endsWith(FileExtConst.DOT_CLASS)) {
 
+                    }
                 }
             }
         });
@@ -259,11 +265,16 @@ public class HomeView extends HomeContext {
     }
 
     protected void refreshPatchTree(File file) {
-        TreeItem<TreeNode> rootItem = patchTree.getRoot();
         PatchPackService patchPackService = PatchPackService.getInstance();
         patchTreeInfo = patchPackService.getTreeNode(file);
         patchPackService.refreshReadmeNode(patchTreeInfo);
-        rootItem.getChildren().clear();
+        TreeItem<TreeNode> rootItem = patchTree.getRoot();
+        if (rootItem == null) {
+            rootItem = new CheckBoxTreeItem<>();
+            patchTree.setRoot(rootItem);
+        } else {
+            rootItem.getChildren().clear();
+        }
         TreeNodeUtil.buildNode(rootItem, patchTreeInfo.getRootNode());
         patchPackService.refreshPatchMappedNode(totalInfo, appTreeInfo, patchTreeInfo);
         TreeNodeUtil.expendedMappedOrAllNode(totalInfo, rootItem);
@@ -290,8 +301,7 @@ public class HomeView extends HomeContext {
     }
 
     protected void buildPatchTree() {
-        TreeItem<TreeNode> rootItem = new CheckBoxTreeItem<>();
-        patchTree = new TreeView<>(rootItem);
+        patchTree = new TreeView<>();
         patchTree.setCellFactory(v -> new FileCheckBoxTreeCell(this));
         buildPatchTreeContextMenu();
         patchTree.getSelectionModel().selectedItemProperty().addListener((observableValue, oldVal, newVal) -> {
@@ -300,12 +310,15 @@ public class HomeView extends HomeContext {
         patchTree.setOnMouseClicked(e -> {
             if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 2) {
                 TreeItem<TreeNode> selectedItem = patchTree.getSelectionModel().getSelectedItem();
-                TreeNode selectedTreeNode = selectedItem.getValue();
-                if (!selectedTreeNode.getName().endsWith(FileExtConst.DOT_ZIP)) {
-                    return;
-                }
-                if (PatchPackService.getInstance().buildNodeChildrenWithZip(selectedTreeNode)) {
-                    TreeNodeUtil.buildNodeChildren(selectedItem, selectedTreeNode);
+                if (selectedItem != null) {
+                    TreeNode selectedTreeNode = selectedItem.getValue();
+
+                    if (!selectedTreeNode.getName().endsWith(FileExtConst.DOT_ZIP)) {
+                        return;
+                    }
+                    if (PatchPackService.getInstance().buildNodeChildrenWithZip(selectedTreeNode)) {
+                        TreeNodeUtil.buildNodeChildren(selectedItem, selectedTreeNode);
+                    }
                 }
             }
         });

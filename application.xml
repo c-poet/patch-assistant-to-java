@@ -1,11 +1,21 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <Configuration>
-  <homeWidth>934.6666870117188</homeWidth>
-  <homeHeight>691.3333129882812</homeHeight>
-  <isSelectedLinked>true</isSelectedLinked>
-  <isDockerImage>false</isDockerImage>
-  <isOnlyChanges>false</isOnlyChanges>
-  <isShowFileDetail>true</isShowFileDetail>
-  <lastAppPackPath>C:\Users\llzer\Desktop\account-server-3.1.0-SNAPSHOT-springcloud-demo.jar</lastAppPackPath>
-  <lastPatchPackPath>C:\Users\llzer\Desktop\20250326_account_账户支持多章退回和甘肃支持判断流程退回.zip</lastPatchPackPath>
+  <homeWidth>764.0</homeWidth>
+  <homeHeight>712.0</homeHeight>
+  <isSelectedLinked/>
+  <isDockerImage/>
+  <isOnlyChanges/>
+  <isShowFileDetail/>
+  <lastAppPackPath></lastAppPackPath>
+  <lastPatchPackPath></lastPatchPackPath>
+  <genera>
+    <language>en-US</language>
+  </genera>
+  <docker>
+    <host>1111</host>
+    <port>22</port>
+    <username></username>
+    <password></password>
+    <workPath></workPath>
+  </docker>
 </Configuration>

@@ -59,6 +59,16 @@ public class Configuration {
     @JacksonXmlProperty
     private String lastPatchPackPath;
 
+    /**
+     * 常规配置
+     */
+    private GeneraConf genera = new GeneraConf();
+
+    /**
+     * Docker配置
+     */
+    private DockerConf docker = new DockerConf();
+
     Configuration() {
     }
 
@@ -128,5 +138,21 @@ public class Configuration {
 
     public void setLastPatchPackPath(String lastPatchPackPath) {
         this.lastPatchPackPath = lastPatchPackPath;
+    }
+
+    public GeneraConf getGenera() {
+        return genera;
+    }
+
+    public void setGenera(GeneraConf genera) {
+        this.genera = genera;
+    }
+
+    public DockerConf getDocker() {
+        return docker;
+    }
+
+    public void setDocker(DockerConf docker) {
+        this.docker = docker;
     }
 }
