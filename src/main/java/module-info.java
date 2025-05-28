@@ -3,6 +3,9 @@ module cn.cpoet.patch.assistant {
     requires com.fasterxml.jackson.databind;
     requires com.fasterxml.jackson.dataformat.xml;
     requires engine.main;
+    requires org.fxmisc.richtext;
+    requires reactfx;
+    requires org.fxmisc.flowless;
 
     exports cn.cpoet.patch.assistant;
 

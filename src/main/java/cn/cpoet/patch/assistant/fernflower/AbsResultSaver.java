@@ -7,7 +7,7 @@ import java.util.jar.Manifest;
 /**
  * @author CPoet
  */
-public class ResultSaver implements IResultSaver {
+public abstract class AbsResultSaver implements IResultSaver {
     @Override
     public void saveFolder(String s) {
 

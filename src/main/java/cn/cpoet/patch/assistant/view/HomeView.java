@@ -175,9 +175,8 @@ public class HomeView extends HomeContext {
                         if (AppPackService.getInstance().buildNodeChildrenWithZip(selectedTreeNode)) {
                             TreeNodeUtil.buildNodeChildren(selectedItem, selectedTreeNode, OnlyChangeFilter.INSTANCE);
                         }
-                    } else if (selectedTreeNode.getName().endsWith(FileExtConst.DOT_CLASS)) {
-                        new ContentView().showDialog(stage, (TreeKindNode) selectedTreeNode);
                     }
+                    new ContentView().showDialog(stage, (TreeKindNode) selectedTreeNode);
                 }
             }
         });
