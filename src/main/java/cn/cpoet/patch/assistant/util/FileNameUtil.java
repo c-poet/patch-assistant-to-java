@@ -20,6 +20,16 @@ public abstract class FileNameUtil {
     private FileNameUtil() {
     }
 
+    public static String getName(String fileName) {
+        int i = fileName.indexOf('.');
+        return i == -1 ? fileName : fileName.substring(0, i);
+    }
+
+    public static String getExt(String fileName) {
+        int i = fileName.indexOf('.');
+        return i == -1 ? null : fileName.substring(i + 1);
+    }
+
     /**
      * 获取文件名（包括后缀）
      *

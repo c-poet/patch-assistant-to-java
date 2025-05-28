@@ -1,9 +1,13 @@
 package cn.cpoet.patch.assistant.util;
 
+import cn.cpoet.patch.assistant.constant.AppConst;
 import cn.cpoet.patch.assistant.exception.AppException;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.FileAttribute;
 
 /**
  * 文件工具
@@ -143,5 +147,15 @@ public abstract class FileUtil {
         } catch (Exception e) {
             throw new RuntimeException("写入文件失败", e);
         }
+    }
+
+    /**
+     * 删除文件
+     *
+     * @param file 文件
+     * @return 是否删除成功
+     */
+    public static boolean deleteFile(File file) {
+        return file.delete();
     }
 }

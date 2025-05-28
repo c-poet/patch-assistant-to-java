@@ -7,6 +7,16 @@ package cn.cpoet.patch.assistant.constant;
  */
 public interface AppConst {
     /**
+     * 应用名称
+     */
+    String APP_NAME = "PatchAssistant2J";
+
+    /**
+     * 项目名称
+     */
+    String APP_PROJECT_NAME = "patch-assistant-to-java";
+
+    /**
      * 配置文件名
      */
     String CONFIG_FILE_NAME = "application.xml";

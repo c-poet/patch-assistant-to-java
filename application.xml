@@ -1,12 +1,12 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <Configuration>
-  <homeWidth>793.3333129882812</homeWidth>
-  <homeHeight>786.6666870117188</homeHeight>
+  <homeWidth>808.0</homeWidth>
+  <homeHeight>824.0</homeHeight>
   <isSelectedLinked/>
   <isDockerImage/>
   <isOnlyChanges/>
   <isShowFileDetail/>
-  <lastAppPackPath></lastAppPackPath>
+  <lastAppPackPath>C:\Users\llzer\Desktop\account-server-3.1.0-SNAPSHOT-springcloud.jar</lastAppPackPath>
   <lastPatchPackPath></lastPatchPackPath>
   <genera>
     <language>en-US</language>

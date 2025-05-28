@@ -2,6 +2,7 @@ module cn.cpoet.patch.assistant {
     requires javafx.controls;
     requires com.fasterxml.jackson.databind;
     requires com.fasterxml.jackson.dataformat.xml;
+    requires engine.main;
 
     exports cn.cpoet.patch.assistant;
 
