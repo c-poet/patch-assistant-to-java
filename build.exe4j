@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<exe4j version="9.0" transformSequenceNumber="3">
+  <directoryPresets config="E:/OpenSource/patch-assistant-to-java/src/main/resources" />
+  <application name="PatchAssistant2J" distributionSourceDir="D:/Downloads/patch-assistant-to-java" />
+  <executable name="PatchAssistant2J" wrapperType="embed" iconSet="true" iconFile="E:/OpenSource/patch-assistant-to-java/src/main/resources/icon.ico" executableMode="gui" />
+  <java mainClass="cn.cpoet.patch.assistant/cn.cpoet.patch.assistant.PatchAssistantApplication" mainMode="module" minVersion="11">
+    <searchSequence>
+      <directory location="./jre" />
+    </searchSequence>
+    <modulePath>
+      <directory location="lib/" failOnError="false" />
+    </modulePath>
+  </java>
+</exe4j>

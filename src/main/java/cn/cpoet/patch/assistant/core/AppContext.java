@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
 
-import java.io.File;
 import java.io.InputStream;
 
 /**
@@ -44,7 +43,8 @@ public class AppContext extends ServiceFactory {
 
     public void syncConf2File() {
         try {
-            buildXmlMapper().writeValue(new File(AppConst.CONFIG_FILE_NAME), configuration);
+            byte[] bytes = buildXmlMapper().writeValueAsBytes(configuration);
+            FileUtil.writeFile(AppConst.CONFIG_FILE_NAME, bytes);
         } catch (Exception e) {
             throw new AppException("配置文件写入失败", e);
         }

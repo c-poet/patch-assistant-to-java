@@ -2,9 +2,7 @@ package cn.cpoet.patch.assistant.util;
 
 import cn.cpoet.patch.assistant.exception.AppException;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -121,5 +119,29 @@ public abstract class FileUtil {
     public static File getExistsDirOrFile(String path) {
         File file = new File(path);
         return file.exists() ? file : null;
+    }
+
+    /**
+     * 写入文件
+     *
+     * @param fileName 文件名
+     * @param bytes    数据
+     */
+    public static void writeFile(String fileName, byte[] bytes) {
+        writeFile(new File(fileName), bytes);
+    }
+
+    /**
+     * 写入文件
+     *
+     * @param file  文件
+     * @param bytes 数据
+     */
+    public static void writeFile(File file, byte[] bytes) {
+        try (OutputStream out = new FileOutputStream(file)) {
+            out.write(bytes);
+        } catch (Exception e) {
+            throw new RuntimeException("写入文件失败", e);
+        }
     }
 }

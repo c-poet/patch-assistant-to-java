@@ -7,7 +7,7 @@
     <groupId>cn.cpoet.patch.assistant</groupId>
     <artifactId>patch-assistant-to-java</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <name>patch-assistant-to-java</name>
+    <name>PatchAssistant2J</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -61,23 +61,38 @@
                     <target>11</target>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.2.2</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib/</classpathPrefix>
+                            <mainClass>cn.cpoet.patch.assistant.PatchAssistantApplication</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+
             <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>
                 <executions>
                     <execution>
-                        <!-- Default configuration for running with: mvn clean javafx:run -->
                         <id>default-cli</id>
                         <configuration>
                             <mainClass>
                                 cn.cpoet.patch.assistant/cn.cpoet.patch.assistant.PatchAssistantApplication
                             </mainClass>
-                            <launcher>app</launcher>
-                            <jlinkZipName>app</jlinkZipName>
-                            <jlinkImageName>app</jlinkImageName>
+                            <launcher>starter</launcher>
+                            <jlinkZipName>patch-assistant-to-java</jlinkZipName>
+                            <jlinkImageName>patch-assistant-to-java</jlinkImageName>
                             <noManPages>true</noManPages>
-                            <stripDebug>true</stripDebug>
+                            <stripDebug>false</stripDebug>
                             <noHeaderFiles>true</noHeaderFiles>
                         </configuration>
                     </execution>
