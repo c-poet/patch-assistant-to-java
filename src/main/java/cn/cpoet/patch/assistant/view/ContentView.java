@@ -156,7 +156,7 @@ public class ContentView {
         dialog.initOwner(stage);
         dialog.initModality(Modality.WINDOW_MODAL);
         dialog.setResizable(true);
-        dialog.setTitle(node.getName());
+        dialog.setTitle(node.getPath());
         DialogPane dialogPane = new DialogPane();
         dialogPane.setContent(this.build(leftContent, rightContent, node.isPatch()));
         dialogPane.setPrefSize(stage.getWidth() * 1.5, stage.getHeight());
