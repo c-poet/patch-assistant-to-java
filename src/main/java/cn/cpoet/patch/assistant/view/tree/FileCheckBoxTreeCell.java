@@ -19,14 +19,13 @@ public class FileCheckBoxTreeCell extends FileTreeCell {
         if (box != null) {
             if (node != null && node.getMappedNode() != null) {
                 CheckBox checkBox = new CheckBox();
-                checkBox.setSelected(Boolean.TRUE.equals(node.getChecked()));
+                checkBox.setSelected(node.isChecked());
                 checkBox.setOnAction(e -> {
-                    if (Boolean.TRUE.equals(node.getChecked())) {
-                        TotalInfo totalInfo = homeContext.getTotalInfo();
+                    TotalInfo totalInfo = homeContext.getTotalInfo();
+                    if (node.isChecked()) {
                         totalInfo.setModTotal(totalInfo.getModTotal() - 1);
                         node.setChecked(false);
                     } else {
-                        TotalInfo totalInfo = homeContext.getTotalInfo();
                         totalInfo.setModTotal(totalInfo.getModTotal() + 1);
                         node.setChecked(true);
                     }

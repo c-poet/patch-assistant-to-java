@@ -7,6 +7,7 @@ import cn.cpoet.patch.assistant.util.FXUtil;
 import cn.cpoet.patch.assistant.util.FileUtil;
 import cn.cpoet.patch.assistant.util.TreeNodeUtil;
 import cn.cpoet.patch.assistant.view.tree.FileCheckBoxTreeCell;
+import cn.cpoet.patch.assistant.view.tree.TreeKindNode;
 import cn.cpoet.patch.assistant.view.tree.TreeNode;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -52,7 +53,15 @@ public class HomeRightTreeView extends HomeTreeView {
             context.readMeTextArea.setText(context.patchTreeInfo.getReadMeText());
             context.patchTree.refresh();
         });
-        contextMenu.getItems().addAll(markRootMenuItem);
+        MenuItem saveFileMenuItem = new MenuItem("保存文件");
+        saveFileMenuItem.setOnAction(e -> {
+
+        });
+        MenuItem saveSourceFileMenuItem = new MenuItem("保存源文件");
+        saveSourceFileMenuItem.setOnAction(e -> {
+
+        });
+        contextMenu.getItems().addAll(markRootMenuItem, saveFileMenuItem, saveSourceFileMenuItem);
         contextMenu.setOnShowing(e -> {
             TreeItem<TreeNode> selectedItem = context.patchTree.getSelectionModel().getSelectedItem();
             if (selectedItem == null) {
@@ -69,6 +78,13 @@ public class HomeRightTreeView extends HomeTreeView {
                 }
             } else {
                 markRootMenuItem.setVisible(false);
+            }
+            if (selectedNode instanceof TreeKindNode) {
+                saveFileMenuItem.setVisible(true);
+                saveSourceFileMenuItem.setVisible(selectedNode.getName().endsWith(FileExtConst.DOT_CLASS));
+            } else {
+                saveFileMenuItem.setVisible(false);
+                saveSourceFileMenuItem.setVisible(false);
             }
         });
         context.patchTree.setContextMenu(contextMenu);
@@ -126,7 +142,7 @@ public class HomeRightTreeView extends HomeTreeView {
                     if (!selectedTreeNode.getName().endsWith(FileExtConst.DOT_ZIP)) {
                         return;
                     }
-                    if (PatchPackService.getInstance().buildNodeChildrenWithZip(selectedTreeNode)) {
+                    if (PatchPackService.getInstance().buildNodeChildrenWithZip(selectedTreeNode, true)) {
                         TreeNodeUtil.buildNodeChildren(selectedItem, selectedTreeNode);
                     }
                 }

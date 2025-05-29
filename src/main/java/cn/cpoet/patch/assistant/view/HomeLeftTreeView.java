@@ -44,7 +44,15 @@ public class HomeLeftTreeView extends HomeTreeView {
             TreeKindNode selectedNode = (TreeKindNode) selectedItem.getValue();
             selectedNode.setStatus(selectedNode.getStatus() == TreeNodeStatus.NONE ? TreeNodeStatus.MARK_DEL : TreeNodeStatus.NONE);
         });
-        contextMenu.getItems().add(markDelMenuItem);
+        MenuItem saveFileMenuItem = new MenuItem("保存文件");
+        saveFileMenuItem.setOnAction(e -> {
+
+        });
+        MenuItem saveSourceFileMenuItem = new MenuItem("保存源文件");
+        saveSourceFileMenuItem.setOnAction(e -> {
+
+        });
+        contextMenu.getItems().addAll(markDelMenuItem, saveFileMenuItem, saveSourceFileMenuItem);
         contextMenu.setOnShowing(e -> {
             TreeItem<TreeNode> selectedItem = context.appTree.getSelectionModel().getSelectedItem();
             TreeNode selectedNode = selectedItem.getValue();
@@ -59,8 +67,12 @@ public class HomeLeftTreeView extends HomeTreeView {
                 } else {
                     markDelMenuItem.setVisible(false);
                 }
+                saveFileMenuItem.setVisible(true);
+                saveSourceFileMenuItem.setVisible(selectedNode.getName().endsWith(FileExtConst.DOT_CLASS));
             } else {
                 markDelMenuItem.setVisible(false);
+                saveFileMenuItem.setVisible(false);
+                saveSourceFileMenuItem.setVisible(false);
             }
         });
         context.appTree.setContextMenu(contextMenu);
@@ -108,7 +120,7 @@ public class HomeLeftTreeView extends HomeTreeView {
                 if (selectedItem != null) {
                     TreeNode selectedTreeNode = selectedItem.getValue();
                     if (selectedTreeNode.getName().endsWith(FileExtConst.DOT_JAR)) {
-                        if (AppPackService.getInstance().buildNodeChildrenWithZip(selectedTreeNode)) {
+                        if (AppPackService.getInstance().buildNodeChildrenWithZip(selectedTreeNode, false)) {
                             TreeNodeUtil.buildNodeChildren(selectedItem, selectedTreeNode, OnlyChangeFilter.INSTANCE);
                         }
                     }

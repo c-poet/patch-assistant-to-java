@@ -124,7 +124,7 @@ public class PatchPackService extends BasePackService {
             TreeNode secondNode = null;
             if (firstNode != null) {
                 if (firstNode.getName().endsWith(FileExtConst.DOT_JAR)) {
-                    if (buildNodeChildrenWithZip(firstNode)) {
+                    if (buildNodeChildrenWithZip(firstNode, false)) {
                         TreeNodeUtil.buildNodeChildren(firstNode.getTreeItem(), firstNode, OnlyChangeFilter.INSTANCE);
                     }
                 }
@@ -160,6 +160,7 @@ public class PatchPackService extends BasePackService {
         rootNode.setName(file.getName());
         rootNode.setPath(file.getPath());
         rootNode.setFile(file);
+        rootNode.setPatch(true);
         treeInfo.setRootNode(rootNode);
         if (file.isDirectory()) {
             doGetTreeNodeWithDir(file, rootNode);
@@ -178,6 +179,7 @@ public class PatchPackService extends BasePackService {
                 fileNode.setPath(childFile.getPath());
                 fileNode.setFile(childFile);
                 fileNode.setParent(parentNode);
+                fileNode.setPatch(true);
                 parentNode.getAndInitChildren().add(fileNode);
                 if (childFile.isDirectory()) {
                     doGetTreeNodeWithDir(childFile, fileNode);
@@ -189,7 +191,7 @@ public class PatchPackService extends BasePackService {
     protected void doGetTreeNodeWithZip(File file, TreeKindNode rootNode) {
         try (InputStream in = new FileInputStream(file);
              ZipInputStream zin = new ZipInputStream(in, Charset.forName("GBK"))) {
-            doReadZipEntry(rootNode, zin);
+            doReadZipEntry(rootNode, zin, true);
         } catch (IOException ex) {
             throw new AppException("写入文件到压缩包失败", ex);
         }

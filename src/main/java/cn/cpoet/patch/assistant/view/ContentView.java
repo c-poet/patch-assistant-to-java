@@ -13,9 +13,9 @@ import javafx.scene.control.DialogPane;
 import javafx.scene.control.SplitPane;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.StackPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.Window;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.GenericStyledArea;
@@ -71,10 +71,10 @@ public class ContentView {
                     + "|(?<COMMENT>" + COMMENT_PATTERN + ")"
     );
 
-    public Node build(String leftContent, String rightContent) {
-
+    public Node build(String leftContent, String rightContent, boolean isPatch) {
         CodeArea leftArea = new CodeArea();
         leftArea.setParagraphGraphicFactory(LineNumberFactory.get(leftArea));
+        leftArea.setEditable(false);
         leftArea.getVisibleParagraphs().addModificationObserver
                 (
                         new VisibleParagraphStyler<>(leftArea, this::computeHighlighting)
@@ -91,16 +91,25 @@ public class ContentView {
         });
         leftArea.replaceText(leftContent);
         VirtualizedScrollPane<CodeArea> leftPane = new VirtualizedScrollPane<>(leftArea);
-
-
         if (rightContent == null) {
-            return leftArea;
+            return leftPane;
         }
-        CodeArea rightArea = new CodeArea(rightContent);
+        CodeArea rightArea = new CodeArea();
         rightArea.setEditable(false);
         rightArea.setParagraphGraphicFactory(LineNumberFactory.get(rightArea));
-
-        SplitPane splitPane = new SplitPane(new StackPane(leftPane), rightArea);
+        rightArea.getVisibleParagraphs().addModificationObserver(new VisibleParagraphStyler<>(rightArea, this::computeHighlighting));
+        leftArea.addEventHandler(KeyEvent.KEY_PRESSED, KE ->
+        {
+            if (KE.getCode() == KeyCode.ENTER) {
+                int caretPosition = rightArea.getCaretPosition();
+                int currentParagraph = rightArea.getCurrentParagraph();
+                Matcher m0 = whiteSpace.matcher(rightArea.getParagraph(currentParagraph - 1).getSegments().get(0));
+                if (m0.find()) Platform.runLater(() -> rightArea.insertText(caretPosition, m0.group()));
+            }
+        });
+        rightArea.replaceText(rightContent);
+        VirtualizedScrollPane<CodeArea> rightPane = new VirtualizedScrollPane<>(rightArea);
+        SplitPane splitPane = isPatch ? new SplitPane(rightPane, leftPane) : new SplitPane(leftPane, rightPane);
         String s = FileUtil.readFileAsString("css/java-keywords.css");
         splitPane.setStyle(s);
         return splitPane;
@@ -149,7 +158,8 @@ public class ContentView {
         dialog.setResizable(true);
         dialog.setTitle(node.getName());
         DialogPane dialogPane = new DialogPane();
-        dialogPane.setContent(this.build(leftContent, rightContent));
+        dialogPane.setContent(this.build(leftContent, rightContent, node.isPatch()));
+        dialogPane.setPrefSize(stage.getWidth() * 1.5, stage.getHeight());
         dialog.setDialogPane(dialogPane);
         dialogPane.getButtonTypes().add(ButtonType.CLOSE);
         dialog.showAndWait();

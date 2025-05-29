@@ -38,7 +38,7 @@ public class AppPackService extends BasePackService {
         treeInfo.setRootNode(rootNode);
         try (InputStream in = new FileInputStream(file);
              ZipInputStream zin = new ZipInputStream(in)) {
-            doReadZipEntry(rootNode, zin);
+            doReadZipEntry(rootNode, zin, false);
         } catch (IOException ex) {
             throw new AppException("读取文件失败", ex);
         }

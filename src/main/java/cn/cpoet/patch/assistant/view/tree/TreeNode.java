@@ -25,7 +25,12 @@ public class TreeNode {
     /**
      * 是否选中
      */
-    protected Boolean checked = Boolean.TRUE;
+    protected boolean checked = true;
+
+    /**
+     * 是否补丁
+     */
+    protected boolean isPatch = false;
 
     /**
      * 父级节点
@@ -50,12 +55,20 @@ public class TreeNode {
         this.name = name;
     }
 
-    public Boolean getChecked() {
+    public boolean isChecked() {
         return checked;
     }
 
-    public void setChecked(Boolean checked) {
+    public void setChecked(boolean checked) {
         this.checked = checked;
+    }
+
+    public boolean isPatch() {
+        return isPatch;
+    }
+
+    public void setPatch(boolean patch) {
+        isPatch = patch;
     }
 
     public TreeNode getMappedNode() {

@@ -22,7 +22,7 @@ import java.util.zip.ZipInputStream;
  */
 public abstract class BasePackService {
 
-    public boolean buildNodeChildrenWithZip(TreeNode rootNode) {
+    public boolean buildNodeChildrenWithZip(TreeNode rootNode, boolean isPatch) {
         if (!(rootNode instanceof TreeKindNode)) {
             return false;
         }
@@ -31,14 +31,14 @@ public abstract class BasePackService {
         }
         try (ByteArrayInputStream in = new ByteArrayInputStream(((TreeKindNode) rootNode).getBytes());
              ZipInputStream zin = new ZipInputStream(in, Charset.forName("GBK"))) {
-            doReadZipEntry(rootNode, zin);
+            doReadZipEntry(rootNode, zin, isPatch);
             return true;
         } catch (IOException ex) {
             throw new AppException("读取压缩文件失败", ex);
         }
     }
 
-    protected void doReadZipEntry(TreeNode rootNode, ZipInputStream zin) throws IOException {
+    protected void doReadZipEntry(TreeNode rootNode, ZipInputStream zin, boolean isPatch) throws IOException {
         ZipEntry zipEntry;
         TreeNode manifestNode = null;
         Map<String, TreeNode> treeNodeMap = new HashMap<>();
@@ -47,6 +47,7 @@ public abstract class BasePackService {
             zipEntryNode.setName(FileNameUtil.getFileName(zipEntry.getName()));
             zipEntryNode.setPath(zipEntry.getName());
             zipEntryNode.setEntry(zipEntry);
+            zipEntryNode.setPatch(isPatch);
             if (!zipEntry.isDirectory()) {
                 zipEntryNode.setSize(zipEntry.getSize());
                 zipEntryNode.setBytes(zin.readAllBytes());
