@@ -54,13 +54,9 @@ public class HomeRightTreeView extends HomeTreeView {
             context.patchTree.refresh();
         });
         MenuItem saveFileMenuItem = new MenuItem("保存文件");
-        saveFileMenuItem.setOnAction(e -> {
-
-        });
+        saveFileMenuItem.setOnAction(e -> saveFile(context.patchTree));
         MenuItem saveSourceFileMenuItem = new MenuItem("保存源文件");
-        saveSourceFileMenuItem.setOnAction(e -> {
-
-        });
+        saveSourceFileMenuItem.setOnAction(e -> saveSourceFile(context.patchTree));
         contextMenu.getItems().addAll(markRootMenuItem, saveFileMenuItem, saveSourceFileMenuItem);
         contextMenu.setOnShowing(e -> {
             TreeItem<TreeNode> selectedItem = context.patchTree.getSelectionModel().getSelectedItem();

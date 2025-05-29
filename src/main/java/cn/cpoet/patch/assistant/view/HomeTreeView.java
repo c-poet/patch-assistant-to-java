@@ -1,9 +1,18 @@
 package cn.cpoet.patch.assistant.view;
 
+import cn.cpoet.patch.assistant.constant.FileExtConst;
+import cn.cpoet.patch.assistant.util.FileNameUtil;
+import cn.cpoet.patch.assistant.util.FileUtil;
+import cn.cpoet.patch.assistant.view.content.ContentAdapterFactory;
+import cn.cpoet.patch.assistant.view.content.IContentAdapter;
+import cn.cpoet.patch.assistant.view.tree.TreeKindNode;
 import cn.cpoet.patch.assistant.view.tree.TreeNode;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+
+import java.io.File;
 
 /**
  * @author CPoet
@@ -31,5 +40,45 @@ public abstract class HomeTreeView {
         targetTree.getSelectionModel().select(targetItem);
         int targetItemIndex = targetTree.getRow(targetItem);
         targetTree.scrollTo(targetItemIndex);
+    }
+
+    protected void doSaveFile(TreeKindNode node, byte[] content, String ext) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("保存文件");
+        String name = FileNameUtil.getName(FileNameUtil.getFileName(node.getName()));
+        if (ext == null) {
+            fileChooser.setInitialFileName(name);
+        } else {
+            fileChooser.setInitialFileName(name + FileNameUtil.C_EXT_SEPARATOR + ext);
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(ext.toUpperCase() + "文件", "*." + ext));
+        }
+        File file = fileChooser.showSaveDialog(stage);
+        if (file == null) {
+            return;
+        }
+        FileUtil.writeFile(file, content);
+    }
+
+    protected void saveFile(TreeView<TreeNode> treeView) {
+        TreeItem<TreeNode> selectedItem = treeView.getSelectionModel().getSelectedItem();
+        if (selectedItem == null) {
+            return;
+        }
+        TreeKindNode node = (TreeKindNode) selectedItem.getValue();
+        doSaveFile(node, node.getBytes(), FileNameUtil.getExt(node.getName()));
+    }
+
+    protected void saveSourceFile(TreeView<TreeNode> treeView) {
+        TreeItem<TreeNode> selectedItem = treeView.getSelectionModel().getSelectedItem();
+        if (selectedItem == null || !selectedItem.getValue().getName().endsWith(FileExtConst.DOT_CLASS)) {
+            return;
+        }
+        TreeKindNode node = (TreeKindNode) selectedItem.getValue();
+        IContentAdapter adapter = ContentAdapterFactory.defaultFactory().getAdapter(node);
+        if (adapter == null) {
+            return;
+        }
+        String content = adapter.handle(node);
+        doSaveFile(node, content.getBytes(), FileExtConst.JAVA);
     }
 }

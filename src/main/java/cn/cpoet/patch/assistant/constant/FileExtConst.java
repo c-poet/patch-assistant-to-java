@@ -35,4 +35,14 @@ public interface FileExtConst {
      * class文件
      */
     String DOT_CLASS = "." + CLASS;
+
+    /**
+     * java文件
+     */
+    String JAVA = "java";
+
+    /**
+     * java文件
+     */
+    String DOT_JAVA = "." + JAVA;
 }

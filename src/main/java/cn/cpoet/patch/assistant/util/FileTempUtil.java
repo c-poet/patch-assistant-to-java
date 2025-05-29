@@ -30,8 +30,8 @@ public abstract class FileTempUtil {
 
     public static File createTempFile(String fileName, String ext, FileAttribute<?>... attrs) {
         try {
-            if (ext != null && !ext.isEmpty() && ext.charAt(0) != '.') {
-                ext = '.' + ext;
+            if (ext != null && !ext.isEmpty() && ext.charAt(0) != FileNameUtil.C_EXT_SEPARATOR) {
+                ext = FileNameUtil.C_EXT_SEPARATOR + ext;
             }
             return Files.createTempFile(fileName, ext, attrs).toFile();
         } catch (Exception e) {

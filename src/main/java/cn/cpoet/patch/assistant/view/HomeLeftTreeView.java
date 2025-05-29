@@ -45,13 +45,9 @@ public class HomeLeftTreeView extends HomeTreeView {
             selectedNode.setStatus(selectedNode.getStatus() == TreeNodeStatus.NONE ? TreeNodeStatus.MARK_DEL : TreeNodeStatus.NONE);
         });
         MenuItem saveFileMenuItem = new MenuItem("保存文件");
-        saveFileMenuItem.setOnAction(e -> {
-
-        });
+        saveFileMenuItem.setOnAction(e -> saveFile(context.appTree));
         MenuItem saveSourceFileMenuItem = new MenuItem("保存源文件");
-        saveSourceFileMenuItem.setOnAction(e -> {
-
-        });
+        saveSourceFileMenuItem.setOnAction(e -> saveSourceFile(context.appTree));
         contextMenu.getItems().addAll(markDelMenuItem, saveFileMenuItem, saveSourceFileMenuItem);
         contextMenu.setOnShowing(e -> {
             TreeItem<TreeNode> selectedItem = context.appTree.getSelectionModel().getSelectedItem();

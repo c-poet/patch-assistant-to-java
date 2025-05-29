@@ -17,16 +17,26 @@ public abstract class FileNameUtil {
      */
     public final static String SEPARATOR = Character.toString(C_SEPARATOR);
 
+    /**
+     * 后缀名分隔符
+     */
+    public final static char C_EXT_SEPARATOR = '.';
+
+    /**
+     * 后缀名分隔符
+     */
+    public final static String EXT_SEPARATOR = Character.toString(C_EXT_SEPARATOR);
+
     private FileNameUtil() {
     }
 
     public static String getName(String fileName) {
-        int i = fileName.indexOf('.');
+        int i = fileName.indexOf(C_EXT_SEPARATOR);
         return i == -1 ? fileName : fileName.substring(0, i);
     }
 
     public static String getExt(String fileName) {
-        int i = fileName.indexOf('.');
+        int i = fileName.indexOf(C_EXT_SEPARATOR);
         return i == -1 ? null : fileName.substring(i + 1);
     }
 
