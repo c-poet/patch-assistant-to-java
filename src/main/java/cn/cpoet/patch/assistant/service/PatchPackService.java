@@ -14,8 +14,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.util.List;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.zip.ZipInputStream;
 
 /**
@@ -24,8 +24,6 @@ import java.util.zip.ZipInputStream;
  * @author CPoet
  */
 public class PatchPackService extends BasePackService {
-
-    private final Pattern pattern = Pattern.compile("([a-zA-Z-/.]+)\\s+([a-zA-Z-/.]+)\\s+([a-zA-Z-/.]+)");
 
     public static PatchPackService getInstance() {
         return AppContext.getInstance().getService(PatchPackService.class);
@@ -89,8 +87,8 @@ public class PatchPackService extends BasePackService {
     }
 
     protected void doPatchMappedNodeWithReadme(TotalInfo totalInfo, TreeInfo appTreeInfo, PatchTreeInfo patchTreeInfo) {
-        String readMeText = patchTreeInfo.getReadMeText();
-        if (readMeText == null || readMeText.isBlank()) {
+        List<ReadMePathInfo> pathInfos = ReadMeFileService.getInstance().getPathInfos(patchTreeInfo);
+        if (pathInfos == null || pathInfos.isEmpty()) {
             return;
         }
         String pathPrefix = null;
@@ -101,11 +99,10 @@ public class PatchPackService extends BasePackService {
         } else if (rootNode instanceof FileNode && ((FileNode) rootNode).isDir()) {
             pathPrefix = ((FileNode) rootNode).getPath() + FileNameUtil.SEPARATOR;
         }
-        Matcher matcher = pattern.matcher(readMeText);
-        while (matcher.find()) {
-            String fileName = matcher.group(1);
-            String firstPath = matcher.group(2);
-            String secondPath = matcher.group(3);
+        for (ReadMePathInfo pathInfo : pathInfos) {
+            String fileName = pathInfo.getFileName();
+            String firstPath = pathInfo.getFirstPath();
+            String secondPath = pathInfo.getSecondPath();
             TreeNode patchNode = TreeNodeUtil.findNodeByPath(rootNode, pathPrefix == null ? fileName : pathPrefix + fileName);
             if (patchNode == null) {
                 continue;
