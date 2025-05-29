@@ -32,7 +32,7 @@ public class AppPackService extends BasePackService {
     public TreeInfo getTreeNode(File file) {
         TreeInfo treeInfo = new TreeInfo();
         FileNode rootNode = new FileNode();
-        rootNode.setName(file.getName());
+        rootNode.setText(file.getName());
         rootNode.setPath(file.getPath());
         rootNode.setFile(file);
         treeInfo.setRootNode(rootNode);
@@ -64,7 +64,7 @@ public class AppPackService extends BasePackService {
     }
 
     protected void writeTreeNode2Pack(ZipOutputStream zipOut, ZipEntryNode node) throws IOException {
-        if (!node.isDir() && node.getName().endsWith(FileExtConst.DOT_JAR)) {
+        if (!node.isDir() && node.getText().endsWith(FileExtConst.DOT_JAR)) {
             writeTreeNode2PackWithJar(zipOut, node);
             return;
         }

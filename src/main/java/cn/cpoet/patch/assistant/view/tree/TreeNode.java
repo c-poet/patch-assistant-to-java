@@ -13,6 +13,11 @@ import java.util.List;
 public class TreeNode {
 
     /**
+     * 节点显示文本
+     */
+    protected String text;
+
+    /**
      * 节点名称
      */
     protected String name;
@@ -46,6 +51,14 @@ public class TreeNode {
      * 对应的节点项
      */
     protected TreeItem<TreeNode> treeItem;
+
+    public String getText() {
+        return text;
+    }
+
+    public void setText(String text) {
+        this.text = text;
+    }
 
     public String getName() {
         return name;

@@ -2,8 +2,6 @@ package cn.cpoet.patch.assistant.view.content;
 
 import cn.cpoet.patch.assistant.view.tree.TreeKindNode;
 
-import java.util.Arrays;
-
 /**
  * @author CPoet
  */
@@ -11,7 +9,7 @@ public class TextContentAdapter implements IContentAdapter {
 
     @Override
     public boolean support(TreeKindNode node) {
-        String name = node.getName();
+        String name = node.getText();
         return name.endsWith(".txt")
                 || name.endsWith(".yaml")
                 || name.endsWith(".yml")

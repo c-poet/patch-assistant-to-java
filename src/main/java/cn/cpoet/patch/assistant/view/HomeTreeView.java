@@ -45,7 +45,7 @@ public abstract class HomeTreeView {
     protected void doSaveFile(TreeKindNode node, byte[] content, String ext) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("保存文件");
-        String name = FileNameUtil.getName(FileNameUtil.getFileName(node.getName()));
+        String name = FileNameUtil.getName(FileNameUtil.getFileName(node.getText()));
         if (ext == null) {
             fileChooser.setInitialFileName(name);
         } else {
@@ -65,12 +65,12 @@ public abstract class HomeTreeView {
             return;
         }
         TreeKindNode node = (TreeKindNode) selectedItem.getValue();
-        doSaveFile(node, node.getBytes(), FileNameUtil.getExt(node.getName()));
+        doSaveFile(node, node.getBytes(), FileNameUtil.getExt(node.getText()));
     }
 
     protected void saveSourceFile(TreeView<TreeNode> treeView) {
         TreeItem<TreeNode> selectedItem = treeView.getSelectionModel().getSelectedItem();
-        if (selectedItem == null || !selectedItem.getValue().getName().endsWith(FileExtConst.DOT_CLASS)) {
+        if (selectedItem == null || !selectedItem.getValue().getText().endsWith(FileExtConst.DOT_CLASS)) {
             return;
         }
         TreeKindNode node = (TreeKindNode) selectedItem.getValue();

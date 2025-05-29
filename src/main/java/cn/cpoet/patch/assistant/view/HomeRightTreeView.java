@@ -77,7 +77,7 @@ public class HomeRightTreeView extends HomeTreeView {
             }
             if (selectedNode instanceof TreeKindNode) {
                 saveFileMenuItem.setVisible(true);
-                saveSourceFileMenuItem.setVisible(selectedNode.getName().endsWith(FileExtConst.DOT_CLASS));
+                saveSourceFileMenuItem.setVisible(selectedNode.getText().endsWith(FileExtConst.DOT_CLASS));
             } else {
                 saveFileMenuItem.setVisible(false);
                 saveSourceFileMenuItem.setVisible(false);
@@ -135,7 +135,7 @@ public class HomeRightTreeView extends HomeTreeView {
                 if (selectedItem != null) {
                     TreeNode selectedTreeNode = selectedItem.getValue();
 
-                    if (!selectedTreeNode.getName().endsWith(FileExtConst.DOT_ZIP)) {
+                    if (!selectedTreeNode.getText().endsWith(FileExtConst.DOT_ZIP)) {
                         return;
                     }
                     if (PatchPackService.getInstance().buildNodeChildrenWithZip(selectedTreeNode, true)) {

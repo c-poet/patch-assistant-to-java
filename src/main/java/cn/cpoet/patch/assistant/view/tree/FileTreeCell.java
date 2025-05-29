@@ -34,7 +34,7 @@ public class FileTreeCell extends TreeCell<TreeNode> {
         } else {
             box = new HBox();
             addIcon(node);
-            box.getChildren().add(new Label(node.getName()));
+            box.getChildren().add(new Label(node.getText()));
             addFileDetail(node);
             setGraphic(box);
         }
@@ -47,7 +47,7 @@ public class FileTreeCell extends TreeCell<TreeNode> {
         if (homeContext.isPatchCustomRoot(node)) {
             icon.setImage(ImageUtil.loadImage(IConConst.FILE_MARK));
         } else {
-            Image image = IConUtil.loadIconByFileExt(node.getName());
+            Image image = IConUtil.loadIconByFileExt(node.getText());
             if (image != null) {
                 icon.setImage(image);
             } else if (node instanceof TreeKindNode && ((TreeKindNode) node).isDir()) {

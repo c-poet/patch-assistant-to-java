@@ -20,7 +20,7 @@ public class ClassContentAdapter implements IContentAdapter {
 
     @Override
     public boolean support(TreeKindNode node) {
-        return node.getName().endsWith(FileExtConst.DOT_CLASS);
+        return node.getText().endsWith(FileExtConst.DOT_CLASS);
     }
 
     @Override

@@ -83,10 +83,10 @@ public abstract class TreeNodeUtil {
                 if (sb.length() > 0) {
                     sb.append(FileNameUtil.SEPARATOR);
                 }
-                sb.append(node.getName());
+                sb.append(node.getText());
                 node = node.getChildren().get(0);
             } while (node.getChildren() != null && node.getChildren().size() == 1);
-            node.setName(sb.append(FileNameUtil.SEPARATOR).append(node.getName()).toString());
+            node.setText(sb.append(FileNameUtil.SEPARATOR).append(node.getText()).toString());
             buildChildNode(parent, node, filter);
             return;
         }

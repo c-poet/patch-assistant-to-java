@@ -5,6 +5,7 @@ import cn.cpoet.patch.assistant.constant.AppConst;
 import cn.cpoet.patch.assistant.constant.FileExtConst;
 import cn.cpoet.patch.assistant.core.AppContext;
 import cn.cpoet.patch.assistant.exception.AppException;
+import cn.cpoet.patch.assistant.util.CollectionUtil;
 import cn.cpoet.patch.assistant.util.FileNameUtil;
 import cn.cpoet.patch.assistant.util.TreeNodeUtil;
 import cn.cpoet.patch.assistant.view.tree.*;
@@ -15,7 +16,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.zip.ZipInputStream;
 
 /**
@@ -39,12 +39,12 @@ public class PatchPackService extends BasePackService {
             return;
         }
         TreeNode rootNode = patchTreeInfo.getCustomRootNode() != null ? patchTreeInfo.getCustomRootNode() : patchTreeInfo.getRootNode();
-        if (rootNode.getChildren() == null || rootNode.getChildren().isEmpty()) {
+        if (CollectionUtil.isEmpty(rootNode.getChildren())) {
             return;
         }
         TreeNode readmeNode = null;
         for (TreeNode child : rootNode.getChildren()) {
-            if (AppConst.README_FILE.equalsIgnoreCase(child.getName())) {
+            if (AppConst.README_FILE.equalsIgnoreCase(child.getText())) {
                 readmeNode = child;
                 break;
             }
@@ -120,7 +120,7 @@ public class PatchPackService extends BasePackService {
             }
             TreeNode secondNode = null;
             if (firstNode != null) {
-                if (firstNode.getName().endsWith(FileExtConst.DOT_JAR)) {
+                if (firstNode.getText().endsWith(FileExtConst.DOT_JAR)) {
                     if (buildNodeChildrenWithZip(firstNode, false)) {
                         TreeNodeUtil.buildNodeChildren(firstNode.getTreeItem(), firstNode, OnlyChangeFilter.INSTANCE);
                     }
@@ -129,7 +129,7 @@ public class PatchPackService extends BasePackService {
             }
             if (secondNode != null && secondNode.getChildren() != null && !secondNode.getChildren().isEmpty()) {
                 for (TreeNode appNode : secondNode.getChildren()) {
-                    if (fileName.equals(appNode.getName())) {
+                    if (fileName.equals(appNode.getText())) {
                         patchNode.setMappedNode(appNode);
                         appNode.setMappedNode(patchNode);
                         // BY CPoet 后续处理删除和新增的情况
@@ -154,7 +154,7 @@ public class PatchPackService extends BasePackService {
     public PatchTreeInfo getTreeNode(File file) {
         PatchTreeInfo treeInfo = new PatchTreeInfo();
         FileNode rootNode = new FileNode();
-        rootNode.setName(file.getName());
+        rootNode.setText(file.getName());
         rootNode.setPath(file.getPath());
         rootNode.setFile(file);
         rootNode.setPatch(true);
@@ -172,7 +172,7 @@ public class PatchPackService extends BasePackService {
         if (files != null) {
             for (File childFile : files) {
                 FileNode fileNode = new FileNode();
-                fileNode.setName(childFile.getName());
+                fileNode.setText(childFile.getName());
                 fileNode.setPath(childFile.getPath());
                 fileNode.setFile(childFile);
                 fileNode.setParent(parentNode);

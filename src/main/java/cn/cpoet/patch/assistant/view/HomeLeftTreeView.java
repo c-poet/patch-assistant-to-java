@@ -64,7 +64,7 @@ public class HomeLeftTreeView extends HomeTreeView {
                     markDelMenuItem.setVisible(false);
                 }
                 saveFileMenuItem.setVisible(true);
-                saveSourceFileMenuItem.setVisible(selectedNode.getName().endsWith(FileExtConst.DOT_CLASS));
+                saveSourceFileMenuItem.setVisible(selectedNode.getText().endsWith(FileExtConst.DOT_CLASS));
             } else {
                 markDelMenuItem.setVisible(false);
                 saveFileMenuItem.setVisible(false);
@@ -115,7 +115,7 @@ public class HomeLeftTreeView extends HomeTreeView {
                 TreeItem<TreeNode> selectedItem = context.appTree.getSelectionModel().getSelectedItem();
                 if (selectedItem != null) {
                     TreeNode selectedTreeNode = selectedItem.getValue();
-                    if (selectedTreeNode.getName().endsWith(FileExtConst.DOT_JAR)) {
+                    if (selectedTreeNode.getText().endsWith(FileExtConst.DOT_JAR)) {
                         if (AppPackService.getInstance().buildNodeChildrenWithZip(selectedTreeNode, false)) {
                             TreeNodeUtil.buildNodeChildren(selectedItem, selectedTreeNode, OnlyChangeFilter.INSTANCE);
                         }

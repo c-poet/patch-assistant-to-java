@@ -44,7 +44,7 @@ public abstract class BasePackService {
         Map<String, TreeNode> treeNodeMap = new HashMap<>();
         while ((zipEntry = zin.getNextEntry()) != null) {
             ZipEntryNode zipEntryNode = new ZipEntryNode();
-            zipEntryNode.setName(FileNameUtil.getFileName(zipEntry.getName()));
+            zipEntryNode.setText(FileNameUtil.getFileName(zipEntry.getName()));
             zipEntryNode.setPath(zipEntry.getName());
             zipEntryNode.setEntry(zipEntry);
             zipEntryNode.setPatch(isPatch);
