@@ -1,13 +1,10 @@
 package cn.cpoet.patch.assistant.util;
 
-import cn.cpoet.patch.assistant.constant.AppConst;
 import cn.cpoet.patch.assistant.exception.AppException;
 
 import java.io.*;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.attribute.FileAttribute;
 
 /**
  * 文件工具
@@ -147,6 +144,27 @@ public abstract class FileUtil {
         } catch (Exception e) {
             throw new RuntimeException("写入文件失败", e);
         }
+    }
+
+    /**
+     * 获取资源地址
+     *
+     * @param name 资源名称
+     * @return 资源地址
+     */
+    public static String getResourceAndExternalForm(String name) {
+        URL url = getResource(name);
+        return url == null ? null : url.toExternalForm();
+    }
+
+    /**
+     * 获取资源URL
+     *
+     * @param name 资源名称
+     * @return 资源URL
+     */
+    public static URL getResource(String name) {
+        return FileUtil.class.getResource(name);
     }
 
     /**

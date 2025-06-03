@@ -3,8 +3,8 @@ package cn.cpoet.patch.assistant.view;
 import cn.cpoet.patch.assistant.constant.FileExtConst;
 import cn.cpoet.patch.assistant.util.FileNameUtil;
 import cn.cpoet.patch.assistant.util.FileUtil;
-import cn.cpoet.patch.assistant.view.content.ContentAdapterFactory;
-import cn.cpoet.patch.assistant.view.content.IContentAdapter;
+import cn.cpoet.patch.assistant.view.content.ContentParser;
+import cn.cpoet.patch.assistant.view.content.ContentSupports;
 import cn.cpoet.patch.assistant.view.tree.TreeKindNode;
 import cn.cpoet.patch.assistant.view.tree.TreeNode;
 import javafx.scene.control.TreeItem;
@@ -74,11 +74,11 @@ public abstract class HomeTreeView {
             return;
         }
         TreeKindNode node = (TreeKindNode) selectedItem.getValue();
-        IContentAdapter adapter = ContentAdapterFactory.defaultFactory().getAdapter(node);
-        if (adapter == null) {
+        ContentParser parser = ContentSupports.getContentParser(node);
+        if (parser == null) {
             return;
         }
-        String content = adapter.handle(node);
+        String content = parser.parse(node);
         doSaveFile(node, content.getBytes(), FileExtConst.JAVA);
     }
 }
