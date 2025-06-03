@@ -105,7 +105,7 @@ public class TreeNode {
     }
 
     public List<TreeNode> getAndInitChildren() {
-        return children == null ? (children = new SortLinkedList<>((o1, o2) -> o1.getName().compareToIgnoreCase(o2.name))) : children;
+        return children == null ? (children = new SortLinkedList<>((o1, o2) -> o1.text.compareToIgnoreCase(o2.text))) : children;
     }
 
     public void setChildren(List<TreeNode> children) {
