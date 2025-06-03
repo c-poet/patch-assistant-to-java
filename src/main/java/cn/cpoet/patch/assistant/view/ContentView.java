@@ -159,7 +159,7 @@ public class ContentView {
         dialog.setTitle(node.getPath());
         DialogPane dialogPane = new DialogPane();
         dialogPane.setContent(this.build(leftContent, rightContent, node.isPatch()));
-        dialogPane.setPrefSize(stage.getWidth() * 1.5, stage.getHeight());
+        dialogPane.setPrefSize(stage.getWidth(), stage.getHeight());
         dialog.setDialogPane(dialogPane);
         dialogPane.getButtonTypes().add(ButtonType.CLOSE);
         dialog.showAndWait();
