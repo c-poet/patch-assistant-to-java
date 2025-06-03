@@ -134,13 +134,13 @@ public class HomeRightTreeView extends HomeTreeView {
                 TreeItem<TreeNode> selectedItem = context.patchTree.getSelectionModel().getSelectedItem();
                 if (selectedItem != null) {
                     TreeNode selectedTreeNode = selectedItem.getValue();
-
-                    if (!selectedTreeNode.getText().endsWith(FileExtConst.DOT_ZIP)) {
+                    if (selectedTreeNode.getText().endsWith(FileExtConst.DOT_ZIP)) {
+                        if (PatchPackService.getInstance().buildNodeChildrenWithZip(selectedTreeNode, true)) {
+                            TreeNodeUtil.buildNodeChildren(selectedItem, selectedTreeNode);
+                        }
                         return;
                     }
-                    if (PatchPackService.getInstance().buildNodeChildrenWithZip(selectedTreeNode, true)) {
-                        TreeNodeUtil.buildNodeChildren(selectedItem, selectedTreeNode);
-                    }
+                    new ContentView().showDialog(stage, (TreeKindNode) selectedTreeNode);
                 }
             }
         });

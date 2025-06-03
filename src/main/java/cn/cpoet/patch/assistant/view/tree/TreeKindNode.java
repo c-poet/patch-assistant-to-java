@@ -65,7 +65,10 @@ public abstract class TreeKindNode extends TreeNode {
     }
 
     public long getSize() {
-        return size;
+        if (size != 0 && size != -1) {
+            return size;
+        }
+        return (size = getBytes().length);
     }
 
     public void setSize(long size) {

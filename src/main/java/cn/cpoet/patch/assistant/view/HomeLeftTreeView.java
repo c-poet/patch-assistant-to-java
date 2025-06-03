@@ -126,6 +126,7 @@ public class HomeLeftTreeView extends HomeTreeView {
                         if (AppPackService.getInstance().buildNodeChildrenWithZip(selectedTreeNode, false)) {
                             TreeNodeUtil.buildNodeChildren(selectedItem, selectedTreeNode, OnlyChangeFilter.INSTANCE);
                         }
+                        return;
                     }
                     new ContentView().showDialog(stage, (TreeKindNode) selectedTreeNode);
                 }

@@ -16,6 +16,8 @@ public class TextContentAdapter implements IContentAdapter {
                 || name.endsWith(".properties")
                 || name.endsWith(".xml")
                 || name.endsWith(".json")
+                || name.endsWith(".html")
+                || name.endsWith(".htm")
                 || name.endsWith(".md");
     }
 

@@ -4,11 +4,9 @@ import cn.cpoet.patch.assistant.util.FileUtil;
 import cn.cpoet.patch.assistant.util.HashUtil;
 
 import java.io.File;
-import java.nio.file.Files;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Locale;
 
 /**
  * 文件节点
@@ -33,14 +31,6 @@ public class FileNode extends TreeKindNode {
     @Override
     public byte[] getBytes() {
         return bytes == null ? initFileBaseInfo() : bytes;
-    }
-
-    @Override
-    public long getSize() {
-        if (size == 0 && bytes == null) {
-            initFileBaseInfo();
-        }
-        return size;
     }
 
     @Override
