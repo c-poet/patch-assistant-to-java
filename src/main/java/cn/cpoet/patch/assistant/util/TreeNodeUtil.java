@@ -76,7 +76,7 @@ public abstract class TreeNodeUtil {
      * @param node   节点信息
      * @param filter 过滤器
      */
-    private static void buildChildNode(TreeItem<TreeNode> parent, TreeNode node, Predicate<TreeNode> filter) {
+    public static void buildChildNode(TreeItem<TreeNode> parent, TreeNode node, Predicate<TreeNode> filter) {
         if (node.getChildren() != null && node.getChildren().size() == 1) {
             StringBuilder sb = new StringBuilder();
             do {

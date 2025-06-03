@@ -23,10 +23,10 @@ public class FileCheckBoxTreeCell extends FileTreeCell {
                 checkBox.setOnAction(e -> {
                     TotalInfo totalInfo = homeContext.getTotalInfo();
                     if (node.isChecked()) {
-                        totalInfo.setModTotal(totalInfo.getModTotal() - 1);
+                        totalInfo.decrTotal(((TreeKindNode) node).getStatus());
                         node.setChecked(false);
                     } else {
-                        totalInfo.setModTotal(totalInfo.getModTotal() + 1);
+                        totalInfo.incrTotal(((TreeKindNode) node).getStatus());
                         node.setChecked(true);
                     }
                 });

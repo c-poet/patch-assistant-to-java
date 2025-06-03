@@ -4,6 +4,9 @@ import cn.cpoet.patch.assistant.constant.FileExtConst;
 import cn.cpoet.patch.assistant.constant.IConConst;
 import javafx.scene.image.Image;
 
+import java.io.InputStream;
+import java.util.function.Function;
+
 /**
  * 图标工具
  *
@@ -16,12 +19,13 @@ public abstract class IConUtil {
     /**
      * 根据文件后缀获取图标
      *
-     * @param name 文件名
+     * @param name       文件名
+     * @param imgFactory 自定义工厂
      * @return 图标
      */
-    public static Image loadIconByFileExt(String name) {
+    public static Image loadIconByFileExt(String name, Function<InputStream, Image> imgFactory) {
         String path = getPathByFileExt(name);
-        return path == null ? null : ImageUtil.loadImage(path);
+        return path == null ? null : ImageUtil.loadImage(path, imgFactory);
     }
 
     /**

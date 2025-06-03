@@ -133,7 +133,7 @@ public class PatchPackService extends BasePackService {
                         patchNode.setMappedNode(appNode);
                         appNode.setMappedNode(patchNode);
                         // BY CPoet 后续处理删除和新增的情况
-                        totalInfo.setModTotal(totalInfo.getModTotal() + 1);
+                        totalInfo.incrTotal(TreeNodeStatus.MOD);
                         break;
                     }
                 }
@@ -154,6 +154,7 @@ public class PatchPackService extends BasePackService {
     public PatchTreeInfo getTreeNode(File file) {
         PatchTreeInfo treeInfo = new PatchTreeInfo();
         FileNode rootNode = new FileNode();
+        rootNode.setName(file.getName());
         rootNode.setText(file.getName());
         rootNode.setPath(file.getPath());
         rootNode.setFile(file);
@@ -172,6 +173,7 @@ public class PatchPackService extends BasePackService {
         if (files != null) {
             for (File childFile : files) {
                 FileNode fileNode = new FileNode();
+                fileNode.setName(childFile.getName());
                 fileNode.setText(childFile.getName());
                 fileNode.setPath(childFile.getPath());
                 fileNode.setFile(childFile);

@@ -99,4 +99,42 @@ public class TotalInfo {
     private void emitChangeEvent() {
         changeTotal.set(getChangeTotal() + 1);
     }
+
+    public void incrTotal(TreeNodeStatus status) {
+        switch (status) {
+            case ADD:
+                setAddTotal(getAddTotal() + 1);
+                break;
+            case MOD:
+                setModTotal(getModTotal() + 1);
+                break;
+            case DEL:
+                setDelTotal(getDelTotal() + 1);
+                break;
+            case MARK_DEL:
+                setMarkDelTotal(getMarkDelTotal() + 1);
+                break;
+            case NONE:
+            default:
+        }
+    }
+
+    public void decrTotal(TreeNodeStatus status) {
+        switch (status) {
+            case ADD:
+                setAddTotal(getAddTotal() - 1);
+                break;
+            case MOD:
+                setModTotal(getModTotal() - 1);
+                break;
+            case DEL:
+                setDelTotal(getDelTotal() - 1);
+                break;
+            case MARK_DEL:
+                setMarkDelTotal(getMarkDelTotal() - 1);
+                break;
+            case NONE:
+            default:
+        }
+    }
 }

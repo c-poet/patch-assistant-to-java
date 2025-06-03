@@ -42,7 +42,13 @@ public class HomeLeftTreeView extends HomeTreeView {
         markDelMenuItem.setOnAction(e -> {
             TreeItem<TreeNode> selectedItem = context.appTree.getSelectionModel().getSelectedItem();
             TreeKindNode selectedNode = (TreeKindNode) selectedItem.getValue();
-            selectedNode.setStatus(selectedNode.getStatus() == TreeNodeStatus.NONE ? TreeNodeStatus.MARK_DEL : TreeNodeStatus.NONE);
+            if (selectedNode.getStatus() == TreeNodeStatus.NONE) {
+                selectedNode.setStatus(TreeNodeStatus.MARK_DEL);
+                context.getTotalInfo().incrTotal(TreeNodeStatus.MARK_DEL);
+            } else {
+                selectedNode.setStatus(TreeNodeStatus.NONE);
+                context.getTotalInfo().decrTotal(TreeNodeStatus.MARK_DEL);
+            }
         });
         MenuItem saveFileMenuItem = new MenuItem("保存文件");
         saveFileMenuItem.setOnAction(e -> saveFile(context.appTree));
@@ -51,9 +57,9 @@ public class HomeLeftTreeView extends HomeTreeView {
         contextMenu.getItems().addAll(markDelMenuItem, saveFileMenuItem, saveSourceFileMenuItem);
         contextMenu.setOnShowing(e -> {
             TreeItem<TreeNode> selectedItem = context.appTree.getSelectionModel().getSelectedItem();
-            TreeNode selectedNode = selectedItem.getValue();
-            if (selectedNode instanceof TreeKindNode) {
-                TreeNodeStatus status = ((TreeKindNode) selectedNode).getStatus();
+            if (selectedItem.getValue() instanceof TreeKindNode) {
+                TreeKindNode selectedNode = (TreeKindNode) selectedItem.getValue();
+                TreeNodeStatus status = selectedNode.getStatus();
                 if (status == TreeNodeStatus.NONE) {
                     markDelMenuItem.setText("标记删除");
                     markDelMenuItem.setVisible(true);

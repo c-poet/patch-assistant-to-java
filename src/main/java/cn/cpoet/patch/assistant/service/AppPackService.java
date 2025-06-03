@@ -32,6 +32,7 @@ public class AppPackService extends BasePackService {
     public TreeInfo getTreeNode(File file) {
         TreeInfo treeInfo = new TreeInfo();
         FileNode rootNode = new FileNode();
+        rootNode.setName(file.getName());
         rootNode.setText(file.getName());
         rootNode.setPath(file.getPath());
         rootNode.setFile(file);
