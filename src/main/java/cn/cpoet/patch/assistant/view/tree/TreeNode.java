@@ -1,8 +1,8 @@
 package cn.cpoet.patch.assistant.view.tree;
 
+import cn.cpoet.patch.assistant.jdk.SortLinkedList;
 import javafx.scene.control.TreeItem;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -105,7 +105,7 @@ public class TreeNode {
     }
 
     public List<TreeNode> getAndInitChildren() {
-        return children == null ? (children = new ArrayList<>()) : children;
+        return children == null ? (children = new SortLinkedList<>((o1, o2) -> o1.getName().compareToIgnoreCase(o2.name))) : children;
     }
 
     public void setChildren(List<TreeNode> children) {

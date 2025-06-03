@@ -4,6 +4,7 @@ import cn.cpoet.patch.assistant.component.OnlyChangeFilter;
 import cn.cpoet.patch.assistant.constant.AppConst;
 import cn.cpoet.patch.assistant.constant.IConConst;
 import cn.cpoet.patch.assistant.core.Configuration;
+import cn.cpoet.patch.assistant.jdk.SortLinkedList;
 import cn.cpoet.patch.assistant.util.*;
 import cn.cpoet.patch.assistant.view.HomeContext;
 import javafx.application.Platform;
@@ -108,7 +109,15 @@ public class FileTreeCell extends TreeCell<TreeNode> {
                 virtualMappedNode.setStatus(TreeNodeStatus.ADD);
                 originNode.setMappedNode(virtualMappedNode);
                 originNode.setStatus(TreeNodeStatus.ADD);
-                TreeNodeUtil.buildChildNode(targetItem, virtualMappedNode, OnlyChangeFilter.INSTANCE);
+                virtualMappedNode.setParent(targetItem.getValue());
+                List<TreeNode> children = targetItem.getValue().getAndInitChildren();
+                if (children instanceof SortLinkedList) {
+                    int index = ((SortLinkedList<TreeNode>) children).addAndIndex(virtualMappedNode);
+                    TreeNodeUtil.buildChildNode(targetItem, index, virtualMappedNode, OnlyChangeFilter.INSTANCE);
+                } else {
+                    children.add(virtualMappedNode);
+                    TreeNodeUtil.buildChildNode(targetItem, virtualMappedNode, OnlyChangeFilter.INSTANCE);
+                }
                 homeContext.getTotalInfo().incrTotal(TreeNodeStatus.ADD);
             }
             Platform.runLater(() -> homeContext.getPatchTree().refresh());

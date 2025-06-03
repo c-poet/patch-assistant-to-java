@@ -77,6 +77,17 @@ public abstract class TreeNodeUtil {
      * @param filter 过滤器
      */
     public static void buildChildNode(TreeItem<TreeNode> parent, TreeNode node, Predicate<TreeNode> filter) {
+        buildChildNode(parent, -1, node, filter);
+    }
+
+    /**
+     * 构建树形子节点
+     *
+     * @param parent 父级节点项
+     * @param node   节点信息
+     * @param filter 过滤器
+     */
+    public static void buildChildNode(TreeItem<TreeNode> parent, int index, TreeNode node, Predicate<TreeNode> filter) {
         if (node.getChildren() != null && node.getChildren().size() == 1) {
             StringBuilder sb = new StringBuilder();
             do {
@@ -97,7 +108,11 @@ public abstract class TreeNodeUtil {
             node.getChildren().forEach(child -> buildChildNode(childItem, child, filter));
         }
         if (!childItem.getChildren().isEmpty() || filter.test(node)) {
-            parent.getChildren().add(childItem);
+            if (index != -1) {
+                parent.getChildren().add(index, childItem);
+            } else {
+                parent.getChildren().add(childItem);
+            }
         } else {
             node.setTreeItem(null);
         }
