@@ -28,7 +28,7 @@ public class VirtualMappedNode extends TreeKindNode {
         super.setMappedNode(mappedNode);
         setName(mappedNode.getName());
         setText(mappedNode.getText());
-        setMd5(mappedNode.getText());
+        setMd5(((TreeKindNode) mappedNode).getMd5());
         setPath(((TreeKindNode) mappedNode).getPath());
         setSize(((TreeKindNode) mappedNode).getSize());
         setBytes(((TreeKindNode) mappedNode).getBytes());
