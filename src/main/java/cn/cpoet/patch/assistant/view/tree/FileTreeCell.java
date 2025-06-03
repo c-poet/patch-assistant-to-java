@@ -46,12 +46,16 @@ public class FileTreeCell extends TreeCell<TreeNode> {
                 return;
             }
             TreeKindNode node = (TreeKindNode) getItem();
+            byte[] bytes = node.getBytes();
+            if (bytes == null) {
+                return;
+            }
             Dragboard db = this.startDragAndDrop(TransferMode.COPY);
             Image image = getIconImage(node, in -> new Image(in, 68, 68, true, true));
             db.setDragView(image);
             ClipboardContent content = new ClipboardContent();
             content.putString(node.getName());
-            File file = FileTempUtil.writeFile2TempDir(COPY_FILE_DIR, node.getName(), node.getBytes());
+            File file = FileTempUtil.writeFile2TempDir(COPY_FILE_DIR, node.getName(), bytes);
             content.putFiles(Collections.singletonList(file));
             db.setContent(content);
             COPY_TREE_ITEM.set(getTreeItem());
@@ -127,7 +131,9 @@ public class FileTreeCell extends TreeCell<TreeNode> {
         } else {
             box = new HBox();
             addIcon(node);
-            box.getChildren().add(new Label(node.getText()));
+            Label textLbl = new Label(node.getText());
+            fillTextColor(node, textLbl);
+            box.getChildren().add(textLbl);
             addFileDetail(node);
             setGraphic(box);
         }
@@ -155,10 +161,10 @@ public class FileTreeCell extends TreeCell<TreeNode> {
         return ImageUtil.loadImage(IConConst.FILE, imgFactory);
     }
 
-    protected void addFileDetail(TreeNode item) {
+    protected void addFileDetail(TreeNode node) {
         if (Boolean.TRUE.equals(Configuration.getInstance().getIsShowFileDetail())) {
-            if (item instanceof TreeKindNode) {
-                TreeKindNode kindNode = (TreeKindNode) item;
+            if (node instanceof TreeKindNode) {
+                TreeKindNode kindNode = (TreeKindNode) node;
                 if (kindNode.isDir()) {
                     return;
                 }
@@ -168,6 +174,30 @@ public class FileTreeCell extends TreeCell<TreeNode> {
                 fileDetailLbl.setTextFill(Color.valueOf("#6c707e"));
                 box.getChildren().add(fileDetailLbl);
             }
+        }
+    }
+
+    protected void fillTextColor(TreeNode node, Label textLbl) {
+        if (!(node instanceof TreeKindNode)) {
+            return;
+        }
+        TreeKindNode kindNode = (TreeKindNode) node;
+        TreeNodeStatus status = kindNode.getStatus();
+        switch (status) {
+            case ADD:
+                textLbl.setTextFill(Color.valueOf("#4fc75c"));
+                break;
+            case MOD:
+                textLbl.setTextFill(Color.valueOf("#4c89fb"));
+                break;
+            case DEL:
+                textLbl.setTextFill(Color.valueOf("#979797"));
+                break;
+            case MARK_DEL:
+                textLbl.setTextFill(Color.valueOf("#e65256"));
+                break;
+            case NONE:
+            default:
         }
     }
 }

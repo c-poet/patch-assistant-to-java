@@ -49,6 +49,7 @@ public class HomeLeftTreeView extends HomeTreeView {
                 selectedNode.setStatus(TreeNodeStatus.NONE);
                 context.getTotalInfo().decrTotal(TreeNodeStatus.MARK_DEL);
             }
+            context.getAppTree().refresh();
         });
         MenuItem saveFileMenuItem = new MenuItem("保存文件");
         saveFileMenuItem.setOnAction(e -> saveFile(context.appTree));
