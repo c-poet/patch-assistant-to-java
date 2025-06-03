@@ -65,6 +65,11 @@ public class AppPackService extends BasePackService {
     }
 
     protected void writeTreeNode2Pack(ZipOutputStream zipOut, ZipEntryNode node) throws IOException {
+        // 标记为删除状态的节点不在写入新的包中
+        TreeNodeStatus status = node.getStatus();
+        if (TreeNodeStatus.DEL.equals(status) || TreeNodeStatus.MARK_DEL.equals(status)) {
+            return;
+        }
         if (!node.isDir() && node.getText().endsWith(FileExtConst.DOT_JAR)) {
             writeTreeNode2PackWithJar(zipOut, node);
             return;
