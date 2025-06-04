@@ -69,6 +69,11 @@ public class Configuration {
      */
     private DockerConf docker = new DockerConf();
 
+    /**
+     * 内容查看页面配置
+     */
+    private ContentConf content = new ContentConf();
+
     Configuration() {
     }
 
@@ -154,5 +159,13 @@ public class Configuration {
 
     public void setDocker(DockerConf docker) {
         this.docker = docker;
+    }
+
+    public ContentConf getContent() {
+        return content;
+    }
+
+    public void setContent(ContentConf content) {
+        this.content = content;
     }
 }

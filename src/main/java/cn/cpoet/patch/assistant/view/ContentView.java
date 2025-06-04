@@ -1,15 +1,18 @@
 package cn.cpoet.patch.assistant.view;
 
+import cn.cpoet.patch.assistant.control.DialogPurePane;
+import cn.cpoet.patch.assistant.core.Configuration;
+import cn.cpoet.patch.assistant.core.ContentConf;
+import cn.cpoet.patch.assistant.util.TextDiffUtil;
 import cn.cpoet.patch.assistant.view.content.CodeAreaFactory;
 import cn.cpoet.patch.assistant.view.content.ContentParser;
 import cn.cpoet.patch.assistant.view.content.ContentSupports;
 import cn.cpoet.patch.assistant.view.tree.TreeKindNode;
-import cn.cpoet.patch.assistant.view.tree.TreeNode;
+import javafx.geometry.Insets;
 import javafx.scene.Node;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.DialogPane;
-import javafx.scene.control.SplitPane;
+import javafx.scene.control.*;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.fxmisc.flowless.VirtualizedScrollPane;
@@ -22,38 +25,86 @@ import org.fxmisc.richtext.CodeArea;
  */
 public class ContentView {
 
-    public Node build(TreeKindNode node, String leftContent, String rightContent) {
-        CodeAreaFactory codeAreaFactory = ContentSupports.getCodeAreaFactory(node);
-        CodeArea leftArea = codeAreaFactory.create();
-        leftArea.replaceText(leftContent);
-        VirtualizedScrollPane<CodeArea> leftPane = new VirtualizedScrollPane<>(leftArea);
-        if (rightContent == null) {
-            return leftPane;
+    private final TreeKindNode leftNode;
+    private final TreeKindNode rightNode;
+    private String leftContent;
+    private String rightContent;
+
+    public ContentView(TreeKindNode node) {
+        if (node.getMappedNode() != null && node.isPatch()) {
+            leftNode = (TreeKindNode) node.getMappedNode();
+            rightNode = node;
+        } else {
+            leftNode = node;
+            rightNode = (TreeKindNode) node.getMappedNode();
         }
-        CodeArea rightArea = codeAreaFactory.create();
-        rightArea.replaceText(rightContent);
-        VirtualizedScrollPane<CodeArea> rightPane = new VirtualizedScrollPane<>(rightArea);
-        return node.isPatch() ? new SplitPane(rightPane, leftPane) : new SplitPane(leftPane, rightPane);
     }
 
-    public void showDialog(Stage stage, TreeKindNode node) {
-        ContentParser parser = ContentSupports.getContentParser(node);
+    public Node build() {
+        CodeAreaFactory codeAreaFactory = ContentSupports.getCodeAreaFactory(leftNode);
+        if (rightContent == null) {
+            return crateCodeAreaPane(codeAreaFactory, leftContent);
+        }
+        VBox box = new VBox();
+        box.setPadding(Insets.EMPTY);
+        ContentConf contentConf = Configuration.getInstance().getContent();
+        ToolBar toolBar = new ToolBar();
+        CheckBox diffModeCheckBox = new CheckBox("差异模式");
+        diffModeCheckBox.setSelected(Boolean.TRUE.equals(contentConf.getDiffModel()));
+        diffModeCheckBox.setOnAction(e -> {
+            contentConf.setDiffModel(!Boolean.TRUE.equals(contentConf.getDiffModel()));
+            dynamicCodeAreaWithDiffModel(box, contentConf, codeAreaFactory);
+        });
+        toolBar.getItems().add(diffModeCheckBox);
+        box.getChildren().add(toolBar);
+        dynamicCodeAreaWithDiffModel(box, contentConf, codeAreaFactory);
+        return box;
+    }
+
+    protected void dynamicCodeAreaWithDiffModel(VBox box, ContentConf contentConf, CodeAreaFactory codeAreaFactory) {
+        // TODO By CPoet 后期建立内容缓存，避免内容解析带来的性能损耗
+        Node tarNode;
+        if (Boolean.TRUE.equals(contentConf.getDiffModel())) {
+            String diff = TextDiffUtil.diff(leftContent, rightContent, leftNode.getPath(), rightNode.getPath());
+            VirtualizedScrollPane<CodeArea> diffPane = crateCodeAreaPane(codeAreaFactory, diff);
+            VBox.setVgrow(diffPane, Priority.ALWAYS);
+            tarNode = diffPane;
+        } else {
+            VirtualizedScrollPane<CodeArea> leftPane = crateCodeAreaPane(codeAreaFactory, leftContent);
+            VirtualizedScrollPane<CodeArea> rightPane = crateCodeAreaPane(codeAreaFactory, rightContent);
+            SplitPane splitPane = new SplitPane(leftPane, rightPane);
+            VBox.setVgrow(splitPane, Priority.ALWAYS);
+            tarNode = splitPane;
+        }
+        if (box.getChildren().size() > 1) {
+            box.getChildren().set(1, tarNode);
+        } else {
+            box.getChildren().add(tarNode);
+        }
+    }
+
+    protected VirtualizedScrollPane<CodeArea> crateCodeAreaPane(CodeAreaFactory codeAreaFactory, String text) {
+        CodeArea rightArea = codeAreaFactory.create();
+        rightArea.replaceText(text);
+        return new VirtualizedScrollPane<>(rightArea);
+    }
+
+    public void showDialog(Stage stage) {
+        ContentParser parser = ContentSupports.getContentParser(leftNode);
         if (parser == null) {
             return;
         }
-        String leftContent = parser.parse(node);
-        String rightContent = null;
-        TreeNode mappedNode = node.getMappedNode();
-        if (mappedNode != null) {
-            rightContent = parser.parse((TreeKindNode) mappedNode);
+        leftContent = parser.parse(leftNode);
+        if (rightNode != null) {
+            rightContent = parser.parse(rightNode);
         }
         Dialog<Boolean> dialog = new Dialog<>();
         dialog.initOwner(stage);
         dialog.initModality(Modality.WINDOW_MODAL);
         dialog.setResizable(true);
-        dialog.setTitle(node.getPath());
-        DialogPane dialogPane = new DialogPane();
-        dialogPane.setContent(build(node, leftContent, rightContent));
+        dialog.setTitle(rightNode == null ? leftNode.getPath() : leftNode.getPath() + " <- " + rightNode.getPath());
+        DialogPane dialogPane = new DialogPurePane();
+        dialogPane.setContent(build());
         dialogPane.setPrefSize(stage.getWidth(), stage.getHeight());
         dialog.setDialogPane(dialogPane);
         dialogPane.getButtonTypes().add(ButtonType.CLOSE);

@@ -128,7 +128,7 @@ public class HomeLeftTreeView extends HomeTreeView {
                         }
                         return;
                     }
-                    new ContentView().showDialog(stage, (TreeKindNode) selectedTreeNode);
+                    new ContentView((TreeKindNode) selectedTreeNode).showDialog(stage);
                 }
             }
         });
