@@ -10,6 +10,7 @@ import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -149,6 +150,12 @@ public class HomeView extends HomeContext {
         rootPane.setTop(buildHeader());
         rootPane.setCenter(buildCentre());
         rootPane.setBottom(buildFooter());
+        rootPane.setOnKeyPressed(e -> {
+            // 显示搜索
+            if (e.isControlDown() && e.getCode() == KeyCode.F) {
+                new SearchView(this).showDialog(stage);
+            }
+        });
         return rootPane;
     }
 }
