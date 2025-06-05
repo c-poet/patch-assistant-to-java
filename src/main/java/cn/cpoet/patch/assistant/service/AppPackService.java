@@ -48,6 +48,47 @@ public class AppPackService extends BasePackService {
 
     /**
      * 生成并保存应用包
+     *
+     * @param file          文件名
+     * @param appTree       应用树
+     * @param isDockerImage 是否Docker镜像
+     */
+    public void savePack(File file, TreeInfo appTree, boolean isDockerImage) {
+        if (isDockerImage) {
+            saveDockerPack(file, appTree);
+        } else {
+            savePack(file, appTree);
+        }
+    }
+
+    /**
+     * 保存Docker镜像包
+     *
+     * @param file    文件
+     * @param appTree 应用树
+     */
+    public void saveDockerPack(File file, TreeInfo appTree) {
+        byte[] bytes;
+        TreeNode rootNode = appTree.getRootNode();
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream();
+             ZipOutputStream zipOut = new ZipOutputStream(out)) {
+            if (rootNode.getChildren() != null) {
+                for (TreeNode child : rootNode.getChildren()) {
+                    writeTreeNode2Pack(zipOut, (ZipEntryNode) child);
+                }
+            }
+            zipOut.finish();
+            bytes = out.toByteArray();
+        } catch (Exception e) {
+            throw new AppException("写入应用包失败", e);
+        }
+    }
+
+    /**
+     * 生成并保存应用包
+     *
+     * @param file    文件
+     * @param appTree 应用树
      */
     public void savePack(File file, TreeInfo appTree) {
         TreeNode rootNode = appTree.getRootNode();

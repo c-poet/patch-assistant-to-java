@@ -73,4 +73,18 @@ public abstract class FileNameUtil {
         int i = path.lastIndexOf(C_SEPARATOR);
         return i == -1 ? "" : path.substring(0, i);
     }
+
+    /**
+     * 拼接路径
+     *
+     * @param path1 路径1
+     * @param path2 路径2
+     * @return 拼接后的路径
+     */
+    public static String joinPath(String path1, String path2) {
+        if (path1.endsWith(SEPARATOR)) {
+            return path1 + (path2.startsWith(SEPARATOR) ? path2.substring(SEPARATOR.length()) : path2);
+        }
+        return path1 + (path2.startsWith(SEPARATOR) ? path2 : SEPARATOR + path2);
+    }
 }

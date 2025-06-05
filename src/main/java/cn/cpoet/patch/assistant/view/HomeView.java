@@ -119,14 +119,21 @@ public class HomeView extends HomeContext {
                 FXUtil.pre(new Region(), node -> HBox.setHgrow(node, Priority.ALWAYS)),
                 FXUtil.pre(new Button("保存"), btn -> {
                     btn.setOnAction(e -> {
+                        // 判断是否Docker模式
+                        boolean isDockerImage = Boolean.TRUE.equals(Configuration.getInstance().getIsDockerImage());
                         FileChooser fileChooser = new FileChooser();
-                        fileChooser.setTitle("保存应用包");
-                        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("应用包", "*.jar"));
+                        if (isDockerImage) {
+                            fileChooser.setTitle("保存镜像包");
+                            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("应用包", "*.tar"));
+                        } else {
+                            fileChooser.setTitle("保存应用包");
+                            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("应用包", "*.jar"));
+                        }
                         File file = fileChooser.showSaveDialog(stage);
                         if (file == null) {
                             return;
                         }
-                        AppPackService.getInstance().savePack(file, appTreeInfo);
+                        AppPackService.getInstance().savePack(file, appTreeInfo, isDockerImage);
                     });
                 })
         );
