@@ -7,6 +7,7 @@ import cn.cpoet.patch.assistant.util.TextDiffUtil;
 import cn.cpoet.patch.assistant.view.content.CodeAreaFactory;
 import cn.cpoet.patch.assistant.view.content.ContentParser;
 import cn.cpoet.patch.assistant.view.content.ContentSupports;
+import cn.cpoet.patch.assistant.view.content.DiffLineNumberFactory;
 import cn.cpoet.patch.assistant.view.tree.TreeKindNode;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
@@ -17,6 +18,8 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.CodeArea;
+
+import java.util.function.Consumer;
 
 /**
  * 内容视图
@@ -65,8 +68,11 @@ public class ContentView {
         // TODO By CPoet 后期建立内容缓存，避免内容解析带来的性能损耗
         Node tarNode;
         if (Boolean.TRUE.equals(contentConf.getDiffModel())) {
-            String diff = TextDiffUtil.diff(leftContent, rightContent, leftNode.getPath(), rightNode.getPath());
-            VirtualizedScrollPane<CodeArea> diffPane = crateCodeAreaPane(codeAreaFactory, diff);
+            String diff = TextDiffUtil.diff2Str(leftContent, rightContent, leftNode.getPath(), rightNode.getPath());
+            VirtualizedScrollPane<CodeArea> diffPane = crateCodeAreaPane(codeAreaFactory, codeArea -> {
+                codeArea.setParagraphGraphicFactory(new DiffLineNumberFactory<>(codeArea));
+                codeArea.replaceText(diff);
+            });
             VBox.setVgrow(diffPane, Priority.ALWAYS);
             tarNode = diffPane;
         } else {
@@ -84,9 +90,13 @@ public class ContentView {
     }
 
     protected VirtualizedScrollPane<CodeArea> crateCodeAreaPane(CodeAreaFactory codeAreaFactory, String text) {
-        CodeArea rightArea = codeAreaFactory.create();
-        rightArea.replaceText(text);
-        return new VirtualizedScrollPane<>(rightArea);
+        return crateCodeAreaPane(codeAreaFactory, codeArea -> codeArea.replaceText(text));
+    }
+
+    protected VirtualizedScrollPane<CodeArea> crateCodeAreaPane(CodeAreaFactory codeAreaFactory, Consumer<CodeArea> consumer) {
+        CodeArea codeArea = codeAreaFactory.create();
+        consumer.accept(codeArea);
+        return new VirtualizedScrollPane<>(codeArea);
     }
 
     public void showDialog(Stage stage) {
