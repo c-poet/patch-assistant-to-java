@@ -4,6 +4,9 @@ import cn.cpoet.patch.assistant.exception.AppException;
 import com.jcraft.jsch.*;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
@@ -13,6 +16,7 @@ import java.util.concurrent.TimeUnit;
  * @author CPoet
  */
 public abstract class SSHUtil {
+
     /**
      * 创建SSH会话
      *
@@ -40,19 +44,20 @@ public abstract class SSHUtil {
     /**
      * 执行SSH命令
      *
-     * @param session 已连接的会话
-     * @param command 要执行的命令
+     * @param session   已连接的会话
+     * @param msgOutput 消息输出
+     * @param command   要执行的命令
      * @return 执行状态
      */
-    public static int execCmd(Session session, String command) {
+    public static int execCmd(Session session, OutputStream msgOutput, String command) {
         int status;
         ChannelExec channel = null;
         try {
             channel = (ChannelExec) session.openChannel("exec");
             channel.setCommand(command);
             channel.setInputStream(null);
-            channel.setOutputStream(System.out);
-            channel.setErrStream(System.err);
+            channel.setOutputStream(msgOutput);
+            channel.setErrStream(msgOutput);
             channel.connect();
             while (!channel.isClosed()) {
                 try {
@@ -73,32 +78,52 @@ public abstract class SSHUtil {
     }
 
     /**
-     * 上传多个文件到远程服务器
+     * 上传单个文件
      *
-     * @param session   已连接的会话
-     * @param dir       远程文件所在目录
-     * @param fileNames 文件名称
-     * @param bytes     数据列表
+     * @param session   会话信息
+     * @param msgOutput 消息输出
+     * @param monitor   进度监听
+     * @param dir       目录
+     * @param name      名称
+     * @param bytes     数据
      */
-    public static void uploadFiles(Session session, String dir, String[] fileNames, byte[]... bytes) {
-        String[] paths = new String[fileNames.length];
-        for (int i = 0; i < fileNames.length; ++i) {
-            paths[i] = FileNameUtil.joinPath(dir, fileNames[i]);
-        }
-        uploadFiles(session, paths, bytes);
+    public static void uploadFile(Session session, OutputStream msgOutput, SftpProgressMonitor monitor, String dir, String name, byte[] bytes) {
+        uploadFiles(session, msgOutput, monitor, dir, new String[]{name}, bytes);
     }
 
     /**
      * 上传多个文件到远程服务器
      *
-     * @param session 已连接的会话
-     * @param paths   远程文件路径列表
-     * @param bytes   数据列表
+     * @param session   已连接的会话
+     * @param msgOutput 消息输出
+     * @param monitor   进度监听
+     * @param dir       远程文件所在目录
+     * @param fileNames 文件名称
+     * @param bytes     数据列表
      */
-    public static void uploadFiles(Session session, String[] paths, byte[]... bytes) {
+    public static void uploadFiles(Session session, OutputStream msgOutput, SftpProgressMonitor monitor, String dir, String[] fileNames, byte[]... bytes) {
+        String[] paths = new String[fileNames.length];
+        for (int i = 0; i < fileNames.length; ++i) {
+            paths[i] = FileNameUtil.joinPath(dir, fileNames[i]);
+        }
+        uploadFiles(session, msgOutput, monitor, paths, bytes);
+    }
+
+    /**
+     * 上传多个文件到远程服务器
+     *
+     * @param session   已连接的会话
+     * @param msgOutput 消息输出
+     * @param monitor   进度监听
+     * @param paths     远程文件路径列表
+     * @param bytes     数据列表
+     */
+    public static void uploadFiles(Session session, OutputStream msgOutput, SftpProgressMonitor monitor, String[] paths, byte[]... bytes) {
         ChannelSftp channel = null;
         try {
             channel = (ChannelSftp) session.openChannel("sftp");
+            channel.setInputStream(null);
+            channel.setOutputStream(msgOutput);
             channel.connect();
             for (int i = 0; i < paths.length; ++i) {
                 String remoteDir = FileNameUtil.getDirPath(paths[i]);
@@ -107,10 +132,38 @@ public abstract class SSHUtil {
                 } catch (SftpException e) {
                     mkdirs(channel, remoteDir);
                 }
-                channel.put(new ByteArrayInputStream(bytes[i]), paths[i]);
+                channel.put(new ByteArrayInputStream(bytes[i]), paths[i], monitor);
             }
         } catch (Exception e) {
             throw new AppException("文件上传失败", e);
+        } finally {
+            if (channel != null && channel.isConnected()) {
+                channel.disconnect();
+            }
+        }
+    }
+
+    public static void downloadFile(Session session, OutputStream msgOutput, SftpProgressMonitor monitor, String path, File file) {
+        try (OutputStream out = new FileOutputStream(file)) {
+            downloadFile(session, msgOutput, monitor, path, out);
+        } catch (Exception e) {
+            if (e instanceof AppException) {
+                throw (AppException) e;
+            }
+            throw new AppException("下载文件失败", e);
+        }
+    }
+
+    public static void downloadFile(Session session, OutputStream msgOutput, SftpProgressMonitor monitor, String path, OutputStream out) {
+        ChannelSftp channel = null;
+        try {
+            channel = (ChannelSftp) session.openChannel("sftp");
+            channel.setInputStream(null);
+            channel.setOutputStream(msgOutput);
+            channel.connect();
+            channel.get(path, out, monitor);
+        } catch (Exception e) {
+            throw new AppException("文件下载失败", e);
         } finally {
             if (channel != null && channel.isConnected()) {
                 channel.disconnect();

@@ -1,5 +1,6 @@
 package cn.cpoet.patch.assistant.util;
 
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 
@@ -23,5 +24,14 @@ public abstract class DateUtil {
      */
     public static String formatDateTime(TemporalAccessor temporal) {
         return DateTimeFormatter.ofPattern(DATE_TIME_FORMAT).format(temporal);
+    }
+
+    /**
+     * 获取当前时间串
+     *
+     * @return 当前时间串
+     */
+    public static String curDateTime() {
+        return formatDateTime(LocalDateTime.now());
     }
 }
