@@ -5,7 +5,9 @@ import cn.cpoet.patch.assistant.core.AppContext;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.core.DockerConf;
 import cn.cpoet.patch.assistant.core.GeneraConf;
+import cn.cpoet.patch.assistant.util.EncryptUtil;
 import cn.cpoet.patch.assistant.util.FXUtil;
+import cn.cpoet.patch.assistant.util.StringUtil;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -97,11 +99,19 @@ public class ConfigView {
         box.getChildren().add(usernameConfig);
         HBox passwordConfig = new HBox(FXUtil.pre(new Label(), node -> {
             node.setText("密 码: ");
-        }), FXUtil.pre(new TextField(), node -> {
+        }), FXUtil.pre(new PasswordField(), node -> {
             HBox.setHgrow(node, Priority.ALWAYS);
-            node.setText(docker.getPassword());
+            if (!StringUtil.isBlank(docker.getPassword())) {
+                String pass = EncryptUtil.decryptWithRsaSys(docker.getPassword());
+                node.setText(pass);
+            }
             node.textProperty().addListener((e, oldVal, newVal) -> {
-                docker.setPassword(newVal);
+                if (StringUtil.isBlank(newVal)) {
+                    docker.setPassword(null);
+                } else {
+                    String s = EncryptUtil.encryptWithRsaSys(newVal);
+                    docker.setPassword(s);
+                }
             });
         }));
         passwordConfig.setAlignment(Pos.CENTER_LEFT);
