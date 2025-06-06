@@ -1,6 +1,7 @@
 package cn.cpoet.patch.assistant.view;
 
 import cn.cpoet.patch.assistant.constant.FileExtConst;
+import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.util.FileNameUtil;
 import cn.cpoet.patch.assistant.util.FileUtil;
 import cn.cpoet.patch.assistant.view.content.ContentParser;
@@ -28,6 +29,9 @@ public abstract class HomeTreeView {
     }
 
     protected void selectedLink(TreeView<TreeNode> originTree, TreeView<TreeNode> targetTree) {
+        if (!Boolean.TRUE.equals(Configuration.getInstance().getIsSelectedLinked())) {
+            return;
+        }
         TreeItem<TreeNode> originItem = originTree.getSelectionModel().getSelectedItem();
         if (originItem == null) {
             return;

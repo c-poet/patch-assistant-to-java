@@ -24,6 +24,42 @@ public class Configuration {
     private Double homeHeight = 600D;
 
     /**
+     * 配置窗口宽度
+     */
+    @JacksonXmlProperty
+    private Double configWidth = 720D;
+
+    /**
+     * 配置窗口高度
+     */
+    @JacksonXmlProperty
+    private Double configHeight = 560D;
+
+    /**
+     * 搜索窗口宽度
+     */
+    @JacksonXmlProperty
+    private Double searchWidth = 720D;
+
+    /**
+     * 搜索窗口高度
+     */
+    @JacksonXmlProperty
+    private Double searchHeight = 300D;
+
+    /**
+     * 内容查看窗口宽度
+     */
+    @JacksonXmlProperty
+    private Double contentWidth;
+
+    /**
+     * 内容查询窗口高度
+     */
+    @JacksonXmlProperty
+    private Double contentHeight;
+
+    /**
      * 选中联动
      */
     @JacksonXmlProperty
@@ -100,6 +136,54 @@ public class Configuration {
 
     public void setHomeHeight(Double homeHeight) {
         this.homeHeight = homeHeight;
+    }
+
+    public Double getConfigWidth() {
+        return configWidth;
+    }
+
+    public void setConfigWidth(Double configWidth) {
+        this.configWidth = configWidth;
+    }
+
+    public Double getConfigHeight() {
+        return configHeight;
+    }
+
+    public void setConfigHeight(Double configHeight) {
+        this.configHeight = configHeight;
+    }
+
+    public Double getSearchWidth() {
+        return searchWidth;
+    }
+
+    public void setSearchWidth(Double searchWidth) {
+        this.searchWidth = searchWidth;
+    }
+
+    public Double getSearchHeight() {
+        return searchHeight;
+    }
+
+    public void setSearchHeight(Double searchHeight) {
+        this.searchHeight = searchHeight;
+    }
+
+    public Double getContentWidth() {
+        return contentWidth;
+    }
+
+    public void setContentWidth(Double contentWidth) {
+        this.contentWidth = contentWidth;
+    }
+
+    public Double getContentHeight() {
+        return contentHeight;
+    }
+
+    public void setContentHeight(Double contentHeight) {
+        this.contentHeight = contentHeight;
     }
 
     public Boolean getIsSelectedLinked() {

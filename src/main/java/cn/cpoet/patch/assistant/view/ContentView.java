@@ -115,7 +115,14 @@ public class ContentView {
         dialog.setTitle(rightNode == null ? leftNode.getPath() : leftNode.getPath() + " <- " + rightNode.getPath());
         DialogPane dialogPane = new DialogPurePane();
         dialogPane.setContent(build());
-        dialogPane.setPrefSize(stage.getWidth(), stage.getHeight());
+        Configuration configuration = Configuration.getInstance();
+        if (configuration.getContentWidth() != null && configuration.getContentHeight() != null) {
+            dialogPane.setPrefSize(configuration.getContentWidth(), configuration.getContentHeight());
+        } else {
+            dialogPane.setPrefSize(stage.getWidth(), stage.getHeight());
+        }
+        dialogPane.widthProperty().addListener((observableValue, oldVal, newVal) -> configuration.setContentWidth(newVal.doubleValue()));
+        dialogPane.heightProperty().addListener((observableValue, oldVal, newVal) -> configuration.setContentHeight(newVal.doubleValue()));
         dialog.setDialogPane(dialogPane);
         dialogPane.getButtonTypes().add(ButtonType.CLOSE);
         dialog.showAndWait();

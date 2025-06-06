@@ -25,12 +25,8 @@ public class PatchAssistantApplication extends Application {
     public void start(Stage stage) {
         Configuration configuration = AppContext.getInstance().getConfiguration();
         Scene scene = new Scene(new HomeView(stage).build(), configuration.getHomeWidth(), configuration.getHomeHeight());
-        stage.widthProperty().addListener((observableValue, oldVal, newVal) -> {
-            configuration.setHomeWidth(newVal.doubleValue());
-        });
-        stage.heightProperty().addListener((observableValue, oldVal, newVal) -> {
-            configuration.setHomeHeight(newVal.doubleValue());
-        });
+        scene.widthProperty().addListener((observableValue, oldVal, newVal) -> configuration.setHomeWidth(newVal.doubleValue()));
+        scene.heightProperty().addListener((observableValue, oldVal, newVal) -> configuration.setHomeHeight(newVal.doubleValue()));
         stage.setTitle("补丁助手 By CPoet");
         stage.getIcons().add(ImageUtil.loadImage(IConConst.APP_ICON));
         stage.setScene(scene);

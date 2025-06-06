@@ -141,13 +141,15 @@ public class ConfigView {
         configViewDialog.setResizable(true);
         DialogPane dialogPane = new DialogPane();
         dialogPane.setContent(build());
-        dialogPane.setPrefSize(720, 560);
+        Configuration configuration = Configuration.getInstance();
+        dialogPane.setPrefSize(configuration.getConfigWidth(), configuration.getConfigHeight());
+        dialogPane.widthProperty().addListener((observableValue, oldVal, newVal) -> configuration.setConfigWidth(newVal.doubleValue()));
+        dialogPane.heightProperty().addListener((observableValue, oldVal, newVal) -> configuration.setConfigHeight(newVal.doubleValue()));
         dialogPane.getButtonTypes().add(ButtonType.OK);
         dialogPane.getButtonTypes().add(ButtonType.CANCEL);
         configViewDialog.setDialogPane(dialogPane);
         configViewDialog.setResultConverter(t -> t == ButtonType.OK);
         if (configViewDialog.showAndWait().orElse(Boolean.FALSE)) {
-            Configuration configuration = Configuration.getInstance();
             configuration.setGenera(genera);
             configuration.setDocker(docker);
             AppContext.getInstance().syncConf2File();

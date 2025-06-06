@@ -178,7 +178,10 @@ public class SearchView {
         dialog.setTitle("搜索");
         DialogPane dialogPane = new DialogPurePane();
         dialogPane.setContent(build());
-        dialogPane.setPrefSize(720, 300);
+        Configuration configuration = Configuration.getInstance();
+        dialogPane.setPrefSize(configuration.getSearchWidth(), configuration.getSearchHeight());
+        dialogPane.widthProperty().addListener((observableValue, oldVal, newVal) -> configuration.setSearchWidth(newVal.doubleValue()));
+        dialogPane.heightProperty().addListener((observableValue, oldVal, newVal) -> configuration.setSearchHeight(newVal.doubleValue()));
         dialog.setDialogPane(dialogPane);
         dialogPane.getButtonTypes().add(ButtonType.CLOSE);
         dialog.showAndWait();
