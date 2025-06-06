@@ -32,7 +32,7 @@ public class AboutView {
         hBox.getChildren().add(imageView);
         VBox vBox = new VBox();
         vBox.setSpacing(8);
-        Label titleLbl = new Label("补丁助手");
+        Label titleLbl = new Label("补丁助手 Beta");
         titleLbl.setStyle("-fx-font-weight: bold;-fx-font-size:20");
         vBox.getChildren().add(titleLbl);
         Label descLbl = new Label(

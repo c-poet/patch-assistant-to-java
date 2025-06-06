@@ -1,11 +1,33 @@
 package cn.cpoet.patch.assistant.core;
 
+import cn.cpoet.patch.assistant.constant.AppConst;
+
 /**
  * Docker配置
  *
  * @author CPoet
  */
 public class DockerConf implements Cloneable {
+
+    public static final String TYPE_LOCAL = "local";
+    public static final String TYPE_REMOTE = "remote";
+    public static final String DEFAULT_COMMAND = "docker";
+    public static final String DEFAULT_WORK_PATH = "/opt/" + AppConst.APP_NAME;
+
+    /**
+     * 类型：local或者remote
+     */
+    private String type;
+
+    /**
+     * 本地命令
+     */
+    private String localCommand = DEFAULT_COMMAND;
+
+    /**
+     * 本地目录
+     */
+    private String localWorkPath = DEFAULT_WORK_PATH;
 
     /**
      * 主机地址
@@ -28,9 +50,38 @@ public class DockerConf implements Cloneable {
     private String password;
 
     /**
+     * 命令
+     */
+    private String command = DEFAULT_COMMAND;
+
+    /**
      * 工作路径
      */
-    private String workPath;
+    private String workPath = DEFAULT_WORK_PATH;
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getLocalCommand() {
+        return localCommand;
+    }
+
+    public void setLocalCommand(String localCommand) {
+        this.localCommand = localCommand;
+    }
+
+    public String getLocalWorkPath() {
+        return localWorkPath;
+    }
+
+    public void setLocalWorkPath(String localWorkPath) {
+        this.localWorkPath = localWorkPath;
+    }
 
     public String getHost() {
         return host;
@@ -62,6 +113,14 @@ public class DockerConf implements Cloneable {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getCommand() {
+        return command;
+    }
+
+    public void setCommand(String command) {
+        this.command = command;
     }
 
     public String getWorkPath() {
