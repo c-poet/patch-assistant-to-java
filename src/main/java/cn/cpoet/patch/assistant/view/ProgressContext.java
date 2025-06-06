@@ -15,9 +15,10 @@ import java.io.OutputStream;
  */
 public class ProgressContext {
 
-    protected boolean runLater;
     protected TextArea textArea;
+    protected volatile boolean end;
     protected ProgressBar progressBar;
+    protected volatile boolean runLater;
 
     public boolean isRunLater() {
         return runLater;
@@ -25,6 +26,10 @@ public class ProgressContext {
 
     public void setRunLater(boolean runLater) {
         this.runLater = runLater;
+    }
+
+    public boolean isEnd() {
+        return end;
     }
 
     protected void doStep(String msg) {
@@ -35,6 +40,7 @@ public class ProgressContext {
     }
 
     protected void doEnd() {
+        end = true;
         if (progressBar != null) {
             progressBar.setProgress(1);
         }

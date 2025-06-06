@@ -88,6 +88,15 @@ public class TotalInfo {
         return addTotal + modTotal > 0;
     }
 
+    /**
+     * 判断是否存在变化的节点
+     *
+     * @return 是否存在变化的节点
+     */
+    public boolean isChangeNode() {
+        return addTotal > 0 || modTotal > 0 || delTotal > 0 || markDelTotal > 0;
+    }
+
     public int getChangeTotal() {
         return changeTotal.get();
     }

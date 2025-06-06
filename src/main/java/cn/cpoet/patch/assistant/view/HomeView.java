@@ -4,6 +4,7 @@ import cn.cpoet.patch.assistant.component.OnlyChangeFilter;
 import cn.cpoet.patch.assistant.constant.IConConst;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.service.AppPackService;
+import cn.cpoet.patch.assistant.util.AlterUtil;
 import cn.cpoet.patch.assistant.util.FXUtil;
 import cn.cpoet.patch.assistant.util.ImageUtil;
 import cn.cpoet.patch.assistant.util.TreeNodeUtil;
@@ -133,6 +134,12 @@ public class HomeView extends HomeContext {
                 FXUtil.pre(new Region(), node -> HBox.setHgrow(node, Priority.ALWAYS)),
                 FXUtil.pre(new Button("保存"), btn -> {
                     btn.setOnAction(e -> {
+                        if (!totalInfo.isChangeNode()) {
+                            ButtonType buttonType = AlterUtil.warn(stage, "应用包未改变，是否继续？", ButtonType.YES, ButtonType.NO);
+                            if (ButtonType.NO.equals(buttonType)) {
+                                return;
+                            }
+                        }
                         // 判断是否Docker模式
                         boolean isDockerImage = Boolean.TRUE.equals(Configuration.getInstance().getIsDockerImage());
                         FileChooser fileChooser = new FileChooser();
@@ -147,7 +154,7 @@ public class HomeView extends HomeContext {
                         if (file == null) {
                             return;
                         }
-                        new ProgressView("保存进度").showDialog(stage, (context) -> {
+                        new ProgressView(fileChooser.getTitle()).showDialog(stage, (context) -> {
                             AppPackService.getInstance().savePack(context, file, appTreeInfo, isDockerImage);
                         });
                     });

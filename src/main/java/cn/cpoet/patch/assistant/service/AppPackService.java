@@ -68,7 +68,7 @@ public class AppPackService extends BasePackService {
                 throw new AppException("Dockerfile模板文件不能为空");
             }
             // 校验远程信息是否配置正确
-            new Thread(() -> {
+            Thread thread = new Thread(() -> {
                 context.setRunLater(true);
                 context.step("开始保存镜像包");
                 try {
@@ -79,9 +79,11 @@ public class AppPackService extends BasePackService {
                 } finally {
                     context.end();
                 }
-            }).start();
+            });
+            thread.setDaemon(true);
+            thread.start();
         } else {
-            new Thread(() -> {
+            Thread thread = new Thread(() -> {
                 context.setRunLater(true);
                 context.step("开始保存应用包");
                 try {
@@ -92,7 +94,9 @@ public class AppPackService extends BasePackService {
                 } finally {
                     context.end();
                 }
-            }).start();
+            });
+            thread.setDaemon(true);
+            thread.start();
         }
     }
 
@@ -157,7 +161,17 @@ public class AppPackService extends BasePackService {
                 this.opCount = 0;
                 this.src = src;
                 this.desc = dest;
-                context.step((isUpload ? "上传 " : "下载 ") + src + " -> " + desc + " 大小: " + FileUtil.getSizeReadability(max));
+                String message = isUpload ? "上传 " : "下载 ";
+                if (!StringUtil.isBlank(src)) {
+                    message += src + " -> ";
+                }
+                if (!StringUtil.isBlank(dest)) {
+                    message += dest;
+                }
+                if (max > 0) {
+                    message += " 大小: " + FileUtil.getSizeReadability(max);
+                }
+                context.step(message);
             }
 
             @Override
@@ -173,7 +187,14 @@ public class AppPackService extends BasePackService {
 
             @Override
             public void end() {
-                context.step((isUpload ? "上传 " : "下载 ") + src + " -> " + desc + " 结束");
+                String message = isUpload ? "上传 " : "下载 ";
+                if (!StringUtil.isBlank(src)) {
+                    message += src + " -> ";
+                }
+                if (!StringUtil.isBlank(desc)) {
+                    message += desc;
+                }
+                context.step(message + " 结束");
             }
         };
     }

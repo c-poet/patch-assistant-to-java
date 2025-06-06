@@ -2,6 +2,7 @@ package cn.cpoet.patch.assistant.view;
 
 import cn.cpoet.patch.assistant.control.DialogPurePane;
 import cn.cpoet.patch.assistant.core.Configuration;
+import cn.cpoet.patch.assistant.util.AlterUtil;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.*;
@@ -19,10 +20,10 @@ import java.util.function.Consumer;
  */
 public class ProgressView extends ProgressContext {
 
-    private final String title;
+    private final String taskName;
 
-    public ProgressView(String title) {
-        this.title = title;
+    public ProgressView(String taskName) {
+        this.taskName = taskName;
     }
 
     public Node build() {
@@ -44,7 +45,7 @@ public class ProgressView extends ProgressContext {
         dialog.initOwner(stage);
         dialog.initModality(Modality.WINDOW_MODAL);
         dialog.setResizable(true);
-        dialog.setTitle(title);
+        dialog.setTitle("正在执行: " + taskName);
         DialogPane dialogPane = new DialogPurePane();
         dialogPane.setContent(build());
         Configuration configuration = Configuration.getInstance();
@@ -52,8 +53,14 @@ public class ProgressView extends ProgressContext {
         dialogPane.widthProperty().addListener((observableValue, oldVal, newVal) -> configuration.setProgressWidth(newVal.doubleValue()));
         dialogPane.heightProperty().addListener((observableValue, oldVal, newVal) -> configuration.setProgressHeight(newVal.doubleValue()));
         dialog.setDialogPane(dialogPane);
-        dialogPane.getButtonTypes().add(ButtonType.CLOSE);
+        dialogPane.getButtonTypes().addAll(ButtonType.CLOSE);
         consumer.accept(this);
+        dialogPane.getScene().getWindow().setOnCloseRequest(e -> {
+            if (!isEnd()) {
+                AlterUtil.error(stage, "【" + taskName + "】正在进行中，请耐心等待");
+                e.consume();
+            }
+        });
         dialog.showAndWait();
     }
 }
