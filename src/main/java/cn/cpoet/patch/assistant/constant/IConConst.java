@@ -86,4 +86,9 @@ public interface IConConst {
      * 标记
      */
     String FILE_MARK = "/icons/file-mark.png";
+
+    /**
+     * 搜索
+     */
+    String SEARCH = "/icons/search.png";
 }

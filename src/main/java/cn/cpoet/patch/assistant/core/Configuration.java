@@ -74,6 +74,11 @@ public class Configuration {
      */
     private ContentConf content = new ContentConf();
 
+    /**
+     * 搜索配置
+     */
+    private SearchConf search = new SearchConf();
+
     Configuration() {
     }
 
@@ -167,5 +172,13 @@ public class Configuration {
 
     public void setContent(ContentConf content) {
         this.content = content;
+    }
+
+    public SearchConf getSearch() {
+        return search;
+    }
+
+    public void setSearch(SearchConf search) {
+        this.search = search;
     }
 }

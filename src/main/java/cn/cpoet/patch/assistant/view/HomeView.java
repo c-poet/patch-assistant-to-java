@@ -1,15 +1,19 @@
 package cn.cpoet.patch.assistant.view;
 
 import cn.cpoet.patch.assistant.component.OnlyChangeFilter;
+import cn.cpoet.patch.assistant.constant.IConConst;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.service.AppPackService;
 import cn.cpoet.patch.assistant.util.FXUtil;
+import cn.cpoet.patch.assistant.util.ImageUtil;
 import cn.cpoet.patch.assistant.util.TreeNodeUtil;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.*;
 import javafx.stage.FileChooser;
@@ -61,6 +65,15 @@ public class HomeView extends HomeContext {
         headerBox.getChildren().add(checkDockerImage);
 
         headerBox.getChildren().add(FXUtil.pre(new Region(), node -> HBox.setHgrow(node, Priority.ALWAYS)));
+
+        Button searchBtn = new Button();
+        Image searchImage = ImageUtil.loadImage(IConConst.SEARCH);
+        ImageView searchIV = new ImageView(searchImage);
+        searchIV.setFitWidth(16);
+        searchIV.setFitHeight(16);
+        searchBtn.setGraphic(searchIV);
+        searchBtn.setOnAction(e -> showSearchView());
+        headerBox.getChildren().add(searchBtn);
 
         Button configBtn = new Button("配置");
         configBtn.setOnAction(e -> new ConfigView().showDialog(stage));
@@ -144,6 +157,10 @@ public class HomeView extends HomeContext {
         return footerBox;
     }
 
+    protected void showSearchView() {
+        new SearchView(this).showDialog(stage);
+    }
+
     public Pane build() {
         BorderPane rootPane = new BorderPane();
         rootPane.setPadding(new Insets(1, 2, 4, 2));
@@ -151,9 +168,8 @@ public class HomeView extends HomeContext {
         rootPane.setCenter(buildCentre());
         rootPane.setBottom(buildFooter());
         rootPane.setOnKeyPressed(e -> {
-            // 显示搜索
             if (e.isControlDown() && e.getCode() == KeyCode.F) {
-                new SearchView(this).showDialog(stage);
+                showSearchView();
             }
         });
         return rootPane;

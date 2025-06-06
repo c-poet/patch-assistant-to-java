@@ -136,6 +136,7 @@ public class FileTreeCell extends TreeCell<TreeNode> {
     public void updateItem(TreeNode node, boolean empty) {
         super.updateItem(node, empty);
         if (empty || node == null) {
+            setText(null);
             setGraphic(null);
         } else {
             box = new HBox();
@@ -180,7 +181,7 @@ public class FileTreeCell extends TreeCell<TreeNode> {
                 String sizeReadability = FileUtil.getSizeReadability(kindNode.getSize());
                 String dateTime = DateUtil.formatDateTime(kindNode.getModifyTime());
                 Label fileDetailLbl = new Label("\t" + dateTime + "  " + sizeReadability + "  " + kindNode.getMd5());
-                fileDetailLbl.setTextFill(Color.valueOf("#6c707e"));
+                fileDetailLbl.setTextFill(Color.web("#6c707e"));
                 box.getChildren().add(fileDetailLbl);
             }
         }
@@ -194,16 +195,16 @@ public class FileTreeCell extends TreeCell<TreeNode> {
         TreeNodeStatus status = kindNode.getStatus();
         switch (status) {
             case ADD:
-                textLbl.setTextFill(Color.valueOf("#4fc75c"));
+                textLbl.setTextFill(Color.web("#4fc75c"));
                 break;
             case MOD:
-                textLbl.setTextFill(Color.valueOf("#4c89fb"));
+                textLbl.setTextFill(Color.web("#4c89fb"));
                 break;
             case DEL:
-                textLbl.setTextFill(Color.valueOf("#979797"));
+                textLbl.setTextFill(Color.web("#979797"));
                 break;
             case MARK_DEL:
-                textLbl.setTextFill(Color.valueOf("#e65256"));
+                textLbl.setTextFill(Color.web("#e65256"));
                 break;
             case NONE:
             default:
