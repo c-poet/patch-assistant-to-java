@@ -5,8 +5,11 @@ import cn.cpoet.patch.assistant.util.StringUtil;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
 import org.fxmisc.richtext.model.StyleSpans;
+import org.fxmisc.richtext.model.StyleSpansBuilder;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.regex.Matcher;
 
 /**
  * {@link  org.fxmisc.richtext.CodeArea}工厂
@@ -14,6 +17,8 @@ import java.util.Collection;
  * @author CPoet
  */
 public abstract class CodeAreaFactory {
+
+    protected static final String CODE_AREA_CSS = FileUtil.getResourceAndExternalForm("/css/code-area.css");
 
     /**
      * 获取样式表路径
@@ -25,7 +30,24 @@ public abstract class CodeAreaFactory {
     }
 
     public StyleSpans<Collection<String>> computeHighlighting(String text) {
-        return null;
+        Matcher matcher = createMatcher(text);
+        if (matcher == null) {
+            return null;
+        }
+        int lastKwEnd = 0;
+        StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();
+        while (matcher.find()) {
+            String styleClass = getStyleClass(matcher);
+            if (styleClass == null) {
+                spansBuilder.add(Collections.emptyList(), matcher.end() - lastKwEnd);
+            } else {
+                spansBuilder.add(Collections.emptyList(), matcher.start() - lastKwEnd);
+                spansBuilder.add(Collections.singleton(styleClass), matcher.end() - matcher.start());
+            }
+            lastKwEnd = matcher.end();
+        }
+        spansBuilder.add(Collections.emptyList(), text.length() - lastKwEnd);
+        return spansBuilder.create();
     }
 
     /**
@@ -37,6 +59,7 @@ public abstract class CodeAreaFactory {
         CodeArea codeArea = new CodeArea();
         codeArea.setEditable(false);
         codeArea.setParagraphGraphicFactory(LineNumberFactory.get(codeArea));
+        codeArea.getStylesheets().addAll(CODE_AREA_CSS);
         String styleSheetPath = getStyleSheetPath();
         if (!StringUtil.isBlank(styleSheetPath)) {
             String stylesheetPath = FileUtil.getResourceAndExternalForm(styleSheetPath);
@@ -51,6 +74,14 @@ public abstract class CodeAreaFactory {
                     }
                 });
         return codeArea;
+    }
+
+    protected Matcher createMatcher(String text) {
+        return null;
+    }
+
+    protected String getStyleClass(Matcher matcher) {
+        return null;
     }
 
     public static class DefaultCodeAreaFactory extends CodeAreaFactory {

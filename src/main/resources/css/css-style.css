@@ -1,0 +1,26 @@
+.code-area .keyword {
+    -fx-fill: #0000FF;
+    -fx-font-weight: bold;
+}
+
+.code-area .selector {
+    -fx-fill: #800080;
+    -fx-font-weight: bold;
+}
+
+.code-area .property {
+    -fx-fill: #FF0000;
+}
+
+.code-area .value {
+    -fx-fill: #008000;
+}
+
+.code-area .punctuation, .terminator {
+    -fx-fill: #000000;
+}
+
+.code-area .comment {
+    -fx-fill: #808080;
+    -fx-font-style: italic;
+}

@@ -100,10 +100,10 @@ public class ContentView {
     }
 
     public void showDialog(Stage stage) {
-        ContentParser parser = ContentSupports.getContentParser(leftNode);
-        if (parser == null) {
+        if (leftNode.isDir()) {
             return;
         }
+        ContentParser parser = ContentSupports.getContentParser(leftNode);
         leftContent = parser.parse(leftNode);
         if (rightNode != null) {
             rightContent = parser.parse(rightNode);

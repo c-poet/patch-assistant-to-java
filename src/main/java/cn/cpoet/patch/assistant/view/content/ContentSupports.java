@@ -11,28 +11,15 @@ public abstract class ContentSupports {
     }
 
     public static ContentParser getContentParser(TreeNode node) {
-        return getContentParser(FileNameUtil.getExt(node.getName()));
+        String ext = FileNameUtil.getExt(node.getName());
+        return getContentParser(ext);
     }
 
     public static ContentParser getContentParser(String ext) {
-        if (ext != null) {
-            switch (ext) {
-                case "class":
-                    return new ClassContentParser();
-                case "txt":
-                case "yaml":
-                case "yml":
-                case "properties":
-                case "xml":
-                case "json":
-                case "html":
-                case "htm":
-                case "md":
-                    return new TextContentParser();
-                default:
-            }
+        if ("class".equals(ext)) {
+            return new ClassContentParser();
         }
-        return null;
+        return new TextContentParser();
     }
 
 
@@ -53,6 +40,13 @@ public abstract class ContentSupports {
                     return new HtmlCodeAreaFactory();
                 case "css":
                     return new CssCodeAreaFactory();
+                case "xml":
+                    return new XmlCodeAreaFactory();
+                case "yml":
+                case "yaml":
+                    return new YamlCodeAreaFactory();
+                case "sql":
+                    return new SQLCodeAreaFactory();
                 default:
             }
         }

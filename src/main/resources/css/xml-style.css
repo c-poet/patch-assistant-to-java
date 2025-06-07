@@ -1,20 +1,18 @@
-.tagmark {
-    -fx-fill: gray;
-}
-.anytag {
-    -fx-fill: crimson;
-}
-.paren {
-    -fx-fill: firebrick;
+.code-area .xml-tag {
+    -fx-fill: #800000;
     -fx-font-weight: bold;
 }
-.attribute {
-    -fx-fill: darkviolet;
-}
-.avalue {
-    -fx-fill: black;
+
+.code-area .xml-attribute {
+    -fx-fill: #000080;
+    -fx-font-weight: bold;
 }
 
-.comment {
-    -fx-fill: teal;
+.code-area .xml-string {
+    -fx-fill: #008000;
+}
+
+.code-area .xml-comment {
+    -fx-fill: #808080;
+    -fx-font-style: italic;
 }
