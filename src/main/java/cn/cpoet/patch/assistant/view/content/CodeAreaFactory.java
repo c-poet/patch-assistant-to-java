@@ -2,6 +2,8 @@ package cn.cpoet.patch.assistant.view.content;
 
 import cn.cpoet.patch.assistant.util.FileUtil;
 import cn.cpoet.patch.assistant.util.StringUtil;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
 import org.fxmisc.richtext.model.StyleSpans;
@@ -50,6 +52,19 @@ public abstract class CodeAreaFactory {
         return spansBuilder.create();
     }
 
+    protected ContextMenu getContextMenu(CodeArea codeArea) {
+        MenuItem copyItem = new MenuItem("复制");
+        copyItem.setOnAction(e -> codeArea.copy());
+        MenuItem selectedAllItem = new MenuItem("全选");
+        selectedAllItem.setOnAction(e -> codeArea.selectAll());
+        ContextMenu contextMenu = new ContextMenu(copyItem, selectedAllItem);
+        contextMenu.setOnShowing(e -> {
+            String selectedText = codeArea.getSelectedText();
+            copyItem.setVisible(!StringUtil.isEmpty(selectedText));
+        });
+        return contextMenu;
+    }
+
     /**
      * 创建代码域
      *
@@ -73,6 +88,10 @@ public abstract class CodeAreaFactory {
                         codeArea.setStyleSpans(0, styleSpans);
                     }
                 });
+        ContextMenu contextMenu = getContextMenu(codeArea);
+        if (contextMenu != null) {
+            codeArea.setContextMenu(contextMenu);
+        }
         return codeArea;
     }
 
