@@ -124,8 +124,7 @@ public class AppPackService extends BasePackService {
         Session session = null;
         try {
             String password = EncryptUtil.decryptWithRsaSys(docker.getPassword());
-            int port = Integer.parseInt(docker.getPort());
-            session = SSHUtil.createSession(docker.getHost(), port, docker.getUsername(), password);
+            session = SSHUtil.createSession(docker.getHost(), docker.getPort(), docker.getUsername(), password);
             context.step("SSH连接成功");
             OutputStream out = context.createOutputStream();
             context.step("上传Dockerfile");

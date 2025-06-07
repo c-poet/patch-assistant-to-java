@@ -1,5 +1,6 @@
 package cn.cpoet.patch.assistant.core;
 
+import java.io.Closeable;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -9,7 +10,7 @@ import java.util.Set;
  *
  * @author CPoet
  */
-public class SearchConf {
+public class SearchConf implements Cloneable {
 
     /**
      * 历史记录保存大小
@@ -47,6 +48,15 @@ public class SearchConf {
             for (int i = 0; i < history.size() - historyLimit; ++i, iterator.next()) {
                 iterator.remove();
             }
+        }
+    }
+
+    @Override
+    public SearchConf clone() {
+        try {
+            return (SearchConf) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
         }
     }
 }

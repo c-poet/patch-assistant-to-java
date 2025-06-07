@@ -1,10 +1,7 @@
 package cn.cpoet.patch.assistant.view;
 
 import cn.cpoet.patch.assistant.constant.I18NEnum;
-import cn.cpoet.patch.assistant.core.AppContext;
-import cn.cpoet.patch.assistant.core.Configuration;
-import cn.cpoet.patch.assistant.core.DockerConf;
-import cn.cpoet.patch.assistant.core.GeneraConf;
+import cn.cpoet.patch.assistant.core.*;
 import cn.cpoet.patch.assistant.util.EncryptUtil;
 import cn.cpoet.patch.assistant.util.FXUtil;
 import cn.cpoet.patch.assistant.util.StringUtil;
@@ -27,6 +24,7 @@ import javafx.util.StringConverter;
  */
 public class ConfigView {
 
+    private final SearchConf search;
     private final GeneraConf genera;
     private final DockerConf docker;
 
@@ -34,6 +32,7 @@ public class ConfigView {
         Configuration configuration = Configuration.getInstance();
         genera = configuration.getGenera().clone();
         docker = configuration.getDocker().clone();
+        search = configuration.getSearch().clone();
     }
 
     protected Node buildDockerLocalConfig() {
@@ -78,9 +77,10 @@ public class ConfigView {
         }), FXUtil.pre(new Label(), node -> {
             node.setText(" : ");
         }), FXUtil.pre(new TextField(), node -> {
-            node.setText(docker.getPort());
+            node.setText(String.valueOf(docker.getPort()));
             node.textProperty().addListener((e, oldVal, newVal) -> {
-                docker.setPort(newVal);
+                int port = Integer.parseInt(newVal);
+                docker.setPort(port);
             });
         }));
         hostConfig.setAlignment(Pos.CENTER_LEFT);
@@ -180,7 +180,33 @@ public class ConfigView {
         }
     }
 
-    public Node buildGeneraConfig() {
+    protected Node buildPatchConfig() {
+        TitledPane patchConfigPane = new TitledPane();
+        patchConfigPane.setCollapsible(false);
+        patchConfigPane.setText("补丁配置");
+        VBox patchConfigBox = new VBox();
+        patchConfigPane.setContent(patchConfigBox);
+        return patchConfigPane;
+    }
+
+    protected Node buildSearchConfig() {
+        TitledPane searchConfigPane = new TitledPane();
+        searchConfigPane.setCollapsible(false);
+        searchConfigPane.setText("搜索配置");
+        VBox searchConfigBox = new VBox();
+        searchConfigBox.getChildren().add(FXUtil.pre(new HBox(new Label("保留历史条数: "), FXUtil.pre(new TextField(), node -> {
+            HBox.setHgrow(node, Priority.ALWAYS);
+            node.setText(String.valueOf(search.getHistoryLimit()));
+            node.textProperty().addListener((observableValue, oldVal, newVal) -> {
+                int limit = Integer.parseInt(newVal);
+                search.setHistoryLimit(limit);
+            });
+        })), box -> box.setAlignment(Pos.CENTER)));
+        searchConfigPane.setContent(searchConfigBox);
+        return searchConfigPane;
+    }
+
+    protected Node buildGeneraConfig() {
         TitledPane generaConfigPane = new TitledPane();
         generaConfigPane.setCollapsible(false);
         generaConfigPane.setText("常规配置");
@@ -208,6 +234,7 @@ public class ConfigView {
         }));
         langConfig.setAlignment(Pos.CENTER_LEFT);
         generaConfigBox.getChildren().add(langConfig);
+
         generaConfigPane.setContent(generaConfigBox);
         return generaConfigPane;
     }
@@ -217,6 +244,8 @@ public class ConfigView {
         configBox.setSpacing(5);
         configBox.setPadding(Insets.EMPTY);
         configBox.getChildren().add(buildGeneraConfig());
+        configBox.getChildren().add(buildSearchConfig());
+        configBox.getChildren().add(buildPatchConfig());
         configBox.getChildren().add(buildDockerConfig());
         return configBox;
     }
@@ -240,6 +269,7 @@ public class ConfigView {
         if (configViewDialog.showAndWait().orElse(Boolean.FALSE)) {
             configuration.setGenera(genera);
             configuration.setDocker(docker);
+            configuration.setSearch(search);
             AppContext.getInstance().syncConf2File();
         }
     }

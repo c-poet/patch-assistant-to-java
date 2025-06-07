@@ -37,7 +37,7 @@ public class DockerConf implements Cloneable {
     /**
      * 端口
      */
-    private String port = "22";
+    private int port = 22;
 
     /**
      * 用户名
@@ -91,11 +91,11 @@ public class DockerConf implements Cloneable {
         this.host = host;
     }
 
-    public String getPort() {
+    public int getPort() {
         return port;
     }
 
-    public void setPort(String port) {
+    public void setPort(int port) {
         this.port = port;
     }
 

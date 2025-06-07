@@ -110,7 +110,7 @@ public class ContentView {
         }
         Dialog<Boolean> dialog = new Dialog<>();
         dialog.initOwner(stage);
-        dialog.initModality(Modality.WINDOW_MODAL);
+        dialog.initModality(Modality.NONE);
         dialog.setResizable(true);
         dialog.setTitle(rightNode == null ? leftNode.getPath() : leftNode.getPath() + " <- " + rightNode.getPath());
         DialogPane dialogPane = new DialogPurePane();
