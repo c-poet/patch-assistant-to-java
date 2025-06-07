@@ -24,12 +24,14 @@ import javafx.util.StringConverter;
  */
 public class ConfigView {
 
+    private final PatchConf patch;
     private final SearchConf search;
     private final GeneraConf genera;
     private final DockerConf docker;
 
     public ConfigView() {
         Configuration configuration = Configuration.getInstance();
+        patch = configuration.getPatch().clone();
         genera = configuration.getGenera().clone();
         docker = configuration.getDocker().clone();
         search = configuration.getSearch().clone();
@@ -185,6 +187,15 @@ public class ConfigView {
         patchConfigPane.setCollapsible(false);
         patchConfigPane.setText("补丁配置");
         VBox patchConfigBox = new VBox();
+
+        patchConfigBox.getChildren().add(FXUtil.pre(new HBox(new Label("说明文件: "), FXUtil.pre(new TextField(), node -> {
+            HBox.setHgrow(node, Priority.ALWAYS);
+            node.setText(patch.getReadmeFile());
+            node.textProperty().addListener((observableValue, oldVal, newVal) -> {
+                patch.setReadmeFile(newVal);
+            });
+        })), box -> box.setAlignment(Pos.CENTER)));
+
         patchConfigPane.setContent(patchConfigBox);
         return patchConfigPane;
     }
@@ -270,6 +281,7 @@ public class ConfigView {
             configuration.setGenera(genera);
             configuration.setDocker(docker);
             configuration.setSearch(search);
+            configuration.setPatch(patch);
             AppContext.getInstance().syncConf2File();
         }
     }

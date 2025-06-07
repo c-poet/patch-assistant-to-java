@@ -4,9 +4,11 @@ import cn.cpoet.patch.assistant.component.OnlyChangeFilter;
 import cn.cpoet.patch.assistant.constant.AppConst;
 import cn.cpoet.patch.assistant.constant.FileExtConst;
 import cn.cpoet.patch.assistant.core.AppContext;
+import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.exception.AppException;
 import cn.cpoet.patch.assistant.util.CollectionUtil;
 import cn.cpoet.patch.assistant.util.FileNameUtil;
+import cn.cpoet.patch.assistant.util.StringUtil;
 import cn.cpoet.patch.assistant.util.TreeNodeUtil;
 import cn.cpoet.patch.assistant.view.tree.*;
 
@@ -42,9 +44,13 @@ public class PatchPackService extends BasePackService {
         if (CollectionUtil.isEmpty(rootNode.getChildren())) {
             return;
         }
+        String readmeFileName = Configuration.getInstance().getPatch().getReadmeFile();
+        if (StringUtil.isBlank(readmeFileName)) {
+            readmeFileName = AppConst.README_FILE;
+        }
         TreeNode readmeNode = null;
         for (TreeNode child : rootNode.getChildren()) {
-            if (AppConst.README_FILE.equalsIgnoreCase(child.getText())) {
+            if (readmeFileName.equalsIgnoreCase(child.getText())) {
                 readmeNode = child;
                 break;
             }

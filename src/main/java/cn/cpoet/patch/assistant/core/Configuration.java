@@ -127,6 +127,11 @@ public class Configuration {
      */
     private SearchConf search = new SearchConf();
 
+    /**
+     * 补丁配置
+     */
+    private PatchConf patch = new PatchConf();
+
     Configuration() {
     }
 
@@ -292,5 +297,13 @@ public class Configuration {
 
     public void setSearch(SearchConf search) {
         this.search = search;
+    }
+
+    public PatchConf getPatch() {
+        return patch;
+    }
+
+    public void setPatch(PatchConf patch) {
+        this.patch = patch;
     }
 }
