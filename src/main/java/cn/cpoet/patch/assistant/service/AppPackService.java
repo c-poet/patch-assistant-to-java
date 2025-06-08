@@ -13,6 +13,7 @@ import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpProgressMonitor;
 
 import java.io.*;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.zip.CRC32;
@@ -82,22 +83,22 @@ public class AppPackService extends BasePackService {
             });
             thread.setDaemon(true);
             thread.start();
-        } else {
-            Thread thread = new Thread(() -> {
-                context.setRunLater(true);
-                context.step("开始保存应用包");
-                try {
-                    savePack(context, file, appTree);
-                    context.step("完成保存应用包");
-                } catch (Exception e) {
-                    context.step(ExceptionUtil.asString(e));
-                } finally {
-                    context.end();
-                }
-            });
-            thread.setDaemon(true);
-            thread.start();
+            return;
         }
+        Thread thread = new Thread(() -> {
+            context.setRunLater(true);
+            context.step("开始保存应用包");
+            try {
+                savePack(context, file, appTree);
+                context.step("完成保存应用包");
+            } catch (Exception e) {
+                context.step(ExceptionUtil.asString(e));
+            } finally {
+                context.end();
+            }
+        });
+        thread.setDaemon(true);
+        thread.start();
     }
 
     /**
@@ -120,33 +121,73 @@ public class AppPackService extends BasePackService {
         }
         dockerfile = TemplateUtil.render(dockerfile, Collections.singletonMap("jarName", rootNode.getName()));
         DockerConf docker = Configuration.getInstance().getDocker();
+        if (DockerConf.TYPE_REMOTE.equals(docker.getType())) {
+            saveDockerPackWithRemote(context, docker, file, rootNode, bytes, dockerfile);
+            return;
+        }
+        saveDockerPackWithLocal(context, docker, file, rootNode, bytes, dockerfile);
+    }
+
+    protected void saveDockerPackWithRemote(ProgressContext context, DockerConf docker, File file, TreeNode rootNode, byte[] bytes, String dockerfile) {
+        context.step("校验Docker服务器信息");
+        String host = docker.getHost();
+        String username = docker.getUsername();
+        String password = docker.getPassword();
+        if (StringUtil.isBlank(host) || StringUtil.isBlank(username) || StringUtil.isBlank(password)) {
+            throw new AppException("Docker服务器信息错误，请检查配置");
+        }
         context.step("SSH连接到: " + docker.getHost());
         Session session = null;
         try {
-            String password = EncryptUtil.decryptWithRsaSys(docker.getPassword());
-            session = SSHUtil.createSession(docker.getHost(), docker.getPort(), docker.getUsername(), password);
+            password = EncryptUtil.decryptWithRsaSys(password);
+            session = SSHUtil.createSession(host, docker.getPort(), username, password);
             context.step("SSH连接成功");
-            OutputStream out = context.createOutputStream();
+            OutputStream progressOut = context.createOutputStream();
+            String command = StringUtil.isBlank(docker.getCommand()) ? DockerConf.DEFAULT_COMMAND : docker.getCommand();
+            String workPath = StringUtil.isBlank(docker.getWorkPath()) ? DockerConf.DEFAULT_WORK_PATH : docker.getWorkPath();
             context.step("上传Dockerfile");
-            SSHUtil.uploadFile(session, out, createSftpProgressMonitor(context, true), docker.getWorkPath(), AppConst.DOCKERFILE_FILE_NAME, dockerfile.getBytes());
+            SSHUtil.uploadFile(session, progressOut, createSftpProgressMonitor(context, true), workPath, AppConst.DOCKERFILE_FILE_NAME, dockerfile.getBytes());
             context.step("上传应用包: " + rootNode.getName());
-            SSHUtil.uploadFile(session, out, createSftpProgressMonitor(context, true), docker.getWorkPath(), rootNode.getName(), bytes);
+            SSHUtil.uploadFile(session, progressOut, createSftpProgressMonitor(context, true), workPath, rootNode.getName(), bytes);
             context.step("生成Docker镜像");
-            int status = SSHUtil.execCmd(session, out, docker.getCommand() + " build -t demo:1.0.0 " + docker.getWorkPath());
+            int status = SSHUtil.execCmd(session, progressOut, command + " build -t demo:1.0.0 " + workPath);
             if (status != 0) {
                 throw new AppException("生成Docker镜像失败");
             }
             context.step("导出Docker镜像");
-            status = SSHUtil.execCmd(session, out, docker.getCommand() + " save -o " + docker.getWorkPath() + "/demo.tar demo:1.0.0");
+            status = SSHUtil.execCmd(session, progressOut, command + " save -o " + workPath + "/demo.tar demo:1.0.0");
             if (status != 0) {
                 throw new AppException("导出Docker镜像失败");
             }
             context.step("下载Docker镜像");
-            SSHUtil.downloadFile(session, out, createSftpProgressMonitor(context, false), docker.getWorkPath() + "/demo.tar", file);
+            SSHUtil.downloadFile(session, progressOut, createSftpProgressMonitor(context, false), workPath + "/demo.tar", file);
         } finally {
             context.step("关闭SSH连接");
             SSHUtil.closeSession(session);
         }
+    }
+
+    protected void saveDockerPackWithLocal(ProgressContext context, DockerConf docker, File file, TreeNode rootNode, byte[] bytes, String dockerfile) {
+        String localCommand = StringUtil.isBlank(docker.getLocalCommand()) ? DockerConf.DEFAULT_COMMAND : docker.getLocalCommand();
+        String localWorkPath = StringUtil.isBlank(docker.getLocalWorkPath()) ? DockerConf.DEFAULT_WORK_PATH : docker.getLocalWorkPath();
+        context.step("写入Dockerfile到: " + localWorkPath);
+        FileUtil.writeFile(localWorkPath, AppConst.DOCKERFILE_FILE_NAME, dockerfile.getBytes());
+        context.step("写入应用包到: " + localWorkPath);
+        FileUtil.writeFile(localWorkPath, rootNode.getName(), bytes);
+        context.step("生成Docker镜像");
+        OutputStream progressOut = context.createOutputStream();
+        int status = CommandUtil.exec(localCommand + " build -t demo:1.0.0 .", localWorkPath, progressOut);
+        if (status != 0) {
+            throw new AppException("生成Docker镜像失败");
+        }
+        context.step("导出Docker镜像");
+        status = CommandUtil.exec(localCommand + " save -o demo.tar demo:1.0.0", localWorkPath, progressOut);
+        if (status != 0) {
+            throw new AppException("导出Docker镜像失败");
+        }
+        context.step("移动Docker镜像");
+        String sourcePath = FileNameUtil.joinPath(localWorkPath, "demo.tar");
+        FileUtil.moveFile(sourcePath, file, StandardCopyOption.REPLACE_EXISTING);
     }
 
     protected SftpProgressMonitor createSftpProgressMonitor(ProgressContext context, boolean isUpload) {

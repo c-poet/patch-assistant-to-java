@@ -1,9 +1,11 @@
 package cn.cpoet.patch.assistant.view;
 
+import cn.cpoet.patch.assistant.util.FXUtil;
 import cn.cpoet.patch.assistant.view.tree.PatchTreeInfo;
 import cn.cpoet.patch.assistant.view.tree.TotalInfo;
 import cn.cpoet.patch.assistant.view.tree.TreeInfo;
 import cn.cpoet.patch.assistant.view.tree.TreeNode;
+import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TreeView;
@@ -27,6 +29,7 @@ public class HomeContext {
     protected TreeView<TreeNode> patchTree;
     protected TextField patchPathTextField;
     protected TextArea readMeTextArea;
+    protected final Button saveAppPackBtn = FXUtil.pre(new Button(), btn -> btn.setDisable(true));
 
     public TotalInfo getTotalInfo() {
         return totalInfo;

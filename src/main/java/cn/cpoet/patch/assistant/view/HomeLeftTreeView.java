@@ -94,6 +94,9 @@ public class HomeLeftTreeView extends HomeTreeView {
         PatchPackService.getInstance().refreshPatchMappedNode(context.totalInfo, context.appTreeInfo, context.patchTreeInfo);
         context.appPathTextField.setText(file.getPath());
         Configuration.getInstance().setLastAppPackPath(file.getPath());
+        if (context.saveAppPackBtn.isDisabled()) {
+            context.saveAppPackBtn.setDisable(false);
+        }
     }
 
     protected void setAppTreeDrag() {

@@ -132,7 +132,8 @@ public class HomeView extends HomeContext {
         HBox footerBox = new HBox(
                 totalInfoLbl,
                 FXUtil.pre(new Region(), node -> HBox.setHgrow(node, Priority.ALWAYS)),
-                FXUtil.pre(new Button("保存"), btn -> {
+                FXUtil.pre(saveAppPackBtn, btn -> {
+                    btn.setText("保存");
                     btn.setOnAction(e -> {
                         if (!totalInfo.isChangeNode()) {
                             ButtonType buttonType = AlterUtil.warn(stage, "应用包未改变，是否继续？", ButtonType.YES, ButtonType.NO);

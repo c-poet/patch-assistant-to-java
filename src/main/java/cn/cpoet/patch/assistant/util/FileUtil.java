@@ -5,6 +5,10 @@ import cn.cpoet.patch.assistant.exception.AppException;
 import java.io.*;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.CopyOption;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * 文件工具
@@ -125,6 +129,18 @@ public abstract class FileUtil {
     /**
      * 写入文件
      *
+     * @param dir      目录
+     * @param fileName 文件名
+     * @param bytes    内容
+     */
+    public static void writeFile(String dir, String fileName, byte[] bytes) {
+        String path = FileNameUtil.joinPath(dir, fileName);
+        writeFile(path, bytes);
+    }
+
+    /**
+     * 写入文件
+     *
      * @param fileName 文件名
      * @param bytes    数据
      */
@@ -175,5 +191,45 @@ public abstract class FileUtil {
      */
     public static boolean deleteFile(File file) {
         return file.delete();
+    }
+
+    /**
+     * 移动文件
+     *
+     * @param source  源文件
+     * @param target  目标文件
+     * @param options 选项
+     */
+    public static void moveFile(String source, String target, CopyOption... options) {
+        Path sourcePath = Paths.get(source);
+        Path targetPath = Paths.get(target);
+        moveFile(sourcePath, targetPath, options);
+    }
+
+    /**
+     * 移动文件
+     *
+     * @param source  源文件
+     * @param target  目标文件
+     * @param options 选项
+     */
+    public static void moveFile(String source, File target, CopyOption... options) {
+        Path sourcePath = Paths.get(source);
+        moveFile(sourcePath, target.toPath(), options);
+    }
+
+    /**
+     * 移动文件
+     *
+     * @param source  源文件
+     * @param target  目标文件
+     * @param options 选项
+     */
+    public static void moveFile(Path source, Path target, CopyOption... options) {
+        try {
+            Files.move(source, target, options);
+        } catch (Exception e) {
+            throw new AppException("移动文件失败", e);
+        }
     }
 }
