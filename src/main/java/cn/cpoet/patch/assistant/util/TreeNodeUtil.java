@@ -94,12 +94,12 @@ public abstract class TreeNodeUtil {
                 if (sb.length() > 0) {
                     sb.append(FileNameUtil.SEPARATOR);
                 }
-                sb.append(node.getText());
+                sb.append(node.getName());
                 node = node.getChildren().get(0);
             } while (node.getChildren() != null && node.getChildren().size() == 1);
-            node.setText(sb.append(FileNameUtil.SEPARATOR).append(node.getText()).toString());
-            buildChildNode(parent, node, filter);
-            return;
+            node.setText(sb.append(FileNameUtil.SEPARATOR).append(node.getName()).toString());
+        } else {
+            node.setText(node.getName());
         }
         TreeItem<TreeNode> childItem = new FileTreeItem();
         childItem.setValue(node);
