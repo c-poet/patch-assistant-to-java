@@ -1,6 +1,7 @@
 package cn.cpoet.patch.assistant.view;
 
 import cn.cpoet.patch.assistant.constant.I18NEnum;
+import cn.cpoet.patch.assistant.control.IntegerField;
 import cn.cpoet.patch.assistant.core.*;
 import cn.cpoet.patch.assistant.util.EncryptUtil;
 import cn.cpoet.patch.assistant.util.FXUtil;
@@ -78,11 +79,10 @@ public class ConfigView {
             });
         }), FXUtil.pre(new Label(), node -> {
             node.setText(" : ");
-        }), FXUtil.pre(new TextField(), node -> {
-            node.setText(String.valueOf(docker.getPort()));
+        }), FXUtil.pre(new IntegerField(), node -> {
+            node.setNumber(docker.getPort());
             node.textProperty().addListener((e, oldVal, newVal) -> {
-                int port = Integer.parseInt(newVal);
-                docker.setPort(port);
+                docker.setPort(node.getNumber());
             });
         }));
         hostConfig.setAlignment(Pos.CENTER_LEFT);
@@ -205,12 +205,11 @@ public class ConfigView {
         searchConfigPane.setCollapsible(false);
         searchConfigPane.setText("搜索配置");
         VBox searchConfigBox = new VBox();
-        searchConfigBox.getChildren().add(FXUtil.pre(new HBox(new Label("保留历史条数: "), FXUtil.pre(new TextField(), node -> {
+        searchConfigBox.getChildren().add(FXUtil.pre(new HBox(new Label("保留历史条数: "), FXUtil.pre(new IntegerField(), node -> {
             HBox.setHgrow(node, Priority.ALWAYS);
-            node.setText(String.valueOf(search.getHistoryLimit()));
+            node.setNumber(search.getHistoryLimit());
             node.textProperty().addListener((observableValue, oldVal, newVal) -> {
-                int limit = Integer.parseInt(newVal);
-                search.setHistoryLimit(limit);
+                search.setHistoryLimit(node.getNumber());
             });
         })), box -> box.setAlignment(Pos.CENTER)));
         searchConfigPane.setContent(searchConfigBox);
