@@ -11,6 +11,8 @@ import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
+import java.util.Arrays;
+
 public class PatchAssistantApplication extends Application {
 
     @Override
@@ -39,6 +41,7 @@ public class PatchAssistantApplication extends Application {
     }
 
     public static void main(String[] args) {
+        AppContext.getInstance().initArgs(args);
         launch();
     }
 }

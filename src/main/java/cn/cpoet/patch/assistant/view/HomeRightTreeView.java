@@ -1,10 +1,13 @@
 package cn.cpoet.patch.assistant.view;
 
 import cn.cpoet.patch.assistant.constant.FileExtConst;
+import cn.cpoet.patch.assistant.constant.ParamNameConst;
+import cn.cpoet.patch.assistant.core.AppContext;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.service.PatchPackService;
 import cn.cpoet.patch.assistant.util.FXUtil;
 import cn.cpoet.patch.assistant.util.FileUtil;
+import cn.cpoet.patch.assistant.util.StringUtil;
 import cn.cpoet.patch.assistant.util.TreeNodeUtil;
 import cn.cpoet.patch.assistant.view.tree.FileCheckBoxTreeCell;
 import cn.cpoet.patch.assistant.view.tree.TreeKindNode;
@@ -145,15 +148,26 @@ public class HomeRightTreeView extends HomeTreeView {
             }
         });
         setPatchTreeDrag();
+        File file = getInitPatchFile();
+        if (file != null) {
+            refreshPatchTree(file);
+        }
+    }
+
+    protected File getInitPatchFile() {
+        File file = null;
+        String startPatchPath = AppContext.getInstance().getArg(ParamNameConst.START_PATCH);
+        if (!StringUtil.isBlank(startPatchPath)) {
+            file = FileUtil.getExistsDirOrFile(startPatchPath);
+        }
+        if (file != null) {
+            return file;
+        }
         String lastPatchPackPath = Configuration.getInstance().getLastPatchPackPath();
-        if (lastPatchPackPath == null || lastPatchPackPath.isBlank()) {
-            return;
+        if (!StringUtil.isBlank(lastPatchPackPath)) {
+            file = FileUtil.getExistsDirOrFile(lastPatchPackPath);
         }
-        File file = FileUtil.getExistsDirOrFile(lastPatchPackPath);
-        if (file == null) {
-            return;
-        }
-        refreshPatchTree(file);
+        return file;
     }
 
     public Node build() {
