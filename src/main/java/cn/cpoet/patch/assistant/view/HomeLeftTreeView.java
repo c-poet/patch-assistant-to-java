@@ -12,6 +12,7 @@ import cn.cpoet.patch.assistant.view.tree.FileTreeCell;
 import cn.cpoet.patch.assistant.view.tree.TreeKindNode;
 import cn.cpoet.patch.assistant.view.tree.TreeNode;
 import cn.cpoet.patch.assistant.view.tree.TreeNodeStatus;
+import javafx.event.Event;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -94,9 +95,7 @@ public class HomeLeftTreeView extends HomeTreeView {
         PatchPackService.getInstance().refreshPatchMappedNode(context.totalInfo, context.appTreeInfo, context.patchTreeInfo);
         context.appPathTextField.setText(file.getPath());
         Configuration.getInstance().setLastAppPackPath(file.getPath());
-        if (context.saveAppPackBtn.isDisabled()) {
-            context.saveAppPackBtn.setDisable(false);
-        }
+        context.appTree.fireEvent(new Event(HomeContext.APP_TREE_REFRESH));
     }
 
     protected void setAppTreeDrag() {

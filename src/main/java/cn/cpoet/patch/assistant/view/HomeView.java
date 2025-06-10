@@ -2,6 +2,7 @@ package cn.cpoet.patch.assistant.view;
 
 import cn.cpoet.patch.assistant.component.OnlyChangeFilter;
 import cn.cpoet.patch.assistant.constant.IConConst;
+import cn.cpoet.patch.assistant.constant.StyleConst;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.service.AppPackService;
 import cn.cpoet.patch.assistant.util.AlterUtil;
@@ -114,25 +115,20 @@ public class HomeView extends HomeContext {
         return centrePane;
     }
 
-    protected void updateTotalInfoLbl(Label totalInfoLbl) {
-        String sb = "新增: " + totalInfo.getAddTotal() +
-                "\t更新: " + totalInfo.getModTotal() +
-                "\t删除: " + totalInfo.getDelTotal() +
-                "\t标记删除: " + totalInfo.getMarkDelTotal();
-        totalInfoLbl.setText(sb);
-    }
-
     protected Node buildFooter() {
-        Label totalInfoLbl = new Label();
-        updateTotalInfoLbl(totalInfoLbl);
-        totalInfo.changeTotalProperty().addListener((observableValue, oldVal, newVal) -> {
-            updateTotalInfoLbl(totalInfoLbl);
-        });
-        totalInfoLbl.setStyle("-fx-font-weight: bold;");
         HBox footerBox = new HBox(
-                totalInfoLbl,
+                FXUtil.pre(new Label("新增: "), StyleConst.FONT_BOLD),
+                FXUtil.pre(new Label(), lbl -> lbl.textProperty().bind(totalInfo.addTotalProperty().asString())),
+                FXUtil.pre(new Label("更新: "), StyleConst.FONT_BOLD),
+                FXUtil.pre(new Label(), lbl -> lbl.textProperty().bind(totalInfo.modTotalProperty().asString())),
+                FXUtil.pre(new Label("删除: "), StyleConst.FONT_BOLD),
+                FXUtil.pre(new Label(), lbl -> lbl.textProperty().bind(totalInfo.delTotalProperty().asString())),
+                FXUtil.pre(new Label("标记删除: "), StyleConst.FONT_BOLD),
+                FXUtil.pre(new Label(), lbl -> lbl.textProperty().bind(totalInfo.markDelTotalProperty().asString())),
                 FXUtil.pre(new Region(), node -> HBox.setHgrow(node, Priority.ALWAYS)),
-                FXUtil.pre(saveAppPackBtn, btn -> {
+                FXUtil.pre(new Button(), btn -> {
+                    btn.setDisable(appTree.getRoot() == null);
+                    appTree.addEventHandler(APP_TREE_REFRESH, e -> btn.setDisable(appTree.getRoot() == null));
                     btn.setText("保存");
                     btn.setOnAction(e -> {
                         if (!totalInfo.isChangeNode()) {

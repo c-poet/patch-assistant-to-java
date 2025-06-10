@@ -79,9 +79,6 @@ public abstract class HomeTreeView {
         }
         TreeKindNode node = (TreeKindNode) selectedItem.getValue();
         ContentParser parser = ContentSupports.getContentParser(node);
-        if (parser == null) {
-            return;
-        }
         String content = parser.parse(node);
         doSaveFile(node, content.getBytes(), FileExtConst.JAVA);
     }

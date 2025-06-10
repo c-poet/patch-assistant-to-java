@@ -9,74 +9,81 @@ import javafx.beans.property.SimpleIntegerProperty;
  * @author CPoet
  */
 public class TotalInfo {
+
+
     /**
      * 新增统计
      */
-    private int addTotal;
+    private final IntegerProperty addTotal = new SimpleIntegerProperty(0);
 
     /**
      * 更新统计
      */
-    private int modTotal;
+    private final IntegerProperty modTotal = new SimpleIntegerProperty(0);
 
     /**
      * 删除统计
      */
-    private int delTotal;
+    private final IntegerProperty delTotal = new SimpleIntegerProperty(0);
 
     /**
      * 标记删除统计
      */
-    private int markDelTotal;
-
-    /**
-     * 变更事件统计
-     */
-    private final IntegerProperty changeTotal = new SimpleIntegerProperty(0);
+    private final IntegerProperty markDelTotal = new SimpleIntegerProperty(0);
 
     public int getAddTotal() {
+        return addTotal.get();
+    }
+
+    public IntegerProperty addTotalProperty() {
         return addTotal;
     }
 
     public void setAddTotal(int addTotal) {
-        this.addTotal = addTotal;
-        this.emitChangeEvent();
+        this.addTotal.set(addTotal);
     }
 
     public int getModTotal() {
+        return modTotal.get();
+    }
+
+    public IntegerProperty modTotalProperty() {
         return modTotal;
     }
 
     public void setModTotal(int modTotal) {
-        this.modTotal = modTotal;
-        this.emitChangeEvent();
+        this.modTotal.set(modTotal);
     }
 
     public int getDelTotal() {
+        return delTotal.get();
+    }
+
+    public IntegerProperty delTotalProperty() {
         return delTotal;
     }
 
     public void setDelTotal(int delTotal) {
-        this.delTotal = delTotal;
-        this.emitChangeEvent();
+        this.delTotal.set(delTotal);
     }
 
     public int getMarkDelTotal() {
+        return markDelTotal.get();
+    }
+
+    public IntegerProperty markDelTotalProperty() {
         return markDelTotal;
     }
 
     public void setMarkDelTotal(int markDelTotal) {
-        this.markDelTotal = markDelTotal;
-        this.emitChangeEvent();
+        this.markDelTotal.set(markDelTotal);
     }
 
-
     public void rest() {
-        this.addTotal = 0;
-        this.modTotal = 0;
-        this.delTotal = 0;
-        this.markDelTotal = 0;
-        this.emitChangeEvent();
+        setAddTotal(0);
+        setModTotal(0);
+        setDelTotal(0);
+        setMarkDelTotal(0);
     }
 
     /**
@@ -85,7 +92,7 @@ public class TotalInfo {
      * @return 是否存在绑定的节点
      */
     public boolean isMappedAddOrModNode() {
-        return addTotal + modTotal > 0;
+        return getAddTotal() + getModTotal() > 0;
     }
 
     /**
@@ -94,19 +101,7 @@ public class TotalInfo {
      * @return 是否存在变化的节点
      */
     public boolean isChangeNode() {
-        return addTotal > 0 || modTotal > 0 || delTotal > 0 || markDelTotal > 0;
-    }
-
-    public int getChangeTotal() {
-        return changeTotal.get();
-    }
-
-    public IntegerProperty changeTotalProperty() {
-        return changeTotal;
-    }
-
-    private void emitChangeEvent() {
-        changeTotal.set(getChangeTotal() + 1);
+        return getAddTotal() > 0 || getModTotal() > 0 || getDelTotal() > 0 || getMarkDelTotal() > 0;
     }
 
     public void incrTotal(TreeNodeStatus status) {

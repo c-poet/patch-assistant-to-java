@@ -1,5 +1,7 @@
 package cn.cpoet.patch.assistant.util;
 
+import javafx.scene.Node;
+
 import java.util.function.Consumer;
 
 /**
@@ -14,13 +16,31 @@ public abstract class FXUtil {
     /**
      * 前置调用
      *
-     * @param t        对象
+     * @param node   对象
+     * @param <T>    类型
+     * @param styles 指定样式列表
+     * @return 对象
+     */
+    public static <T extends Node> T pre(T node, String... styles) {
+        return pre(node, null, styles);
+    }
+
+    /**
+     * 前置调用
+     *
+     * @param node     对象
      * @param consumer 对象消费者
+     * @param styles   指定样式列表
      * @param <T>      类型
      * @return 对象
      */
-    public static <T> T pre(T t, Consumer<T> consumer) {
-        consumer.accept(t);
-        return t;
+    public static <T extends Node> T pre(T node, Consumer<T> consumer, String... styles) {
+        if (consumer != null) {
+            consumer.accept(node);
+        }
+        if (styles.length != 0) {
+            node.setStyle(String.join(";", styles));
+        }
+        return node;
     }
 }
