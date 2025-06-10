@@ -187,6 +187,7 @@ public class ConfigView {
         patchConfigPane.setCollapsible(false);
         patchConfigPane.setText("补丁配置");
         VBox patchConfigBox = new VBox();
+        patchConfigBox.setSpacing(10);
 
         patchConfigBox.getChildren().add(FXUtil.pre(new HBox(new Label("说明文件: "), FXUtil.pre(new TextField(), node -> {
             HBox.setHgrow(node, Priority.ALWAYS);
@@ -195,6 +196,20 @@ public class ConfigView {
                 patch.setReadmeFile(newVal);
             });
         })), box -> box.setAlignment(Pos.CENTER)));
+
+        patchConfigBox.getChildren().add(FXUtil.pre(new HBox(
+                FXUtil.pre(new RadioButton("开启路径匹配"), node -> {
+                    node.setSelected(Boolean.TRUE.equals(patch.getPathMatch()));
+                    node.setOnAction(e -> patch.setPathMatch(!Boolean.TRUE.equals(patch.getPathMatch())));
+                }),
+                FXUtil.pre(new RadioButton("开启文件名匹配"), node -> {
+                    node.setSelected(Boolean.TRUE.equals(patch.getFileNameMatch()));
+                    node.setOnAction(e -> patch.setFileNameMatch(!Boolean.TRUE.equals(patch.getFileNameMatch())));
+                })
+        ), box -> {
+            box.setAlignment(Pos.CENTER_LEFT);
+            box.setSpacing(10);
+        }));
 
         patchConfigPane.setContent(patchConfigBox);
         return patchConfigPane;

@@ -14,12 +14,38 @@ public class PatchConf implements Cloneable {
      */
     private String readmeFile = AppConst.README_FILE;
 
+    /**
+     * 按照路径匹配
+     */
+    private Boolean pathMatch = Boolean.TRUE;
+
+    /**
+     * 按照文件名匹配
+     */
+    private Boolean fileNameMatch = Boolean.FALSE;
+
     public String getReadmeFile() {
         return readmeFile;
     }
 
     public void setReadmeFile(String readmeFile) {
         this.readmeFile = readmeFile;
+    }
+
+    public Boolean getPathMatch() {
+        return pathMatch;
+    }
+
+    public void setPathMatch(Boolean pathMatch) {
+        this.pathMatch = pathMatch;
+    }
+
+    public Boolean getFileNameMatch() {
+        return fileNameMatch;
+    }
+
+    public void setFileNameMatch(Boolean fileNameMatch) {
+        this.fileNameMatch = fileNameMatch;
     }
 
     @Override
