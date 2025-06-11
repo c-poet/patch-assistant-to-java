@@ -9,6 +9,8 @@ import cn.cpoet.patch.assistant.util.AlterUtil;
 import cn.cpoet.patch.assistant.util.FXUtil;
 import cn.cpoet.patch.assistant.util.ImageUtil;
 import cn.cpoet.patch.assistant.util.TreeNodeUtil;
+import javafx.event.Event;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
@@ -93,8 +95,12 @@ public class HomeView extends HomeContext {
     }
 
     protected Node buildBottomCentre() {
-        readMeTextArea = new TextArea();
+        TextArea readMeTextArea = new TextArea();
         readMeTextArea.setEditable(false);
+        readMeTextArea.setText(patchTreeInfo.getReadMeText());
+        patchTree.addEventHandler(HomeContext.PATCH_TREE_REFRESH, (EventHandler<Event>) event -> {
+            readMeTextArea.setText(patchTreeInfo.getReadMeText());
+        });
         if (patchTreeInfo != null) {
             readMeTextArea.setText(patchTreeInfo.getReadMeText());
         }
@@ -104,7 +110,7 @@ public class HomeView extends HomeContext {
     }
 
     protected Node buildCentre() {
-        treeStackPane = new StackPane();
+        StackPane treeStackPane = new StackPane();
         Node leftTree = new HomeLeftTreeView(stage, this).build();
         Node rightTree = new HomeRightTreeView(stage, this).build();
         SplitPane topPane = new SplitPane(leftTree, rightTree);

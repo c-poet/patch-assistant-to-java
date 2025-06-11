@@ -12,6 +12,7 @@ import cn.cpoet.patch.assistant.util.TreeNodeUtil;
 import cn.cpoet.patch.assistant.view.tree.FileCheckBoxTreeCell;
 import cn.cpoet.patch.assistant.view.tree.TreeKindNode;
 import cn.cpoet.patch.assistant.view.tree.TreeNode;
+import javafx.event.Event;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -49,12 +50,7 @@ public class HomeRightTreeView extends HomeTreeView {
             } else {
                 context.patchTreeInfo.setCustomRootNode(selectedItem.getValue());
             }
-            PatchPackService patchPackService = PatchPackService.getInstance();
-            patchPackService.refreshReadmeNode(context.patchTreeInfo);
-            patchPackService.refreshPatchMappedNode(context.totalInfo, context.appTreeInfo, context.patchTreeInfo);
-            TreeNodeUtil.expendedMappedOrAllNode(context.totalInfo, context.patchTree.getRoot());
-            context.readMeTextArea.setText(context.patchTreeInfo.getReadMeText());
-            context.patchTree.refresh();
+            refreshPatchTree(false, true);
         });
         MenuItem saveFileMenuItem = new MenuItem("保存文件");
         saveFileMenuItem.setOnAction(e -> saveFile(context.patchTree));
@@ -92,21 +88,26 @@ public class HomeRightTreeView extends HomeTreeView {
     protected void refreshPatchTree(File file) {
         PatchPackService patchPackService = PatchPackService.getInstance();
         context.patchTreeInfo = patchPackService.getTreeNode(file);
+        refreshPatchTree(true, true);
+    }
+
+    protected void refreshPatchTree(boolean isBuildTreeItem, boolean isEmitEvent) {
+        PatchPackService patchPackService = PatchPackService.getInstance();
         patchPackService.refreshReadmeNode(context.patchTreeInfo);
         TreeItem<TreeNode> rootItem = context.patchTree.getRoot();
-        if (rootItem == null) {
-            rootItem = new CheckBoxTreeItem<>();
-            context.patchTree.setRoot(rootItem);
-        } else {
-            rootItem.getChildren().clear();
+        if (isBuildTreeItem) {
+            if (rootItem == null) {
+                rootItem = new CheckBoxTreeItem<>();
+                context.patchTree.setRoot(rootItem);
+            } else {
+                rootItem.getChildren().clear();
+            }
+            TreeNodeUtil.buildNode(rootItem, context.patchTreeInfo.getRootNode());
         }
-        TreeNodeUtil.buildNode(rootItem, context.patchTreeInfo.getRootNode());
         patchPackService.refreshPatchMappedNode(context.totalInfo, context.appTreeInfo, context.patchTreeInfo);
         TreeNodeUtil.expendedMappedOrAllNode(context.totalInfo, rootItem);
-        context.patchPathTextField.setText(file.getPath());
-        Configuration.getInstance().setLastPatchPackPath(file.getPath());
-        if (context.readMeTextArea != null) {
-            context.readMeTextArea.setText(context.patchTreeInfo.getReadMeText());
+        if (isEmitEvent) {
+            context.patchTree.fireEvent(new Event(HomeContext.PATCH_TREE_REFRESH));
         }
     }
 

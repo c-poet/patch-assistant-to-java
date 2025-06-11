@@ -23,16 +23,13 @@ public class HomeContext {
     public static final EventType<?> APP_TREE_REFRESH_BEG = new EventType<>("APP_TREE_REFRESH_BEG");
     public static final EventType<?> PATCH_TREE_REFRESH = new EventType<>("PATCH_TREE_REFRESH");
     public static final EventType<?> PATCH_TREE_REFRESH_BEG = new EventType<>("PATCH_TREE_REFRESH_BEG");
-    public static final EventType<?> PATCH_README_UPDATE = new EventType<>("PATCH_README_UPDATE");
 
     protected TreeInfo appTreeInfo;
-    protected StackPane treeStackPane;
     protected TextField appPathTextField;
     protected TreeView<TreeNode> appTree;
     protected PatchTreeInfo patchTreeInfo;
     protected TreeView<TreeNode> patchTree;
     protected TextField patchPathTextField;
-    protected TextArea readMeTextArea;
     protected final TotalInfo totalInfo = new TotalInfo();
 
     public TotalInfo getTotalInfo() {
@@ -41,10 +38,6 @@ public class HomeContext {
 
     public TreeInfo getAppTreeInfo() {
         return appTreeInfo;
-    }
-
-    public TextArea getReadMeTextArea() {
-        return readMeTextArea;
     }
 
     public TreeView<TreeNode> getAppTree() {
@@ -57,10 +50,6 @@ public class HomeContext {
 
     public TreeView<TreeNode> getPatchTree() {
         return patchTree;
-    }
-
-    public StackPane getTreeStackPane() {
-        return treeStackPane;
     }
 
     public TextField getAppPathTextField() {
