@@ -11,8 +11,6 @@ import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-import java.util.Arrays;
-
 public class PatchAssistantApplication extends Application {
 
     @Override
