@@ -177,17 +177,18 @@ public class HomeRightTreeView extends HomeTreeView {
             node.setPadding(new Insets(3, 8, 3, 8));
             node.setSpacing(3);
         });
+        TextField patchPathTextField;
         patchPackPathBox.getChildren().add(new Label("补丁包:"));
-        patchPackPathBox.getChildren().add(FXUtil.pre(context.patchPathTextField = new TextField(), node -> {
+        patchPackPathBox.getChildren().add(FXUtil.pre(patchPathTextField = new TextField(), node -> {
             node.setEditable(false);
             HBox.setHgrow(node, Priority.ALWAYS);
+            node.textProperty().addListener((observableValue, oldVal, newVal) -> {
+                Configuration.getInstance().setLastPatchPackPath(newVal);
+            });
         }));
         patchPackPathBox.getChildren().add(FXUtil.pre(new Button("选择"), node -> {
             node.setOnAction(e -> {
                 FileChooser fileChooser = new FileChooser();
-                if (!context.patchPathTextField.getText().isBlank()) {
-                    fileChooser.setInitialFileName(context.patchPathTextField.getText());
-                }
                 fileChooser.setTitle("选择补丁包");
                 fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("补丁包", "*.zip"));
                 File file = fileChooser.showOpenDialog(stage);
@@ -208,6 +209,14 @@ public class HomeRightTreeView extends HomeTreeView {
         }));
         buildPatchTree();
         VBox.setVgrow(context.patchTree, Priority.ALWAYS);
+        if (context.patchTreeInfo != null && context.patchTreeInfo.getRootNode() != null) {
+            patchPathTextField.setText(((TreeKindNode) context.patchTreeInfo.getRootNode()).getPath());
+        }
+        context.patchTree.addEventHandler(HomeContext.PATCH_TREE_REFRESH, e -> {
+            if (context.patchTreeInfo != null && context.patchTreeInfo.getRootNode() != null) {
+                patchPathTextField.setText(((TreeKindNode) context.patchTreeInfo.getRootNode()).getPath());
+            }
+        });
         return new VBox(patchPackPathBox, context.patchTree);
     }
 }

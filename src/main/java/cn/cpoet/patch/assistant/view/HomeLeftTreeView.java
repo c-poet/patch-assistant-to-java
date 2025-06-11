@@ -93,8 +93,6 @@ public class HomeLeftTreeView extends HomeTreeView {
         }
         TreeNodeUtil.buildNode(rootItem, context.appTreeInfo.getRootNode(), OnlyChangeFilter.INSTANCE);
         PatchPackService.getInstance().refreshPatchMappedNode(context.totalInfo, context.appTreeInfo, context.patchTreeInfo);
-        context.appPathTextField.setText(file.getPath());
-        Configuration.getInstance().setLastAppPackPath(file.getPath());
         context.appTree.fireEvent(new Event(HomeContext.APP_TREE_REFRESH));
     }
 
@@ -152,17 +150,18 @@ public class HomeLeftTreeView extends HomeTreeView {
             node.setPadding(new Insets(3, 8, 3, 8));
             node.setSpacing(3);
         });
+        TextField appPathTextField;
         appPackPathBox.getChildren().add(new Label("应用包:"));
-        appPackPathBox.getChildren().add(FXUtil.pre(context.appPathTextField = new TextField(), node -> {
+        appPackPathBox.getChildren().add(FXUtil.pre(appPathTextField = new TextField(), node -> {
             node.setEditable(false);
             HBox.setHgrow(node, Priority.ALWAYS);
+            node.textProperty().addListener((observableValue, oldVal, newVal) -> {
+                Configuration.getInstance().setLastAppPackPath(newVal);
+            });
         }));
         appPackPathBox.getChildren().add(FXUtil.pre(new Button("选择"), node -> {
             node.setOnAction(e -> {
                 FileChooser fileChooser = new FileChooser();
-                if (!context.appPathTextField.getText().isBlank()) {
-                    fileChooser.setInitialFileName(context.appPathTextField.getText());
-                }
                 fileChooser.setTitle("选择应用包");
                 fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("应用包", "*.jar"));
                 File file = fileChooser.showOpenDialog(stage);
@@ -174,6 +173,14 @@ public class HomeLeftTreeView extends HomeTreeView {
         }));
         buildAppTree();
         VBox.setVgrow(context.appTree, Priority.ALWAYS);
+        if (context.appTreeInfo != null && context.appTreeInfo.getRootNode() != null) {
+            appPathTextField.setText(((TreeKindNode) context.appTreeInfo.getRootNode()).getPath());
+        }
+        context.appTree.addEventHandler(HomeContext.APP_TREE_REFRESH, e -> {
+            if (context.appTreeInfo != null && context.appTreeInfo.getRootNode() != null) {
+                appPathTextField.setText(((TreeKindNode) context.appTreeInfo.getRootNode()).getPath());
+            }
+        });
         return new VBox(appPackPathBox, context.appTree);
     }
 }

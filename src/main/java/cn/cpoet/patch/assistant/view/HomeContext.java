@@ -25,11 +25,9 @@ public class HomeContext {
     public static final EventType<?> PATCH_TREE_REFRESH_BEG = new EventType<>("PATCH_TREE_REFRESH_BEG");
 
     protected TreeInfo appTreeInfo;
-    protected TextField appPathTextField;
     protected TreeView<TreeNode> appTree;
     protected PatchTreeInfo patchTreeInfo;
     protected TreeView<TreeNode> patchTree;
-    protected TextField patchPathTextField;
     protected final TotalInfo totalInfo = new TotalInfo();
 
     public TotalInfo getTotalInfo() {
@@ -50,14 +48,6 @@ public class HomeContext {
 
     public TreeView<TreeNode> getPatchTree() {
         return patchTree;
-    }
-
-    public TextField getAppPathTextField() {
-        return appPathTextField;
-    }
-
-    public TextField getPatchPathTextField() {
-        return patchPathTextField;
     }
 
     /**
