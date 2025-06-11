@@ -26,12 +26,6 @@ public interface AppConst {
      */
     String STYLE_FILE_NAME = "/css/theme.css";
 
-
-    /**
-     * 明亮主题样式
-     */
-    String STYLE_LIGHT_FILE_NAME = "/css/theme-light.css";
-
     /**
      * 暗黑主题样式
      */

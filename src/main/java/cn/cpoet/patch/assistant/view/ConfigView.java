@@ -212,6 +212,11 @@ public class ConfigView {
             box.setSpacing(10);
         }));
 
+        patchConfigBox.getChildren().add(FXUtil.pre(new RadioButton("写入补丁元信息"), node -> {
+            node.setSelected(Boolean.TRUE.equals(patch.getWritePatchMeta()));
+            node.setOnAction(e -> patch.setWritePatchMeta(!Boolean.TRUE.equals(patch.getWritePatchMeta())));
+        }));
+
         patchConfigPane.setContent(patchConfigBox);
         return patchConfigPane;
     }
@@ -291,7 +296,10 @@ public class ConfigView {
         configBox.getChildren().add(buildSearchConfig());
         configBox.getChildren().add(buildPatchConfig());
         configBox.getChildren().add(buildDockerConfig());
-        return configBox;
+        ScrollPane scrollPane = new ScrollPane(configBox);
+        scrollPane.setPadding(Insets.EMPTY);
+        scrollPane.setFitToWidth(true);
+        return scrollPane;
     }
 
     public void showDialog(Stage stage) {

@@ -4,6 +4,7 @@ import cn.cpoet.patch.assistant.constant.AppConst;
 import cn.cpoet.patch.assistant.constant.ThemeEnum;
 import cn.cpoet.patch.assistant.exception.AppException;
 import cn.cpoet.patch.assistant.util.FileUtil;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
@@ -67,11 +68,9 @@ public class AppContext extends ServiceFactory {
     public void updateTheme() {
         if (mainScene != null) {
             if (ThemeEnum.DARK.equals(curTheme())) {
-                mainScene.getStylesheets().remove(FileUtil.getResourceAndExternalForm(AppConst.STYLE_LIGHT_FILE_NAME));
                 mainScene.getStylesheets().add(FileUtil.getResourceAndExternalForm(AppConst.STYLE_DARK_FILE_NAME));
             } else {
                 mainScene.getStylesheets().remove(FileUtil.getResourceAndExternalForm(AppConst.STYLE_DARK_FILE_NAME));
-                mainScene.getStylesheets().add(FileUtil.getResourceAndExternalForm(AppConst.STYLE_LIGHT_FILE_NAME));
             }
         }
     }
@@ -146,6 +145,7 @@ public class AppContext extends ServiceFactory {
         return XmlMapper.builder()
                 .enable(ToXmlGenerator.Feature.WRITE_XML_DECLARATION)
                 .enable(SerializationFeature.INDENT_OUTPUT)
+                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
                 .defaultUseWrapper(true)
                 .build();
     }

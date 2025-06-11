@@ -10,7 +10,7 @@
     -fx-text-background-color: black;
 }
 
-.label, .text-field, .button, .list-view {
+.label, .text-field, .button, .list-view, .radio-button, .check-box {
     -fx-text-fill: white; /* 设置文本颜色为白色 */
 }
 
