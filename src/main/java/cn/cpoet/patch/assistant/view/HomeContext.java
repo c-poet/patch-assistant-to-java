@@ -17,7 +17,9 @@ import java.util.Objects;
 public class HomeContext {
 
     public static final EventType<?> APP_TREE_REFRESH = new EventType<>("APP_TREE_REFRESH");
+    public static final EventType<?> APP_TREE_REFRESHING = new EventType<>("APP_TREE_REFRESHING");
     public static final EventType<?> PATCH_TREE_REFRESH = new EventType<>("PATCH_TREE_REFRESH");
+    public static final EventType<?> PATCH_TREE_REFRESHING = new EventType<>("PATCH_TREE_REFRESHING");
 
     protected TreeInfo appTreeInfo;
     protected PatchTreeInfo patchTreeInfo;

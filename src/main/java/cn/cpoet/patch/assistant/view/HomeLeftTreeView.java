@@ -87,6 +87,9 @@ public class HomeLeftTreeView extends HomeTreeView {
     }
 
     protected void refreshAppTree(boolean isBuildTreeItem, boolean isEmitEvent) {
+        if (isEmitEvent) {
+            context.appTree.fireEvent(new Event(HomeContext.APP_TREE_REFRESHING));
+        }
         if (isBuildTreeItem) {
             TreeItem<TreeNode> rootItem = context.appTree.getRoot();
             if (rootItem == null) {
@@ -122,9 +125,8 @@ public class HomeLeftTreeView extends HomeTreeView {
         context.patchTree.addEventHandler(HomeContext.PATCH_TREE_REFRESH, e -> {
             refreshAppTree(false, false);
         });
-        context.appTree.getSelectionModel().selectedItemProperty().addListener((observableValue, oldVal, newVal) -> {
-            selectedLink(context.appTree, context.patchTree);
-        });
+        context.appTree.getSelectionModel().selectedItemProperty()
+                .addListener((observableValue, oldVal, newVal) -> selectedLink(context.appTree, context.patchTree));
         context.appTree.setOnMouseClicked(e -> {
             if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 2) {
                 TreeItem<TreeNode> selectedItem = context.appTree.getSelectionModel().getSelectedItem();

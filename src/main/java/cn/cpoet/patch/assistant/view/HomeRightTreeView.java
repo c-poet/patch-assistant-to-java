@@ -92,8 +92,9 @@ public class HomeRightTreeView extends HomeTreeView {
     }
 
     protected void refreshPatchTree(boolean isBuildTreeItem, boolean isEmitEvent) {
-        PatchPackService patchPackService = PatchPackService.getInstance();
-        patchPackService.refreshReadmeNode(context.patchTreeInfo);
+        if (isEmitEvent) {
+            context.patchTree.fireEvent(new Event(HomeContext.PATCH_TREE_REFRESHING));
+        }
         TreeItem<TreeNode> rootItem = context.patchTree.getRoot();
         if (isBuildTreeItem) {
             if (rootItem == null) {
@@ -104,11 +105,18 @@ public class HomeRightTreeView extends HomeTreeView {
             }
             TreeNodeUtil.buildNode(rootItem, context.patchTreeInfo.getRootNode());
         }
-        patchPackService.refreshPatchMappedNode(context.totalInfo, context.appTreeInfo, context.patchTreeInfo);
         TreeNodeUtil.expendedMappedOrAllNode(context.totalInfo, rootItem);
         if (isEmitEvent) {
             context.patchTree.fireEvent(new Event(HomeContext.PATCH_TREE_REFRESH));
         }
+    }
+
+    protected void refreshPatchMappedNode(boolean isRefreshReadme) {
+        PatchPackService patchPackService = PatchPackService.getInstance();
+        if (isRefreshReadme) {
+            patchPackService.refreshReadmeNode(context.patchTreeInfo);
+        }
+        patchPackService.refreshPatchMappedNode(context.totalInfo, context.appTreeInfo, context.patchTreeInfo);
     }
 
     protected void initPatchTreeDrag() {
@@ -129,9 +137,11 @@ public class HomeRightTreeView extends HomeTreeView {
     protected void buildPatchTree() {
         context.patchTree.setCellFactory(v -> new FileCheckBoxTreeCell(context));
         buildPatchTreeContextMenu();
-        context.patchTree.getSelectionModel().selectedItemProperty().addListener((observableValue, oldVal, newVal) -> {
-            selectedLink(context.patchTree, context.appTree);
-        });
+        context.appTree.addEventHandler(HomeContext.APP_TREE_REFRESHING, e -> refreshPatchMappedNode(false));
+        context.appTree.addEventHandler(HomeContext.APP_TREE_REFRESH, e -> refreshPatchTree(false, false));
+        context.patchTree.addEventHandler(HomeContext.PATCH_TREE_REFRESHING, e -> refreshPatchMappedNode(true));
+        context.patchTree.getSelectionModel().selectedItemProperty()
+                .addListener((observableValue, oldVal, newVal) -> selectedLink(context.patchTree, context.appTree));
         context.patchTree.setOnMouseClicked(e -> {
             if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 2) {
                 TreeItem<TreeNode> selectedItem = context.patchTree.getSelectionModel().getSelectedItem();
