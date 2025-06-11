@@ -14,17 +14,11 @@ import javafx.stage.Stage;
 public class PatchAssistantApplication extends Application {
 
     @Override
-    public void init() {
-        String styleContent = FileUtil.readFileAsString(AppConst.STYLE_FILE_NAME);
-        if (styleContent != null && !styleContent.isBlank()) {
-            setUserAgentStylesheet(styleContent);
-        }
-    }
-
-    @Override
     public void start(Stage stage) {
-        Configuration configuration = AppContext.getInstance().getConfiguration();
+        AppContext appContext = AppContext.getInstance();
+        Configuration configuration = appContext.getConfiguration();
         Scene scene = new Scene(new HomeView(stage).build(), configuration.getHomeWidth(), configuration.getHomeHeight());
+        appContext.initTheme(scene);
         scene.widthProperty().addListener((observableValue, oldVal, newVal) -> configuration.setHomeWidth(newVal.doubleValue()));
         scene.heightProperty().addListener((observableValue, oldVal, newVal) -> configuration.setHomeHeight(newVal.doubleValue()));
         stage.setTitle("补丁助手 By CPoet");

@@ -1,11 +1,13 @@
 package cn.cpoet.patch.assistant.core;
 
 import cn.cpoet.patch.assistant.constant.AppConst;
+import cn.cpoet.patch.assistant.constant.ThemeEnum;
 import cn.cpoet.patch.assistant.exception.AppException;
 import cn.cpoet.patch.assistant.util.FileUtil;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
+import javafx.scene.Scene;
 
 import java.io.InputStream;
 import java.util.HashMap;
@@ -22,7 +24,10 @@ public class AppContext extends ServiceFactory {
 
     private static AppContext INSTANCE;
 
-    /** 启动参数，一次性解析不考虑线程安全问题 */
+    private Scene mainScene;
+    /**
+     * 启动参数，一次性解析不考虑线程安全问题
+     */
     private Map<String, String> params;
     private Configuration configuration;
 
@@ -31,6 +36,44 @@ public class AppContext extends ServiceFactory {
 
     public Configuration getConfiguration() {
         return configuration;
+    }
+
+    /**
+     * 初始化主题
+     *
+     * @param scene 主场景
+     */
+    public void initTheme(Scene scene) {
+        if (mainScene == null) {
+            mainScene = scene;
+            updateTheme();
+            scene.getStylesheets().add(FileUtil.getResourceAndExternalForm(AppConst.STYLE_FILE_NAME));
+        }
+    }
+
+    /**
+     * 获取当前主题
+     *
+     * @return 当前主题
+     */
+    public ThemeEnum curTheme() {
+        String theme = configuration.getGenera().getTheme();
+        return ThemeEnum.ofCode(theme);
+    }
+
+    /**
+     * 更新主题
+     */
+    public void updateTheme() {
+        if (mainScene != null) {
+            if (ThemeEnum.DARK.equals(curTheme())) {
+                mainScene.getStylesheets().remove(FileUtil.getResourceAndExternalForm(AppConst.STYLE_LIGHT_FILE_NAME));
+                mainScene.getStylesheets().add(FileUtil.getResourceAndExternalForm(AppConst.STYLE_DARK_FILE_NAME));
+            } else {
+                mainScene.getStylesheets().remove(FileUtil.getResourceAndExternalForm(AppConst.STYLE_DARK_FILE_NAME));
+                mainScene.getStylesheets().add(FileUtil.getResourceAndExternalForm(AppConst.STYLE_LIGHT_FILE_NAME));
+            }
+        }
     }
 
     /**

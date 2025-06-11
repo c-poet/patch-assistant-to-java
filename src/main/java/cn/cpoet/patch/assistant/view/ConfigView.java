@@ -1,6 +1,7 @@
 package cn.cpoet.patch.assistant.view;
 
 import cn.cpoet.patch.assistant.constant.I18NEnum;
+import cn.cpoet.patch.assistant.constant.ThemeEnum;
 import cn.cpoet.patch.assistant.control.IntegerField;
 import cn.cpoet.patch.assistant.core.*;
 import cn.cpoet.patch.assistant.util.EncryptUtil;
@@ -236,9 +237,9 @@ public class ConfigView {
         generaConfigPane.setCollapsible(false);
         generaConfigPane.setText("常规配置");
         VBox generaConfigBox = new VBox();
-        HBox langConfig = new HBox(FXUtil.pre(new Label(), node -> {
-            node.setText("语言: ");
-        }), FXUtil.pre(new ComboBox<I18NEnum>(), node -> {
+        generaConfigBox.setSpacing(10);
+
+        HBox langConfig = new HBox(new Label("语言: "), FXUtil.pre(new ComboBox<I18NEnum>(), node -> {
             HBox.setHgrow(node, Priority.ALWAYS);
             node.getItems().addAll(I18NEnum.values());
             node.setConverter(new StringConverter<>() {
@@ -252,13 +253,31 @@ public class ConfigView {
                     return I18NEnum.ofName(name);
                 }
             });
-            node.valueProperty().addListener((e, oldVal, newVal) -> {
-                genera.setLanguage(newVal.getCode());
-            });
+            node.valueProperty().addListener((e, oldVal, newVal) -> genera.setLanguage(newVal.getCode()));
             node.setValue(I18NEnum.ofCode(genera.getLanguage()));
         }));
         langConfig.setAlignment(Pos.CENTER_LEFT);
         generaConfigBox.getChildren().add(langConfig);
+
+        HBox themeConfig = new HBox(new Label("主题: "), FXUtil.pre(new ComboBox<ThemeEnum>(), node -> {
+            HBox.setHgrow(node, Priority.ALWAYS);
+            node.getItems().addAll(ThemeEnum.values());
+            node.setConverter(new StringConverter<>() {
+                @Override
+                public String toString(ThemeEnum themeEnum) {
+                    return themeEnum == null ? null : themeEnum.getName();
+                }
+
+                @Override
+                public ThemeEnum fromString(String name) {
+                    return ThemeEnum.ofName(name);
+                }
+            });
+            node.valueProperty().addListener((e, oldVal, newVal) -> genera.setTheme(newVal.getCode()));
+            node.setValue(ThemeEnum.ofCode(genera.getTheme()));
+        }));
+        themeConfig.setAlignment(Pos.CENTER_LEFT);
+        generaConfigBox.getChildren().add(themeConfig);
 
         generaConfigPane.setContent(generaConfigBox);
         return generaConfigPane;
@@ -292,11 +311,16 @@ public class ConfigView {
         configViewDialog.setDialogPane(dialogPane);
         configViewDialog.setResultConverter(t -> t == ButtonType.OK);
         if (configViewDialog.showAndWait().orElse(Boolean.FALSE)) {
+            AppContext appContext = AppContext.getInstance();
+            ThemeEnum theme = appContext.curTheme();
             configuration.setGenera(genera);
             configuration.setDocker(docker);
             configuration.setSearch(search);
             configuration.setPatch(patch);
-            AppContext.getInstance().syncConf2File();
+            appContext.syncConf2File();
+            if (!genera.getTheme().equals(theme.getCode())) {
+                appContext.updateTheme();
+            }
         }
     }
 }
