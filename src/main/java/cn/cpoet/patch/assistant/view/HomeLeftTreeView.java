@@ -4,7 +4,6 @@ import cn.cpoet.patch.assistant.component.OnlyChangeFilter;
 import cn.cpoet.patch.assistant.constant.FileExtConst;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.service.AppPackService;
-import cn.cpoet.patch.assistant.service.PatchPackService;
 import cn.cpoet.patch.assistant.util.FXUtil;
 import cn.cpoet.patch.assistant.util.FileUtil;
 import cn.cpoet.patch.assistant.util.TreeNodeUtil;
@@ -84,19 +83,26 @@ public class HomeLeftTreeView extends HomeTreeView {
 
     protected void refreshAppTree(File file) {
         context.appTreeInfo = AppPackService.getInstance().getTreeNode(file);
-        TreeItem<TreeNode> rootItem = context.appTree.getRoot();
-        if (rootItem == null) {
-            rootItem = new TreeItem<>();
-            context.appTree.setRoot(rootItem);
-        } else {
-            rootItem.getChildren().clear();
-        }
-        TreeNodeUtil.buildNode(rootItem, context.appTreeInfo.getRootNode(), OnlyChangeFilter.INSTANCE);
-        PatchPackService.getInstance().refreshPatchMappedNode(context.totalInfo, context.appTreeInfo, context.patchTreeInfo);
-        context.appTree.fireEvent(new Event(HomeContext.APP_TREE_REFRESH));
+        refreshAppTree(true, true);
     }
 
-    protected void setAppTreeDrag() {
+    protected void refreshAppTree(boolean isBuildTreeItem, boolean isEmitEvent) {
+        if (isBuildTreeItem) {
+            TreeItem<TreeNode> rootItem = context.appTree.getRoot();
+            if (rootItem == null) {
+                rootItem = new TreeItem<>();
+                context.appTree.setRoot(rootItem);
+            } else {
+                rootItem.getChildren().clear();
+            }
+            TreeNodeUtil.buildNode(rootItem, context.appTreeInfo.getRootNode(), OnlyChangeFilter.INSTANCE);
+        }
+        if (isEmitEvent) {
+            context.appTree.fireEvent(new Event(HomeContext.APP_TREE_REFRESH));
+        }
+    }
+
+    protected void initAppTreeDrag() {
         context.appTree.setOnDragOver(e -> {
             List<File> files = e.getDragboard().getFiles();
             if (files.size() == 1 && files.get(0).getName().endsWith(FileExtConst.DOT_JAR)) {
@@ -111,9 +117,11 @@ public class HomeLeftTreeView extends HomeTreeView {
     }
 
     protected void buildAppTree() {
-        context.appTree = new TreeView<>();
         context.appTree.setCellFactory(treeView -> new FileTreeCell(context));
         buildAppTreeContextMenu();
+        context.patchTree.addEventHandler(HomeContext.PATCH_TREE_REFRESH, e -> {
+            refreshAppTree(false, false);
+        });
         context.appTree.getSelectionModel().selectedItemProperty().addListener((observableValue, oldVal, newVal) -> {
             selectedLink(context.appTree, context.patchTree);
         });
@@ -132,16 +140,15 @@ public class HomeLeftTreeView extends HomeTreeView {
                 }
             }
         });
-        setAppTreeDrag();
+        initAppTreeDrag();
         String lastAppPackPath = Configuration.getInstance().getLastAppPackPath();
         if (lastAppPackPath == null || lastAppPackPath.isBlank()) {
             return;
         }
         File file = FileUtil.getExistsFile(lastAppPackPath);
-        if (file == null) {
-            return;
+        if (file != null) {
+            refreshAppTree(file);
         }
-        refreshAppTree(file);
     }
 
     protected Node build() {
@@ -150,11 +157,18 @@ public class HomeLeftTreeView extends HomeTreeView {
             node.setPadding(new Insets(3, 8, 3, 8));
             node.setSpacing(3);
         });
-        TextField appPathTextField;
         appPackPathBox.getChildren().add(new Label("应用包:"));
-        appPackPathBox.getChildren().add(FXUtil.pre(appPathTextField = new TextField(), node -> {
+        appPackPathBox.getChildren().add(FXUtil.pre(new TextField(), node -> {
             node.setEditable(false);
             HBox.setHgrow(node, Priority.ALWAYS);
+            if (context.appTreeInfo != null && context.appTreeInfo.getRootNode() != null) {
+                node.setText(((TreeKindNode) context.appTreeInfo.getRootNode()).getPath());
+            }
+            context.appTree.addEventHandler(HomeContext.APP_TREE_REFRESH, e -> {
+                if (context.appTreeInfo != null && context.appTreeInfo.getRootNode() != null) {
+                    node.setText(((TreeKindNode) context.appTreeInfo.getRootNode()).getPath());
+                }
+            });
             node.textProperty().addListener((observableValue, oldVal, newVal) -> {
                 Configuration.getInstance().setLastAppPackPath(newVal);
             });
@@ -173,14 +187,6 @@ public class HomeLeftTreeView extends HomeTreeView {
         }));
         buildAppTree();
         VBox.setVgrow(context.appTree, Priority.ALWAYS);
-        if (context.appTreeInfo != null && context.appTreeInfo.getRootNode() != null) {
-            appPathTextField.setText(((TreeKindNode) context.appTreeInfo.getRootNode()).getPath());
-        }
-        context.appTree.addEventHandler(HomeContext.APP_TREE_REFRESH, e -> {
-            if (context.appTreeInfo != null && context.appTreeInfo.getRootNode() != null) {
-                appPathTextField.setText(((TreeKindNode) context.appTreeInfo.getRootNode()).getPath());
-            }
-        });
         return new VBox(appPackPathBox, context.appTree);
     }
 }

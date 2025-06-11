@@ -5,10 +5,7 @@ import cn.cpoet.patch.assistant.view.tree.TotalInfo;
 import cn.cpoet.patch.assistant.view.tree.TreeInfo;
 import cn.cpoet.patch.assistant.view.tree.TreeNode;
 import javafx.event.EventType;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
 import javafx.scene.control.TreeView;
-import javafx.scene.layout.StackPane;
 
 import java.util.Objects;
 
@@ -20,14 +17,12 @@ import java.util.Objects;
 public class HomeContext {
 
     public static final EventType<?> APP_TREE_REFRESH = new EventType<>("APP_TREE_REFRESH");
-    public static final EventType<?> APP_TREE_REFRESH_BEG = new EventType<>("APP_TREE_REFRESH_BEG");
     public static final EventType<?> PATCH_TREE_REFRESH = new EventType<>("PATCH_TREE_REFRESH");
-    public static final EventType<?> PATCH_TREE_REFRESH_BEG = new EventType<>("PATCH_TREE_REFRESH_BEG");
 
     protected TreeInfo appTreeInfo;
-    protected TreeView<TreeNode> appTree;
     protected PatchTreeInfo patchTreeInfo;
-    protected TreeView<TreeNode> patchTree;
+    protected TreeView<TreeNode> appTree = new TreeView<>();
+    protected TreeView<TreeNode> patchTree = new TreeView<>();
     protected final TotalInfo totalInfo = new TotalInfo();
 
     public TotalInfo getTotalInfo() {

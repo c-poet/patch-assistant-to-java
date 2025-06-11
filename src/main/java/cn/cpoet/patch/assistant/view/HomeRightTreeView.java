@@ -111,7 +111,7 @@ public class HomeRightTreeView extends HomeTreeView {
         }
     }
 
-    protected void setPatchTreeDrag() {
+    protected void initPatchTreeDrag() {
         context.patchTree.setOnDragOver(e -> {
             List<File> files = e.getDragboard().getFiles();
             if (files.size() == 1 && (files.get(0).isDirectory() ||
@@ -127,7 +127,6 @@ public class HomeRightTreeView extends HomeTreeView {
     }
 
     protected void buildPatchTree() {
-        context.patchTree = new TreeView<>();
         context.patchTree.setCellFactory(v -> new FileCheckBoxTreeCell(context));
         buildPatchTreeContextMenu();
         context.patchTree.getSelectionModel().selectedItemProperty().addListener((observableValue, oldVal, newVal) -> {
@@ -148,7 +147,7 @@ public class HomeRightTreeView extends HomeTreeView {
                 }
             }
         });
-        setPatchTreeDrag();
+        initPatchTreeDrag();
         File file = getInitPatchFile();
         if (file != null) {
             refreshPatchTree(file);
@@ -177,11 +176,18 @@ public class HomeRightTreeView extends HomeTreeView {
             node.setPadding(new Insets(3, 8, 3, 8));
             node.setSpacing(3);
         });
-        TextField patchPathTextField;
         patchPackPathBox.getChildren().add(new Label("补丁包:"));
-        patchPackPathBox.getChildren().add(FXUtil.pre(patchPathTextField = new TextField(), node -> {
+        patchPackPathBox.getChildren().add(FXUtil.pre(new TextField(), node -> {
             node.setEditable(false);
             HBox.setHgrow(node, Priority.ALWAYS);
+            if (context.patchTreeInfo != null && context.patchTreeInfo.getRootNode() != null) {
+                node.setText(((TreeKindNode) context.patchTreeInfo.getRootNode()).getPath());
+            }
+            context.patchTree.addEventHandler(HomeContext.PATCH_TREE_REFRESH, e -> {
+                if (context.patchTreeInfo != null && context.patchTreeInfo.getRootNode() != null) {
+                    node.setText(((TreeKindNode) context.patchTreeInfo.getRootNode()).getPath());
+                }
+            });
             node.textProperty().addListener((observableValue, oldVal, newVal) -> {
                 Configuration.getInstance().setLastPatchPackPath(newVal);
             });
@@ -209,14 +215,6 @@ public class HomeRightTreeView extends HomeTreeView {
         }));
         buildPatchTree();
         VBox.setVgrow(context.patchTree, Priority.ALWAYS);
-        if (context.patchTreeInfo != null && context.patchTreeInfo.getRootNode() != null) {
-            patchPathTextField.setText(((TreeKindNode) context.patchTreeInfo.getRootNode()).getPath());
-        }
-        context.patchTree.addEventHandler(HomeContext.PATCH_TREE_REFRESH, e -> {
-            if (context.patchTreeInfo != null && context.patchTreeInfo.getRootNode() != null) {
-                patchPathTextField.setText(((TreeKindNode) context.patchTreeInfo.getRootNode()).getPath());
-            }
-        });
         return new VBox(patchPackPathBox, context.patchTree);
     }
 }
