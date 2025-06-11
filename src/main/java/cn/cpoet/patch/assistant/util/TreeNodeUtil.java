@@ -16,6 +16,24 @@ public abstract class TreeNodeUtil {
     }
 
     /**
+     * 清理绑定的节点
+     *
+     * @param node 节点
+     */
+    public static void cleanMappedNode(TreeNode node) {
+        if (node == null) {
+            return;
+        }
+        node.setMappedNode(null);
+        if (node instanceof TreeKindNode) {
+            ((TreeKindNode) node).setStatus(TreeNodeStatus.NONE);
+        }
+        if (CollectionUtil.isNotEmpty(node.getChildren())) {
+            node.getChildren().forEach(TreeNodeUtil::cleanMappedNode);
+        }
+    }
+
+    /**
      * 更新绑定的节点和状态
      *
      * @param totalInfo 统计信息

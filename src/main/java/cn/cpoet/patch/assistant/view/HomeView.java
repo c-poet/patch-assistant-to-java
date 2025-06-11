@@ -1,6 +1,5 @@
 package cn.cpoet.patch.assistant.view;
 
-import cn.cpoet.patch.assistant.component.OnlyChangeFilter;
 import cn.cpoet.patch.assistant.constant.IConConst;
 import cn.cpoet.patch.assistant.constant.StyleConst;
 import cn.cpoet.patch.assistant.core.Configuration;
@@ -8,7 +7,6 @@ import cn.cpoet.patch.assistant.service.AppPackService;
 import cn.cpoet.patch.assistant.util.AlterUtil;
 import cn.cpoet.patch.assistant.util.FXUtil;
 import cn.cpoet.patch.assistant.util.ImageUtil;
-import cn.cpoet.patch.assistant.util.TreeNodeUtil;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -57,9 +55,7 @@ public class HomeView extends HomeContext {
         onlyChanges.setSelected(Boolean.TRUE.equals(configuration.getIsOnlyChanges()));
         onlyChanges.setOnAction(e -> {
             configuration.setIsOnlyChanges(!Boolean.TRUE.equals(configuration.getIsOnlyChanges()));
-            appTree.getRoot().getChildren().clear();
-            TreeNodeUtil.buildNode(appTree.getRoot(), appTree.getRoot().getValue(), OnlyChangeFilter.INSTANCE);
-            appTree.refresh();
+            appTree.fireEvent(new Event(HomeContext.APP_TREE_REFRESH_CALL));
         });
         headerBox.getChildren().add(onlyChanges);
 

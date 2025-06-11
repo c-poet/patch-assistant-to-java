@@ -18,7 +18,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -64,18 +63,6 @@ public class PatchPackService extends BasePackService {
     }
 
     /**
-     * 清理映射的节点信息
-     *
-     * @param node 节点信息
-     */
-    public void cleanMappedNode(TreeNode node) {
-        node.setMappedNode(null);
-        if (node.getChildren() != null) {
-            node.getChildren().forEach(this::cleanMappedNode);
-        }
-    }
-
-    /**
      * 刷新补丁文件映射信息
      *
      * @param totalInfo     统计信息
@@ -84,10 +71,10 @@ public class PatchPackService extends BasePackService {
      */
     public void refreshMappedNode(TotalInfo totalInfo, TreeInfo appTreeInfo, PatchTreeInfo patchTreeInfo) {
         if (appTreeInfo != null) {
-            cleanMappedNode(appTreeInfo.getRootNode());
+            TreeNodeUtil.cleanMappedNode(appTreeInfo.getRootNode());
         }
         if (patchTreeInfo != null) {
-            cleanMappedNode(patchTreeInfo.getRootNode());
+            TreeNodeUtil.cleanMappedNode(patchTreeInfo.getRootNode());
         }
         totalInfo.rest();
         if (appTreeInfo == null || patchTreeInfo == null) {

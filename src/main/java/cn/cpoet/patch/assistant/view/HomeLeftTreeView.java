@@ -83,23 +83,21 @@ public class HomeLeftTreeView extends HomeTreeView {
 
     protected void refreshAppTree(File file) {
         context.appTreeInfo = AppPackService.getInstance().getTreeNode(file);
-        refreshAppTree(true, true);
+        refreshAppTree(true);
     }
 
-    protected void refreshAppTree(boolean isBuildTreeItem, boolean isEmitEvent) {
+    protected void refreshAppTree(boolean isEmitEvent) {
         if (isEmitEvent) {
             context.appTree.fireEvent(new Event(HomeContext.APP_TREE_REFRESHING));
         }
-        if (isBuildTreeItem) {
-            TreeItem<TreeNode> rootItem = context.appTree.getRoot();
-            if (rootItem == null) {
-                rootItem = new TreeItem<>();
-                context.appTree.setRoot(rootItem);
-            } else {
-                rootItem.getChildren().clear();
-            }
-            TreeNodeUtil.buildNode(rootItem, context.appTreeInfo.getRootNode(), OnlyChangeFilter.INSTANCE);
+        TreeItem<TreeNode> rootItem = context.appTree.getRoot();
+        if (rootItem == null) {
+            rootItem = new TreeItem<>();
+            context.appTree.setRoot(rootItem);
+        } else {
+            rootItem.getChildren().clear();
         }
+        TreeNodeUtil.buildNode(rootItem, context.appTreeInfo.getRootNode(), OnlyChangeFilter.INSTANCE);
         if (isEmitEvent) {
             context.appTree.fireEvent(new Event(HomeContext.APP_TREE_REFRESH));
         }
@@ -122,9 +120,8 @@ public class HomeLeftTreeView extends HomeTreeView {
     protected void buildAppTree() {
         context.appTree.setCellFactory(treeView -> new FileTreeCell(context));
         buildAppTreeContextMenu();
-        context.patchTree.addEventHandler(HomeContext.PATCH_TREE_REFRESH, e -> {
-            refreshAppTree(false, false);
-        });
+        context.patchTree.addEventHandler(HomeContext.PATCH_TREE_REFRESH, e -> refreshAppTree(false));
+        context.appTree.addEventHandler(HomeContext.APP_TREE_REFRESH_CALL, e -> refreshAppTree(true));
         context.appTree.getSelectionModel().selectedItemProperty()
                 .addListener((observableValue, oldVal, newVal) -> selectedLink(context.appTree, context.patchTree));
         context.appTree.setOnMouseClicked(e -> {
