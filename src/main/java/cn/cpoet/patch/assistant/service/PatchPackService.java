@@ -5,6 +5,7 @@ import cn.cpoet.patch.assistant.constant.AppConst;
 import cn.cpoet.patch.assistant.constant.FileExtConst;
 import cn.cpoet.patch.assistant.core.AppContext;
 import cn.cpoet.patch.assistant.core.Configuration;
+import cn.cpoet.patch.assistant.core.PatchConf;
 import cn.cpoet.patch.assistant.exception.AppException;
 import cn.cpoet.patch.assistant.util.CollectionUtil;
 import cn.cpoet.patch.assistant.util.FileNameUtil;
@@ -17,7 +18,11 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.zip.ZipInputStream;
 
 /**
@@ -77,7 +82,7 @@ public class PatchPackService extends BasePackService {
      * @param appTreeInfo   应用树形信息
      * @param patchTreeInfo 补丁树形信息
      */
-    public void refreshPatchMappedNode(TotalInfo totalInfo, TreeInfo appTreeInfo, PatchTreeInfo patchTreeInfo) {
+    public void refreshMappedNode(TotalInfo totalInfo, TreeInfo appTreeInfo, PatchTreeInfo patchTreeInfo) {
         if (appTreeInfo != null) {
             cleanMappedNode(appTreeInfo.getRootNode());
         }
@@ -88,19 +93,18 @@ public class PatchPackService extends BasePackService {
         if (appTreeInfo == null || patchTreeInfo == null) {
             return;
         }
-        doPatchMappedNodeWithReadme(totalInfo, appTreeInfo, patchTreeInfo);
-        doPatchMappedNodeWithPath(totalInfo, appTreeInfo, patchTreeInfo);
+        refreshMappedNodeWithReadme(totalInfo, appTreeInfo, patchTreeInfo);
+        refreshMappedNodeWithPathOrName(totalInfo, appTreeInfo, patchTreeInfo);
     }
 
-    protected void doPatchMappedNodeWithReadme(TotalInfo totalInfo, TreeInfo appTreeInfo, PatchTreeInfo patchTreeInfo) {
+    protected void refreshMappedNodeWithReadme(TotalInfo totalInfo, TreeInfo appTreeInfo, PatchTreeInfo patchTreeInfo) {
         List<ReadMePathInfo> pathInfos = ReadMeFileService.getInstance().getPathInfos(patchTreeInfo);
         if (pathInfos == null || pathInfos.isEmpty()) {
             return;
         }
         String pathPrefix = null;
-        TreeNode rootNode = patchTreeInfo.getRootNode();
+        TreeNode rootNode = patchTreeInfo.getCurRootNode();
         if (patchTreeInfo.getCustomRootNode() != null) {
-            rootNode = patchTreeInfo.getCustomRootNode();
             pathPrefix = rootNode instanceof TreeKindNode ? ((TreeKindNode) rootNode).getPath() : null;
         } else if (rootNode instanceof FileNode && ((FileNode) rootNode).isDir()) {
             pathPrefix = ((FileNode) rootNode).getPath() + FileNameUtil.SEPARATOR;
@@ -136,10 +140,8 @@ public class PatchPackService extends BasePackService {
             if (secondNode != null && secondNode.getChildren() != null && !secondNode.getChildren().isEmpty()) {
                 for (TreeNode appNode : secondNode.getChildren()) {
                     if (fileName.equals(appNode.getText())) {
-                        patchNode.setMappedNode(appNode);
-                        appNode.setMappedNode(patchNode);
                         // BY CPoet 后续处理删除和新增的情况
-                        totalInfo.incrTotal(TreeNodeStatus.MOD);
+                        TreeNodeUtil.mappedNode(totalInfo, appNode, patchNode, TreeNodeStatus.MOD);
                         break;
                     }
                 }
@@ -147,8 +149,28 @@ public class PatchPackService extends BasePackService {
         }
     }
 
-    protected void doPatchMappedNodeWithPath(TotalInfo totalInfo, TreeInfo appTreeInfo, PatchTreeInfo patchTreeInfo) {
+    protected void refreshMappedNodeWithPathOrName(TotalInfo totalInfo, TreeInfo appTreeInfo, PatchTreeInfo patchTreeInfo) {
+        PatchConf patch = Configuration.getInstance().getPatch();
+        if (Boolean.TRUE.equals(patch.getPathMatch()) || Boolean.TRUE.equals(patch.getFileNameMatch())) {
+            Map<String, TreeNode> nameMapping = patchTreeInfo.getCurRootNode().getChildren().stream()
+                    .collect(Collectors.toMap(TreeNode::getName, Function.identity()));
+            refreshMappedNodeWithPathOrName(totalInfo, appTreeInfo.getRootNode().getChildren(), nameMapping
+                    , Boolean.TRUE.equals(patch.getPathMatch()), Boolean.TRUE.equals(patch.getFileNameMatch()));
+        }
+    }
 
+    protected void refreshMappedNodeWithPathOrName(TotalInfo totalInfo, List<TreeNode> appNodes, Map<String, TreeNode> nameMapping
+            , boolean isWithPath, boolean isWithName) {
+        if (CollectionUtil.isEmpty(appNodes)) {
+            return;
+        }
+        for (TreeNode appNode : appNodes) {
+            TreeNode patchNode = nameMapping.get(appNode.getName());
+            if (patchNode == null) {
+                continue;
+            }
+            TreeNodeUtil.mappedNode(totalInfo, appNode, patchNode, TreeNodeStatus.MOD);
+        }
     }
 
     /**

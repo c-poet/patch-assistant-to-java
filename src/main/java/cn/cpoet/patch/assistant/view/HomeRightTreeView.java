@@ -116,7 +116,7 @@ public class HomeRightTreeView extends HomeTreeView {
         if (isRefreshReadme) {
             patchPackService.refreshReadmeNode(context.patchTreeInfo);
         }
-        patchPackService.refreshPatchMappedNode(context.totalInfo, context.appTreeInfo, context.patchTreeInfo);
+        patchPackService.refreshMappedNode(context.totalInfo, context.appTreeInfo, context.patchTreeInfo);
     }
 
     protected void initPatchTreeDrag() {

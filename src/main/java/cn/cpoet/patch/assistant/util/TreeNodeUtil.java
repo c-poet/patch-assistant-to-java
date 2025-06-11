@@ -1,9 +1,6 @@
 package cn.cpoet.patch.assistant.util;
 
-import cn.cpoet.patch.assistant.view.tree.FileTreeItem;
-import cn.cpoet.patch.assistant.view.tree.TotalInfo;
-import cn.cpoet.patch.assistant.view.tree.TreeKindNode;
-import cn.cpoet.patch.assistant.view.tree.TreeNode;
+import cn.cpoet.patch.assistant.view.tree.*;
 import javafx.scene.control.TreeItem;
 
 import java.util.function.Predicate;
@@ -16,6 +13,37 @@ import java.util.function.Predicate;
 public abstract class TreeNodeUtil {
 
     private TreeNodeUtil() {
+    }
+
+    /**
+     * 更新绑定的节点和状态
+     *
+     * @param totalInfo 统计信息
+     * @param node1     绑定的节点1
+     * @param node2     绑定的节点2
+     * @param status    状态
+     */
+    public static void mappedNode(TotalInfo totalInfo, TreeNode node1, TreeNode node2, TreeNodeStatus status) {
+        mappedNode(node1, node2, status);
+        totalInfo.incrTotal(status);
+    }
+
+    /**
+     * 更新绑定的节点和状态
+     *
+     * @param node1  绑定的节点1
+     * @param node2  绑定的节点2
+     * @param status 状态
+     */
+    public static void mappedNode(TreeNode node1, TreeNode node2, TreeNodeStatus status) {
+        node1.setMappedNode(node2);
+        node2.setMappedNode(node1);
+        if (node1 instanceof TreeKindNode) {
+            ((TreeKindNode) node1).setStatus(status);
+        }
+        if (node2 instanceof TreeKindNode) {
+            ((TreeKindNode) node2).setStatus(status);
+        }
     }
 
     /**

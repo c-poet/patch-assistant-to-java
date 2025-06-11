@@ -190,14 +190,6 @@ public class ConfigView {
         VBox patchConfigBox = new VBox();
         patchConfigBox.setSpacing(10);
 
-        patchConfigBox.getChildren().add(FXUtil.pre(new HBox(new Label("说明文件: "), FXUtil.pre(new TextField(), node -> {
-            HBox.setHgrow(node, Priority.ALWAYS);
-            node.setText(patch.getReadmeFile());
-            node.textProperty().addListener((observableValue, oldVal, newVal) -> {
-                patch.setReadmeFile(newVal);
-            });
-        })), box -> box.setAlignment(Pos.CENTER)));
-
         patchConfigBox.getChildren().add(FXUtil.pre(new HBox(
                 FXUtil.pre(new RadioButton("开启路径匹配"), node -> {
                     node.setSelected(Boolean.TRUE.equals(patch.getPathMatch()));
@@ -211,6 +203,14 @@ public class ConfigView {
             box.setAlignment(Pos.CENTER_LEFT);
             box.setSpacing(10);
         }));
+
+        patchConfigBox.getChildren().add(FXUtil.pre(new HBox(new Label("说明文件: "), FXUtil.pre(new TextField(), node -> {
+            HBox.setHgrow(node, Priority.ALWAYS);
+            node.setText(patch.getReadmeFile());
+            node.textProperty().addListener((observableValue, oldVal, newVal) -> {
+                patch.setReadmeFile(newVal);
+            });
+        })), box -> box.setAlignment(Pos.CENTER)));
 
         patchConfigBox.getChildren().add(FXUtil.pre(new RadioButton("写入补丁元信息"), node -> {
             node.setSelected(Boolean.TRUE.equals(patch.getWritePatchMeta()));
@@ -262,7 +262,6 @@ public class ConfigView {
             node.setValue(I18NEnum.ofCode(genera.getLanguage()));
         }));
         langConfig.setAlignment(Pos.CENTER_LEFT);
-        generaConfigBox.getChildren().add(langConfig);
 
         HBox themeConfig = new HBox(new Label("主题: "), FXUtil.pre(new ComboBox<ThemeEnum>(), node -> {
             HBox.setHgrow(node, Priority.ALWAYS);
@@ -282,7 +281,7 @@ public class ConfigView {
             node.setValue(ThemeEnum.ofCode(genera.getTheme()));
         }));
         themeConfig.setAlignment(Pos.CENTER_LEFT);
-        generaConfigBox.getChildren().add(themeConfig);
+        generaConfigBox.getChildren().add(FXUtil.pre(new HBox(themeConfig, langConfig), node -> node.setSpacing(15)));
 
         generaConfigPane.setContent(generaConfigBox);
         return generaConfigPane;

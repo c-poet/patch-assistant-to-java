@@ -36,6 +36,15 @@ public class PatchTreeInfo extends TreeInfo {
     }
 
     /**
+     * 获取当前的根节点
+     *
+     * @return 根节点
+     */
+    public TreeNode getCurRootNode() {
+        return customRootNode != null ? customRootNode : getRootNode();
+    }
+
+    /**
      * 读取ReadMe文本内容
      *
      * @return Read文本内容
