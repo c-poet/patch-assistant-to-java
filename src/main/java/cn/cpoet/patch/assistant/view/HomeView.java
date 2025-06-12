@@ -154,7 +154,7 @@ public class HomeView extends HomeContext {
                             return;
                         }
                         new ProgressView(fileChooser.getTitle()).showDialog(stage, (context) -> {
-                            AppPackService.getInstance().savePack(context, file, appTreeInfo, isDockerImage);
+                            AppPackService.getInstance().savePack(context, file, appTreeInfo, patchTreeInfo, isDockerImage);
                         });
                     });
                 })

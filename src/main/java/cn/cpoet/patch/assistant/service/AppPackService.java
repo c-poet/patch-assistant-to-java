@@ -55,14 +55,26 @@ public class AppPackService extends BasePackService {
         return treeInfo;
     }
 
+    protected void writePatchMeta(ZipOutputStream zipOut, TreeInfo patchTree) throws IOException {
+        boolean isWritePathMeta = Boolean.TRUE.equals(Configuration.getInstance().getPatch().getWritePatchMeta());
+        if (!isWritePathMeta) {
+            return;
+        }
+        ZipEntry entry = new ZipEntry("patch.meta");
+        zipOut.putNextEntry(entry);
+        zipOut.write(("Name: " + patchTree.getRootNode().getName()).getBytes());
+    }
+
     /**
      * 生成并保存应用包
      *
+     * @param context       进度上下文
      * @param file          文件名
      * @param appTree       应用树
+     * @param patchNode     补丁树
      * @param isDockerImage 是否Docker镜像
      */
-    public void savePack(ProgressContext context, File file, TreeInfo appTree, boolean isDockerImage) {
+    public void savePack(ProgressContext context, File file, TreeInfo appTree, TreeInfo patchNode, boolean isDockerImage) {
         if (isDockerImage) {
             String dockerfile = FileUtil.readFileAsString(AppConst.DOCKERFILE_FILE_NAME);
             if (StringUtil.isBlank(dockerfile)) {
@@ -73,7 +85,7 @@ public class AppPackService extends BasePackService {
                 context.setRunLater(true);
                 context.step("开始保存镜像包");
                 try {
-                    saveDockerPack(context, file, appTree, dockerfile);
+                    saveDockerPack(context, file, appTree, patchNode, dockerfile);
                     context.step("完成保存镜像包");
                 } catch (Exception e) {
                     context.step(ExceptionUtil.asString(e));
@@ -89,7 +101,7 @@ public class AppPackService extends BasePackService {
             context.setRunLater(true);
             context.step("开始保存应用包");
             try {
-                savePack(context, file, appTree);
+                savePack(context, file, appTree, patchNode);
                 context.step("完成保存应用包");
             } catch (Exception e) {
                 context.step(ExceptionUtil.asString(e));
@@ -109,12 +121,13 @@ public class AppPackService extends BasePackService {
      * @param appTree    应用树
      * @param dockerfile dockerfile文件内容
      */
-    public void saveDockerPack(ProgressContext context, File file, TreeInfo appTree, String dockerfile) {
+    public void saveDockerPack(ProgressContext context, File file, TreeInfo appTree, TreeInfo patchNode, String dockerfile) {
         byte[] bytes;
         TreeNode rootNode = appTree.getRootNode();
         try (ByteArrayOutputStream out = new ByteArrayOutputStream();
              ZipOutputStream zipOut = new ZipOutputStream(out)) {
             doSavePack(context, rootNode, zipOut);
+            writePatchMeta(zipOut, patchNode);
             bytes = out.toByteArray();
         } catch (Exception e) {
             throw new AppException("生成应用包失败", e);
@@ -246,11 +259,12 @@ public class AppPackService extends BasePackService {
      * @param file    文件
      * @param appTree 应用树
      */
-    public void savePack(ProgressContext context, File file, TreeInfo appTree) {
+    public void savePack(ProgressContext context, File file, TreeInfo appTree, TreeInfo patchNode) {
         TreeNode rootNode = appTree.getRootNode();
         try (OutputStream out = new FileOutputStream(file);
              ZipOutputStream zipOut = new ZipOutputStream(out)) {
             doSavePack(context, rootNode, zipOut);
+            writePatchMeta(zipOut, patchNode);
         } catch (Exception e) {
             throw new AppException("生成应用包失败", e);
         }
