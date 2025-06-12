@@ -60,7 +60,9 @@ public class AppPackService extends BasePackService {
         if (!isWritePathMeta) {
             return;
         }
-        ZipEntry entry = new ZipEntry("patch.meta");
+        ZipEntry entry = new ZipEntry("PATCH-INF/" + DateUtil.formatDateTime(LocalDateTime.now()));
+        entry.setTimeLocal(LocalDateTime.now());
+        entry.setComment("Patch meta file");
         zipOut.putNextEntry(entry);
         zipOut.write(("Name: " + patchTree.getRootNode().getName()).getBytes());
     }
@@ -126,8 +128,8 @@ public class AppPackService extends BasePackService {
         TreeNode rootNode = appTree.getRootNode();
         try (ByteArrayOutputStream out = new ByteArrayOutputStream();
              ZipOutputStream zipOut = new ZipOutputStream(out)) {
-            doSavePack(context, rootNode, zipOut);
             writePatchMeta(zipOut, patchNode);
+            doSavePack(context, rootNode, zipOut);
             bytes = out.toByteArray();
         } catch (Exception e) {
             throw new AppException("生成应用包失败", e);
@@ -263,8 +265,8 @@ public class AppPackService extends BasePackService {
         TreeNode rootNode = appTree.getRootNode();
         try (OutputStream out = new FileOutputStream(file);
              ZipOutputStream zipOut = new ZipOutputStream(out)) {
-            doSavePack(context, rootNode, zipOut);
             writePatchMeta(zipOut, patchNode);
+            doSavePack(context, rootNode, zipOut);
         } catch (Exception e) {
             throw new AppException("生成应用包失败", e);
         }
