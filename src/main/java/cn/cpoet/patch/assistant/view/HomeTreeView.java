@@ -6,7 +6,6 @@ import cn.cpoet.patch.assistant.util.FileNameUtil;
 import cn.cpoet.patch.assistant.util.FileUtil;
 import cn.cpoet.patch.assistant.view.content.ContentParser;
 import cn.cpoet.patch.assistant.view.content.ContentSupports;
-import cn.cpoet.patch.assistant.view.tree.TreeKindNode;
 import cn.cpoet.patch.assistant.view.tree.TreeNode;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
@@ -46,7 +45,7 @@ public abstract class HomeTreeView {
         targetTree.scrollTo(targetItemIndex);
     }
 
-    protected void doSaveFile(TreeKindNode node, byte[] content, String ext) {
+    protected void doSaveFile(TreeNode node, byte[] content, String ext) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("保存文件");
         String name = FileNameUtil.getName(FileNameUtil.getFileName(node.getText()));
@@ -68,7 +67,7 @@ public abstract class HomeTreeView {
         if (selectedItem == null) {
             return;
         }
-        TreeKindNode node = (TreeKindNode) selectedItem.getValue();
+        TreeNode node = selectedItem.getValue();
         doSaveFile(node, node.getBytes(), FileNameUtil.getExt(node.getText()));
     }
 
@@ -77,7 +76,7 @@ public abstract class HomeTreeView {
         if (selectedItem == null || !selectedItem.getValue().getText().endsWith(FileExtConst.DOT_CLASS)) {
             return;
         }
-        TreeKindNode node = (TreeKindNode) selectedItem.getValue();
+        TreeNode node = selectedItem.getValue();
         ContentParser parser = ContentSupports.getContentParser(node);
         String content = parser.parse(node);
         doSaveFile(node, content.getBytes(), FileExtConst.JAVA);

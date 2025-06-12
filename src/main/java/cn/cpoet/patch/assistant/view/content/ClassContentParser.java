@@ -1,7 +1,7 @@
 package cn.cpoet.patch.assistant.view.content;
 
 import cn.cpoet.patch.assistant.fernflower.SingleClassDecompiler;
-import cn.cpoet.patch.assistant.view.tree.TreeKindNode;
+import cn.cpoet.patch.assistant.view.tree.TreeNode;
 
 import java.util.Collections;
 
@@ -11,7 +11,7 @@ import java.util.Collections;
 public class ClassContentParser extends ContentParser {
 
     @Override
-    public String parse(TreeKindNode node) {
+    public String parse(TreeNode node) {
         SingleClassDecompiler decompiler = new SingleClassDecompiler(Collections.emptyMap());
         return decompiler.decompile(node.getBytes());
     }

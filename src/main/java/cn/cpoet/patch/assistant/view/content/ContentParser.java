@@ -1,6 +1,6 @@
 package cn.cpoet.patch.assistant.view.content;
 
-import cn.cpoet.patch.assistant.view.tree.TreeKindNode;
+import cn.cpoet.patch.assistant.view.tree.TreeNode;
 
 /**
  * @author CPoet
@@ -12,5 +12,5 @@ public abstract class ContentParser {
      * @param node 需要解析的节点
      * @return 解析结果
      */
-    public abstract String parse(TreeKindNode node);
+    public abstract String parse(TreeNode node);
 }

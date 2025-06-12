@@ -92,9 +92,9 @@ public class PatchPackService extends BasePackService {
         String pathPrefix = null;
         TreeNode rootNode = patchTreeInfo.getCurRootNode();
         if (patchTreeInfo.getCustomRootNode() != null) {
-            pathPrefix = rootNode instanceof TreeKindNode ? ((TreeKindNode) rootNode).getPath() : null;
-        } else if (rootNode instanceof FileNode && ((FileNode) rootNode).isDir()) {
-            pathPrefix = ((FileNode) rootNode).getPath() + FileNameUtil.SEPARATOR;
+            pathPrefix = rootNode.getPath();
+        } else if (rootNode instanceof FileNode && rootNode.isDir()) {
+            pathPrefix = rootNode.getPath() + FileNameUtil.SEPARATOR;
         }
         for (ReadMePathInfo pathInfo : pathInfos) {
             String fileName = pathInfo.getFileName();
@@ -109,7 +109,7 @@ public class PatchPackService extends BasePackService {
             TreeNode dirNode = TreeNodeUtil.findNodeByPath(appTreeInfo.getRootNode(), dirPath);
             if (dirNode != null && dirNode.getChildren() != null && !dirNode.getChildren().isEmpty()) {
                 for (TreeNode child : dirNode.getChildren()) {
-                    if (((TreeKindNode) child).getPath().startsWith(firstPath)) {
+                    if (child.getPath().startsWith(firstPath)) {
                         firstNode = child;
                         break;
                     }
@@ -183,7 +183,7 @@ public class PatchPackService extends BasePackService {
         return treeInfo;
     }
 
-    protected void doGetTreeNodeWithDir(File file, TreeKindNode parentNode) {
+    protected void doGetTreeNodeWithDir(File file, TreeNode parentNode) {
         File[] files = file.listFiles();
         if (files != null) {
             for (File childFile : files) {
@@ -202,7 +202,7 @@ public class PatchPackService extends BasePackService {
         }
     }
 
-    protected void doGetTreeNodeWithZip(File file, TreeKindNode rootNode) {
+    protected void doGetTreeNodeWithZip(File file, TreeNode rootNode) {
         try (InputStream in = new FileInputStream(file);
              ZipInputStream zin = new ZipInputStream(in, Charset.forName("GBK"))) {
             doReadZipEntry(rootNode, zin, true);

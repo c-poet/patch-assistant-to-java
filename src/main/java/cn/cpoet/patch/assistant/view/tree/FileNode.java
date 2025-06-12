@@ -13,7 +13,7 @@ import java.time.ZoneId;
  *
  * @author CPoet
  */
-public class FileNode extends TreeKindNode {
+public class FileNode extends TreeNode {
 
     /**
      * 关联的文件

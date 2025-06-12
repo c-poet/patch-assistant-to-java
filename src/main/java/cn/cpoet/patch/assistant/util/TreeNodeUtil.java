@@ -1,6 +1,9 @@
 package cn.cpoet.patch.assistant.util;
 
-import cn.cpoet.patch.assistant.view.tree.*;
+import cn.cpoet.patch.assistant.view.tree.FileTreeItem;
+import cn.cpoet.patch.assistant.view.tree.TotalInfo;
+import cn.cpoet.patch.assistant.view.tree.TreeNode;
+import cn.cpoet.patch.assistant.view.tree.TreeNodeStatus;
 import javafx.scene.control.TreeItem;
 
 import java.util.function.Predicate;
@@ -25,9 +28,7 @@ public abstract class TreeNodeUtil {
             return;
         }
         node.setMappedNode(null);
-        if (node instanceof TreeKindNode) {
-            ((TreeKindNode) node).setStatus(TreeNodeStatus.NONE);
-        }
+        node.setStatus(TreeNodeStatus.NONE);
         if (CollectionUtil.isNotEmpty(node.getChildren())) {
             node.getChildren().forEach(TreeNodeUtil::cleanMappedNode);
         }
@@ -56,12 +57,8 @@ public abstract class TreeNodeUtil {
     public static void mappedNode(TreeNode node1, TreeNode node2, TreeNodeStatus status) {
         node1.setMappedNode(node2);
         node2.setMappedNode(node1);
-        if (node1 instanceof TreeKindNode) {
-            ((TreeKindNode) node1).setStatus(status);
-        }
-        if (node2 instanceof TreeKindNode) {
-            ((TreeKindNode) node2).setStatus(status);
-        }
+        node1.setStatus(status);
+        node2.setStatus(status);
     }
 
     /**
@@ -172,11 +169,7 @@ public abstract class TreeNodeUtil {
      * @return 查询到的节点信息
      */
     public static TreeNode findNodeByPath(TreeNode node, String path) {
-        if (!(node instanceof TreeKindNode)) {
-            return null;
-        }
-        if (path.replaceAll("\\\\", FileNameUtil.SEPARATOR).equals(((TreeKindNode) node)
-                .getPath().replaceAll("\\\\", FileNameUtil.SEPARATOR))) {
+        if (path.replaceAll("\\\\", FileNameUtil.SEPARATOR).equals(node.getPath().replaceAll("\\\\", FileNameUtil.SEPARATOR))) {
             return node;
         }
         if (node.getChildren() != null && !node.getChildren().isEmpty()) {

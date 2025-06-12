@@ -287,7 +287,7 @@ public class AppPackService extends BasePackService {
                 zipOut.write(node.getBytes());
             }
         } else {
-            TreeKindNode mappedNode = (TreeKindNode) node.getMappedNode();
+            TreeNode mappedNode = node.getMappedNode();
             ZipEntry zipEntry = getNewEntryWithZipEntry(node.getEntry());
             zipEntry.setTimeLocal(mappedNode.getModifyTime());
             zipOut.putNextEntry(zipEntry);

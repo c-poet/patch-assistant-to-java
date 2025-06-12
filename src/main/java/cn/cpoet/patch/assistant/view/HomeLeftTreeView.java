@@ -8,7 +8,6 @@ import cn.cpoet.patch.assistant.util.FXUtil;
 import cn.cpoet.patch.assistant.util.FileUtil;
 import cn.cpoet.patch.assistant.util.TreeNodeUtil;
 import cn.cpoet.patch.assistant.view.tree.FileTreeCell;
-import cn.cpoet.patch.assistant.view.tree.TreeKindNode;
 import cn.cpoet.patch.assistant.view.tree.TreeNode;
 import cn.cpoet.patch.assistant.view.tree.TreeNodeStatus;
 import javafx.event.Event;
@@ -41,7 +40,7 @@ public class HomeLeftTreeView extends HomeTreeView {
         MenuItem markDelMenuItem = new MenuItem();
         markDelMenuItem.setOnAction(e -> {
             TreeItem<TreeNode> selectedItem = context.appTree.getSelectionModel().getSelectedItem();
-            TreeKindNode selectedNode = (TreeKindNode) selectedItem.getValue();
+            TreeNode selectedNode = selectedItem.getValue();
             if (selectedNode.getStatus() == TreeNodeStatus.NONE) {
                 selectedNode.setStatus(TreeNodeStatus.MARK_DEL);
                 context.getTotalInfo().incrTotal(TreeNodeStatus.MARK_DEL);
@@ -58,24 +57,23 @@ public class HomeLeftTreeView extends HomeTreeView {
         contextMenu.getItems().addAll(markDelMenuItem, saveFileMenuItem, saveSourceFileMenuItem);
         contextMenu.setOnShowing(e -> {
             TreeItem<TreeNode> selectedItem = context.appTree.getSelectionModel().getSelectedItem();
-            if (selectedItem.getValue() instanceof TreeKindNode) {
-                TreeKindNode selectedNode = (TreeKindNode) selectedItem.getValue();
-                TreeNodeStatus status = selectedNode.getStatus();
-                if (status == TreeNodeStatus.NONE) {
-                    markDelMenuItem.setText("标记删除");
-                    markDelMenuItem.setVisible(true);
-                } else if (status == TreeNodeStatus.MARK_DEL) {
-                    markDelMenuItem.setText("取消标记删除");
-                    markDelMenuItem.setVisible(true);
-                } else {
-                    markDelMenuItem.setVisible(false);
-                }
-                saveFileMenuItem.setVisible(true);
-                saveSourceFileMenuItem.setVisible(selectedNode.getText().endsWith(FileExtConst.DOT_CLASS));
+            TreeNode selectedNode = selectedItem.getValue();
+            TreeNodeStatus status = selectedNode.getStatus();
+            if (status == TreeNodeStatus.NONE) {
+                markDelMenuItem.setText("标记删除");
+                markDelMenuItem.setVisible(true);
+            } else if (status == TreeNodeStatus.MARK_DEL) {
+                markDelMenuItem.setText("取消标记删除");
+                markDelMenuItem.setVisible(true);
             } else {
                 markDelMenuItem.setVisible(false);
+            }
+            if (selectedNode.isDir()) {
                 saveFileMenuItem.setVisible(false);
                 saveSourceFileMenuItem.setVisible(false);
+            } else {
+                saveFileMenuItem.setVisible(true);
+                saveSourceFileMenuItem.setVisible(selectedNode.getText().endsWith(FileExtConst.DOT_CLASS));
             }
         });
         context.appTree.setContextMenu(contextMenu);
@@ -135,7 +133,7 @@ public class HomeLeftTreeView extends HomeTreeView {
                         }
                         return;
                     }
-                    new ContentView((TreeKindNode) selectedTreeNode).showDialog(stage);
+                    new ContentView(selectedTreeNode).showDialog(stage);
                 }
             }
         });
@@ -161,11 +159,11 @@ public class HomeLeftTreeView extends HomeTreeView {
             node.setEditable(false);
             HBox.setHgrow(node, Priority.ALWAYS);
             if (context.appTreeInfo != null && context.appTreeInfo.getRootNode() != null) {
-                node.setText(((TreeKindNode) context.appTreeInfo.getRootNode()).getPath());
+                node.setText(context.appTreeInfo.getRootNode().getPath());
             }
             context.appTree.addEventHandler(HomeContext.APP_TREE_REFRESH, e -> {
                 if (context.appTreeInfo != null && context.appTreeInfo.getRootNode() != null) {
-                    node.setText(((TreeKindNode) context.appTreeInfo.getRootNode()).getPath());
+                    node.setText(context.appTreeInfo.getRootNode().getPath());
                 }
             });
             node.textProperty().addListener((observableValue, oldVal, newVal) -> {

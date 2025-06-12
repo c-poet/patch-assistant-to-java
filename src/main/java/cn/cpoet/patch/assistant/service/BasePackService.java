@@ -3,7 +3,6 @@ package cn.cpoet.patch.assistant.service;
 import cn.cpoet.patch.assistant.constant.JarInfoConst;
 import cn.cpoet.patch.assistant.exception.AppException;
 import cn.cpoet.patch.assistant.util.FileNameUtil;
-import cn.cpoet.patch.assistant.view.tree.TreeKindNode;
 import cn.cpoet.patch.assistant.view.tree.TreeNode;
 import cn.cpoet.patch.assistant.view.tree.ZipEntryNode;
 
@@ -23,13 +22,10 @@ import java.util.zip.ZipInputStream;
 public abstract class BasePackService {
 
     public boolean buildNodeChildrenWithZip(TreeNode rootNode, boolean isPatch) {
-        if (!(rootNode instanceof TreeKindNode)) {
-            return false;
-        }
         if (rootNode.getChildren() != null) {
             return false;
         }
-        try (ByteArrayInputStream in = new ByteArrayInputStream(((TreeKindNode) rootNode).getBytes());
+        try (ByteArrayInputStream in = new ByteArrayInputStream(rootNode.getBytes());
              ZipInputStream zin = new ZipInputStream(in, Charset.forName("GBK"))) {
             doReadZipEntry(rootNode, zin, isPatch);
             return true;

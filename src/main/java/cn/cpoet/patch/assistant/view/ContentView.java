@@ -8,7 +8,7 @@ import cn.cpoet.patch.assistant.view.content.CodeAreaFactory;
 import cn.cpoet.patch.assistant.view.content.ContentParser;
 import cn.cpoet.patch.assistant.view.content.ContentSupports;
 import cn.cpoet.patch.assistant.view.content.DiffLineNumberFactory;
-import cn.cpoet.patch.assistant.view.tree.TreeKindNode;
+import cn.cpoet.patch.assistant.view.tree.TreeNode;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.*;
@@ -28,18 +28,18 @@ import java.util.function.Consumer;
  */
 public class ContentView {
 
-    private final TreeKindNode leftNode;
-    private final TreeKindNode rightNode;
+    private final TreeNode leftNode;
+    private final TreeNode rightNode;
     private String leftContent;
     private String rightContent;
 
-    public ContentView(TreeKindNode node) {
+    public ContentView(TreeNode node) {
         if (node.getMappedNode() != null && node.isPatch()) {
-            leftNode = (TreeKindNode) node.getMappedNode();
+            leftNode = node.getMappedNode();
             rightNode = node;
         } else {
             leftNode = node;
-            rightNode = (TreeKindNode) node.getMappedNode();
+            rightNode = node.getMappedNode();
         }
     }
 

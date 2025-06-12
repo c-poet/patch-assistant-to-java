@@ -10,7 +10,6 @@ import cn.cpoet.patch.assistant.util.FileUtil;
 import cn.cpoet.patch.assistant.util.StringUtil;
 import cn.cpoet.patch.assistant.util.TreeNodeUtil;
 import cn.cpoet.patch.assistant.view.tree.FileCheckBoxTreeCell;
-import cn.cpoet.patch.assistant.view.tree.TreeKindNode;
 import cn.cpoet.patch.assistant.view.tree.TreeNode;
 import javafx.event.Event;
 import javafx.geometry.Insets;
@@ -74,12 +73,12 @@ public class HomeRightTreeView extends HomeTreeView {
             } else {
                 markRootMenuItem.setVisible(false);
             }
-            if (selectedNode instanceof TreeKindNode) {
-                saveFileMenuItem.setVisible(true);
-                saveSourceFileMenuItem.setVisible(selectedNode.getText().endsWith(FileExtConst.DOT_CLASS));
-            } else {
+            if (selectedNode.isDir()) {
                 saveFileMenuItem.setVisible(false);
                 saveSourceFileMenuItem.setVisible(false);
+            } else {
+                saveFileMenuItem.setVisible(true);
+                saveSourceFileMenuItem.setVisible(selectedNode.getText().endsWith(FileExtConst.DOT_CLASS));
             }
         });
         context.patchTree.setContextMenu(contextMenu);
@@ -153,7 +152,7 @@ public class HomeRightTreeView extends HomeTreeView {
                         }
                         return;
                     }
-                    new ContentView((TreeKindNode) selectedTreeNode).showDialog(stage);
+                    new ContentView(selectedTreeNode).showDialog(stage);
                 }
             }
         });
@@ -191,11 +190,11 @@ public class HomeRightTreeView extends HomeTreeView {
             node.setEditable(false);
             HBox.setHgrow(node, Priority.ALWAYS);
             if (context.patchTreeInfo != null && context.patchTreeInfo.getRootNode() != null) {
-                node.setText(((TreeKindNode) context.patchTreeInfo.getRootNode()).getPath());
+                node.setText(context.patchTreeInfo.getRootNode().getPath());
             }
             context.patchTree.addEventHandler(HomeContext.PATCH_TREE_REFRESH, e -> {
                 if (context.patchTreeInfo != null && context.patchTreeInfo.getRootNode() != null) {
-                    node.setText(((TreeKindNode) context.patchTreeInfo.getRootNode()).getPath());
+                    node.setText(context.patchTreeInfo.getRootNode().getPath());
                 }
             });
             node.textProperty().addListener((observableValue, oldVal, newVal) -> {

@@ -43,10 +43,10 @@ public class FileTreeCell extends TreeCell<TreeNode> {
 
     protected void startCellDrag() {
         setOnDragDetected(e -> {
-            if (isEmpty() && !(getItem() instanceof TreeKindNode)) {
+            if (isEmpty() || getItem() == null) {
                 return;
             }
-            TreeKindNode node = (TreeKindNode) getItem();
+            TreeNode node = getItem();
             byte[] bytes = node.getBytes();
             if (bytes == null) {
                 return;
@@ -86,7 +86,7 @@ public class FileTreeCell extends TreeCell<TreeNode> {
                 return;
             }
             TreeItem<TreeNode> targetItem = getTreeItem();
-            if (!((TreeKindNode) targetItem.getValue()).isDir()) {
+            if (!targetItem.getValue().isDir()) {
                 targetItem = targetItem.getParent();
             }
             TreeItem<TreeNode> mappedItem = null;
@@ -96,9 +96,9 @@ public class FileTreeCell extends TreeCell<TreeNode> {
                     break;
                 }
             }
-            TreeKindNode originNode = (TreeKindNode) originItem.getValue();
+            TreeNode originNode = originItem.getValue();
             if (mappedItem != null) {
-                TreeKindNode mappedNode = (TreeKindNode) mappedItem.getValue();
+                TreeNode mappedNode = mappedItem.getValue();
                 originNode.setMappedNode(mappedNode);
                 originNode.setStatus(TreeNodeStatus.MOD);
                 mappedNode.setMappedNode(originNode);
@@ -165,7 +165,7 @@ public class FileTreeCell extends TreeCell<TreeNode> {
         if (image != null) {
             return image;
         }
-        if (node instanceof TreeKindNode && ((TreeKindNode) node).isDir()) {
+        if (node.isDir()) {
             return ImageUtil.loadImage(IConConst.DIRECTORY, imgFactory);
         }
         return ImageUtil.loadImage(IConConst.FILE, imgFactory);
@@ -173,26 +173,19 @@ public class FileTreeCell extends TreeCell<TreeNode> {
 
     protected void addFileDetail(TreeNode node) {
         if (Boolean.TRUE.equals(Configuration.getInstance().getIsShowFileDetail())) {
-            if (node instanceof TreeKindNode) {
-                TreeKindNode kindNode = (TreeKindNode) node;
-                if (kindNode.isDir()) {
-                    return;
-                }
-                String sizeReadability = FileUtil.getSizeReadability(kindNode.getSize());
-                String dateTime = DateUtil.formatDateTime(kindNode.getModifyTime());
-                Label fileDetailLbl = new Label("\t" + dateTime + "  " + sizeReadability + "  " + kindNode.getMd5());
-                fileDetailLbl.setTextFill(Color.web("#6c707e"));
-                box.getChildren().add(fileDetailLbl);
+            if (node.isDir()) {
+                return;
             }
+            String sizeReadability = FileUtil.getSizeReadability(node.getSize());
+            String dateTime = DateUtil.formatDateTime(node.getModifyTime());
+            Label fileDetailLbl = new Label("\t" + dateTime + "  " + sizeReadability + "  " + node.getMd5());
+            fileDetailLbl.setTextFill(Color.web("#6c707e"));
+            box.getChildren().add(fileDetailLbl);
         }
     }
 
     protected void fillTextColor(TreeNode node, Label textLbl) {
-        if (!(node instanceof TreeKindNode)) {
-            return;
-        }
-        TreeKindNode kindNode = (TreeKindNode) node;
-        TreeNodeStatus status = kindNode.getStatus();
+        TreeNodeStatus status = node.getStatus();
         switch (status) {
             case ADD:
                 textLbl.setTextFill(Color.web("#4fc75c"));

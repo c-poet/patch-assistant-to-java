@@ -1,8 +1,10 @@
 package cn.cpoet.patch.assistant.view.tree;
 
 import cn.cpoet.patch.assistant.jdk.SortLinkedList;
+import cn.cpoet.patch.assistant.util.HashUtil;
 import javafx.scene.control.TreeItem;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -10,7 +12,7 @@ import java.util.List;
  *
  * @author CPoet
  */
-public class TreeNode {
+public abstract class TreeNode {
 
     /**
      * 节点显示文本
@@ -51,6 +53,32 @@ public class TreeNode {
      * 对应的节点项
      */
     protected TreeItem<TreeNode> treeItem;
+
+
+    /**
+     * 路径
+     */
+    protected String path;
+
+    /**
+     * 内容
+     */
+    protected byte[] bytes;
+
+    /**
+     * 内容md5值
+     */
+    protected String md5;
+
+    /**
+     * 内容大小
+     */
+    protected long size;
+
+    /**
+     * 节点状态
+     */
+    protected TreeNodeStatus status = TreeNodeStatus.NONE;
 
     public String getText() {
         return text;
@@ -118,5 +146,67 @@ public class TreeNode {
 
     public void setTreeItem(TreeItem<TreeNode> treeItem) {
         this.treeItem = treeItem;
+    }
+
+
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
+    }
+
+    public byte[] getBytes() {
+        return bytes;
+    }
+
+    public void setBytes(byte[] bytes) {
+        this.bytes = bytes;
+    }
+
+    public String getMd5() {
+        if (md5 != null) {
+            return md5;
+        }
+        byte[] data = getBytes();
+        return data == null ? "" : (md5 = HashUtil.md5(data));
+    }
+
+    public void setMd5(String md5) {
+        this.md5 = md5;
+    }
+
+    public long getSize() {
+        if (size != 0 && size != -1) {
+            return size;
+        }
+        return (size = getBytes().length);
+    }
+
+    public void setSize(long size) {
+        this.size = size;
+    }
+
+    /**
+     * 判断当前节点是否目录
+     *
+     * @return 是否目录
+     */
+    public abstract boolean isDir();
+
+    /**
+     * 获取当前节点的更新时间
+     *
+     * @return 当前节点的更新时间
+     */
+    public abstract LocalDateTime getModifyTime();
+
+    public TreeNodeStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(TreeNodeStatus status) {
+        this.status = status;
     }
 }

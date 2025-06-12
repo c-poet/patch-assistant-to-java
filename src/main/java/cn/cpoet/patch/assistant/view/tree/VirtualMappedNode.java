@@ -7,20 +7,20 @@ import java.time.LocalDateTime;
  *
  * @author CPoet
  */
-public class VirtualMappedNode extends TreeKindNode {
+public class VirtualMappedNode extends TreeNode {
 
-    public VirtualMappedNode(TreeKindNode mappedNode) {
+    public VirtualMappedNode(TreeNode mappedNode) {
         setMappedNode(mappedNode);
     }
 
     @Override
     public boolean isDir() {
-        return ((TreeKindNode) mappedNode).isDir();
+        return mappedNode.isDir();
     }
 
     @Override
     public LocalDateTime getModifyTime() {
-        return ((TreeKindNode) mappedNode).getModifyTime();
+        return mappedNode.getModifyTime();
     }
 
     @Override
@@ -28,9 +28,9 @@ public class VirtualMappedNode extends TreeKindNode {
         super.setMappedNode(mappedNode);
         setName(mappedNode.getName());
         setText(mappedNode.getText());
-        setMd5(((TreeKindNode) mappedNode).getMd5());
-        setPath(((TreeKindNode) mappedNode).getPath());
-        setSize(((TreeKindNode) mappedNode).getSize());
-        setBytes(((TreeKindNode) mappedNode).getBytes());
+        setMd5(mappedNode.getMd5());
+        setPath(mappedNode.getPath());
+        setSize(mappedNode.getSize());
+        setBytes(mappedNode.getBytes());
     }
 }

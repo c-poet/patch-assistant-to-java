@@ -6,7 +6,7 @@ import java.util.zip.ZipEntry;
 /**
  * @author CPoet
  */
-public class ZipEntryNode extends TreeKindNode {
+public class ZipEntryNode extends TreeNode {
 
     private ZipEntry entry;
 
