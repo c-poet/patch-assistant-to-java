@@ -22,7 +22,7 @@ public class PatchConf implements Cloneable {
     /**
      * 按照文件名匹配
      */
-    private Boolean fileNameMatch = Boolean.FALSE;
+    private Boolean fileNameMatch = Boolean.TRUE;
 
     /**
      * 写入补丁元信息

@@ -19,9 +19,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.zip.ZipInputStream;
 
 /**
@@ -138,25 +135,13 @@ public class PatchPackService extends BasePackService {
 
     protected void refreshMappedNodeWithPathOrName(TotalInfo totalInfo, TreeInfo appTreeInfo, PatchTreeInfo patchTreeInfo) {
         PatchConf patch = Configuration.getInstance().getPatch();
-        if (Boolean.TRUE.equals(patch.getPathMatch()) || Boolean.TRUE.equals(patch.getFileNameMatch())) {
-            Map<String, TreeNode> nameMapping = patchTreeInfo.getCurRootNode().getChildren().stream()
-                    .collect(Collectors.toMap(TreeNode::getName, Function.identity()));
-            refreshMappedNodeWithPathOrName(totalInfo, appTreeInfo.getRootNode().getChildren(), nameMapping
-                    , Boolean.TRUE.equals(patch.getPathMatch()), Boolean.TRUE.equals(patch.getFileNameMatch()));
-        }
-    }
-
-    protected void refreshMappedNodeWithPathOrName(TotalInfo totalInfo, List<TreeNode> appNodes, Map<String, TreeNode> nameMapping
-            , boolean isWithPath, boolean isWithName) {
-        if (CollectionUtil.isEmpty(appNodes)) {
-            return;
-        }
-        for (TreeNode appNode : appNodes) {
-            TreeNode patchNode = nameMapping.get(appNode.getName());
-            if (patchNode == null) {
-                continue;
-            }
-            TreeNodeUtil.mappedNode(totalInfo, appNode, patchNode, TreeNodeStatus.MOD);
+        boolean isWithPath = Boolean.TRUE.equals(patch.getPathMatch());
+        boolean isWithName = Boolean.TRUE.equals(patch.getFileNameMatch());
+        if (isWithPath || isWithName) {
+            PatchMatchProcessor processor = new PatchMatchProcessor(totalInfo, isWithPath, isWithName);
+            processor.setAppRootNode(appTreeInfo.getRootNode());
+            processor.setPatchRootNode(patchTreeInfo.getCurRootNode());
+            processor.exec();
         }
     }
 
