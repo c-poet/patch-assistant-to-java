@@ -93,7 +93,6 @@ public class HomeView extends HomeContext {
     protected Node buildBottomCentre() {
         TextArea readMeTextArea = new TextArea();
         readMeTextArea.setEditable(false);
-        readMeTextArea.setText(patchTreeInfo.getReadMeText());
         patchTree.addEventHandler(HomeContext.PATCH_TREE_REFRESH, (EventHandler<Event>) event -> {
             readMeTextArea.setText(patchTreeInfo.getReadMeText());
         });
