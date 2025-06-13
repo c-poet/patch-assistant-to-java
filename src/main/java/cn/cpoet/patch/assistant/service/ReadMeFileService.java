@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
  */
 public class ReadMeFileService {
 
-    private final Pattern pattern = Pattern.compile("([a-zA-Z-/.]+)\\s+([a-zA-Z-/.]+)\\s+([a-zA-Z-/.]+)");
+    private final Pattern pattern = Pattern.compile("([!+-]?)([a-zA-Z-/.]+)\\s+([a-zA-Z-/.]+)(\\s+([a-zA-Z-/.]*))?");
 
     public static ReadMeFileService getInstance() {
         return AppContext.getInstance().getService(ReadMeFileService.class);
@@ -37,9 +37,10 @@ public class ReadMeFileService {
         Matcher matcher = pattern.matcher(readMeText);
         while (matcher.find()) {
             ReadMePathInfo pathInfo = new ReadMePathInfo();
-            pathInfo.setFileName(matcher.group(1));
-            pathInfo.setFirstPath(matcher.group(2));
-            pathInfo.setSecondPath(matcher.group(3));
+            pathInfo.setType(ReadMePathInfo.TypeEnum.ofCode(matcher.group(1)));
+            pathInfo.setFilePath(matcher.group(2));
+            pathInfo.setFirstPath(matcher.group(3));
+            pathInfo.setSecondPath(matcher.group(5));
             pathInfos.add(pathInfo);
         }
         return pathInfos;

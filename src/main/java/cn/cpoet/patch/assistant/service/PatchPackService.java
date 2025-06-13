@@ -1,6 +1,5 @@
 package cn.cpoet.patch.assistant.service;
 
-import cn.cpoet.patch.assistant.component.OnlyChangeFilter;
 import cn.cpoet.patch.assistant.constant.AppConst;
 import cn.cpoet.patch.assistant.constant.FileExtConst;
 import cn.cpoet.patch.assistant.core.AppContext;
@@ -18,6 +17,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipInputStream;
 
@@ -83,54 +84,96 @@ public class PatchPackService extends BasePackService {
 
     protected void refreshMappedNodeWithReadme(TotalInfo totalInfo, TreeInfo appTreeInfo, PatchTreeInfo patchTreeInfo) {
         List<ReadMePathInfo> pathInfos = ReadMeFileService.getInstance().getPathInfos(patchTreeInfo);
-        if (pathInfos == null || pathInfos.isEmpty()) {
+        if (CollectionUtil.isEmpty(pathInfos)) {
             return;
         }
         String pathPrefix = null;
         TreeNode rootNode = patchTreeInfo.getCurRootNode();
-        if (patchTreeInfo.getCustomRootNode() != null) {
+        if (patchTreeInfo.getCustomRootNode() != null || (rootNode instanceof FileNode && rootNode.isDir())) {
             pathPrefix = rootNode.getPath();
-        } else if (rootNode instanceof FileNode && rootNode.isDir()) {
-            pathPrefix = rootNode.getPath() + FileNameUtil.SEPARATOR;
         }
         for (ReadMePathInfo pathInfo : pathInfos) {
-            String fileName = pathInfo.getFileName();
-            String firstPath = pathInfo.getFirstPath();
-            String secondPath = pathInfo.getSecondPath();
-            TreeNode patchNode = TreeNodeUtil.findNodeByPath(rootNode, pathPrefix == null ? fileName : pathPrefix + fileName);
-            if (patchNode == null) {
+            String filePath = pathPrefix == null ? pathInfo.getFilePath() : FileNameUtil.joinPath(pathPrefix, pathInfo.getFilePath());
+            TreeNode patchNode = TreeNodeUtil.findNodeByPath(rootNode, filePath);
+            if (patchNode == null && !ReadMePathInfo.TypeEnum.DEL.equals(pathInfo.getType())) {
                 continue;
             }
-            TreeNode firstNode = null;
-            String dirPath = FileNameUtil.getDirPath(firstPath) + FileNameUtil.SEPARATOR;
-            TreeNode dirNode = TreeNodeUtil.findNodeByPath(appTreeInfo.getRootNode(), dirPath);
-            if (dirNode != null && dirNode.getChildren() != null && !dirNode.getChildren().isEmpty()) {
-                for (TreeNode child : dirNode.getChildren()) {
-                    if (child.getPath().startsWith(firstPath)) {
-                        firstNode = child;
-                        break;
-                    }
-                }
-            }
-            TreeNode secondNode = null;
-            if (firstNode != null) {
-                if (firstNode.getText().endsWith(FileExtConst.DOT_JAR)) {
-                    if (buildNodeChildrenWithZip(firstNode, false)) {
-                        TreeNodeUtil.buildNodeChildren(firstNode.getTreeItem(), firstNode, OnlyChangeFilter.INSTANCE);
-                    }
-                }
-                secondNode = TreeNodeUtil.findNodeByPath(firstNode, secondPath + FileNameUtil.SEPARATOR);
-            }
-            if (secondNode != null && secondNode.getChildren() != null && !secondNode.getChildren().isEmpty()) {
-                for (TreeNode appNode : secondNode.getChildren()) {
-                    if (fileName.equals(appNode.getText())) {
-                        // BY CPoet 后续处理删除和新增的情况
-                        TreeNodeUtil.mappedNode(totalInfo, appNode, patchNode, TreeNodeStatus.MOD);
-                        break;
-                    }
-                }
+            matchMappedNodeWithReadme(totalInfo, pathInfo, appTreeInfo, patchNode);
+        }
+    }
+
+    protected void matchMappedNodeWithReadme(TotalInfo totalInfo, ReadMePathInfo pathInfo, TreeInfo appTreeInfo, TreeNode patchNode) {
+        // 组装完成映射路径
+        String appNodePath = pathInfo.getFirstPath();
+        if (!StringUtil.isBlank(pathInfo.getSecondPath())) {
+            appNodePath = FileNameUtil.joinPath(appNodePath, pathInfo.getSecondPath());
+        }
+        String[] paths = FileNameUtil.joinPath(appNodePath, pathInfo.getFilePath()).split(FileNameUtil.SEPARATOR);
+        doMatchMappedNodeWithReadme(totalInfo, pathInfo, paths, 0, appTreeInfo.getRootNode().getChildren(), patchNode);
+    }
+
+    protected boolean doMatchMappedNodeWithReadme(TotalInfo totalInfo, ReadMePathInfo pathInfo, String[] paths, int index, List<TreeNode> appNodes, TreeNode patchNode) {
+        if (index >= paths.length) {
+            return false;
+        }
+        for (TreeNode appNode : appNodes) {
+            if (doMatchMappedNodeWithReadme(totalInfo, pathInfo, paths, index, appNode, patchNode)) {
+                return true;
             }
         }
+        LocalDateTime now = LocalDateTime.now();
+        StringBuilder sb = new StringBuilder(paths.length);
+        for (int i = 0; i < index; ++i) {
+            sb.append(paths[i]);
+        }
+        if (!ReadMePathInfo.TypeEnum.ADD.equals(pathInfo.getType())) {
+            return false;
+        }
+        TreeNode parent = appNodes.get(0).getParent();
+        TreeNode newAppNode = null;
+        while (index < paths.length) {
+            if (index + 1 == paths.length) {
+                newAppNode = new VirtualMappedNode(patchNode);
+            } else {
+                VirtualTreeNode virtualTreeNode = new VirtualTreeNode();
+                virtualTreeNode.setName(paths[index]);
+                virtualTreeNode.setText(paths[index]);
+                virtualTreeNode.setPath(sb.append(paths[index]).toString());
+                virtualTreeNode.setDir(index + 1 < paths.length);
+                virtualTreeNode.setModifyTime(now);
+                newAppNode = virtualTreeNode;
+            }
+            if (parent.getChildren() == null) {
+                parent.setChildren(new ArrayList<>());
+            }
+            parent.getChildren().add(newAppNode);
+            parent = newAppNode;
+            ++index;
+        }
+        TreeNodeUtil.mappedNode(totalInfo, newAppNode, patchNode, TreeNodeStatus.ADD);
+        return true;
+    }
+
+    protected boolean doMatchMappedNodeWithReadme(TotalInfo totalInfo, ReadMePathInfo pathInfo, String[] paths, int index, TreeNode appNode, TreeNode patchNode) {
+        if (!matchPatchName(appNode, paths[index])) {
+            return false;
+        }
+        if (index == paths.length - 1) {
+            if (ReadMePathInfo.TypeEnum.DEL.equals(pathInfo.getType())) {
+                appNode.setStatus(TreeNodeStatus.DEL);
+                totalInfo.incrTotal(TreeNodeStatus.DEL);
+            } else {
+                TreeNodeUtil.mappedNode(totalInfo, appNode, patchNode, TreeNodeStatus.MOD);
+            }
+            return true;
+        }
+        if (CollectionUtil.isNotEmpty(appNode.getChildren())) {
+            return doMatchMappedNodeWithReadme(totalInfo, pathInfo, paths, ++index, appNode.getChildren(), patchNode);
+        }
+        if (appNode.getName().endsWith(FileExtConst.DOT_JAR) && buildNodeChildrenWithZip(appNode, false)) {
+            return doMatchMappedNodeWithReadme(totalInfo, pathInfo, paths, ++index, appNode.getChildren(), patchNode);
+        }
+        return false;
     }
 
     protected void refreshMappedNodeWithPathOrName(TotalInfo totalInfo, TreeInfo appTreeInfo, PatchTreeInfo patchTreeInfo) {
@@ -138,11 +181,39 @@ public class PatchPackService extends BasePackService {
         boolean isWithPath = Boolean.TRUE.equals(patch.getPathMatch());
         boolean isWithName = Boolean.TRUE.equals(patch.getFileNameMatch());
         if (isWithPath || isWithName) {
-            PatchMatchProcessor processor = new PatchMatchProcessor(totalInfo, isWithPath, isWithName);
+            PatchMatchProcessor processor = new PatchMatchProcessor(this, totalInfo, isWithPath, isWithName);
             processor.setAppRootNode(appTreeInfo.getRootNode());
             processor.setPatchRootNode(patchTreeInfo.getCurRootNode());
             processor.exec();
         }
+    }
+
+    /**
+     * 匹配名称
+     * <p>Jar包采用前缀匹配的方式</p>
+     *
+     * @param appNode   应用节点
+     * @param patchNode 补丁节点
+     * @return 是否匹配
+     */
+    public boolean matchPatchName(TreeNode appNode, TreeNode patchNode) {
+        return matchPatchName(appNode, patchNode.getName());
+    }
+
+
+    /**
+     * 匹配名称
+     * <p>Jar包采用前缀匹配的方式</p>
+     *
+     * @param appNode   应用节点
+     * @param patchName 补丁节点名称
+     * @return 是否匹配
+     */
+    public boolean matchPatchName(TreeNode appNode, String patchName) {
+        if (appNode.getName().endsWith(FileExtConst.DOT_JAR)) {
+            return appNode.getName().startsWith(patchName);
+        }
+        return appNode.getName().equals(patchName);
     }
 
     /**

@@ -6,10 +6,42 @@ package cn.cpoet.patch.assistant.service;
  * @author CPoet
  */
 public class ReadMePathInfo {
+
+    public enum TypeEnum {
+        NONE(""),
+        ADD("+"),
+        MOD("!"),
+        DEL("-");
+
+        private final String code;
+
+        TypeEnum(String code) {
+            this.code = code;
+        }
+
+        public String getCode() {
+            return code;
+        }
+
+        public static TypeEnum ofCode(String code) {
+            for (TypeEnum value : values()) {
+                if (value.code.equals(code)) {
+                    return value;
+                }
+            }
+            return TypeEnum.NONE;
+        }
+    }
+
+    /**
+     * 类型
+     */
+    private TypeEnum type;
+
     /**
      * 文件名或者路径
      */
-    private String fileName;
+    private String filePath;
 
     /**
      * 一级路径
@@ -21,12 +53,20 @@ public class ReadMePathInfo {
      */
     private String secondPath;
 
-    public String getFileName() {
-        return fileName;
+    public TypeEnum getType() {
+        return type;
     }
 
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
+    public void setType(TypeEnum type) {
+        this.type = type;
+    }
+
+    public String getFilePath() {
+        return filePath;
+    }
+
+    public void setFilePath(String fileName) {
+        this.filePath = fileName;
     }
 
     public String getFirstPath() {
