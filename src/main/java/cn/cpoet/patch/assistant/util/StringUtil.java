@@ -29,4 +29,22 @@ public abstract class StringUtil {
     public static boolean isBlank(CharSequence charSequence) {
         return isEmpty(charSequence) || charSequence.chars().allMatch(Character::isSpaceChar);
     }
+
+    /**
+     * 获取指定字符在序列最后的下标并返回总数
+     *
+     * @param charSequence 序列
+     * @param c            字符
+     * @return 0-下标，1-总数
+     */
+    public static int[] lastIndexOfAndCount(CharSequence charSequence, char c) {
+        int[] ret = new int[]{-1, 0};
+        for (int i = 0; i < charSequence.length(); ++i) {
+            if (charSequence.charAt(i) == c) {
+                ret[0] = i;
+                ++ret[1];
+            }
+        }
+        return ret;
+    }
 }
