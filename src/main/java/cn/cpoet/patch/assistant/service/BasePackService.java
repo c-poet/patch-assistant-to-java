@@ -136,14 +136,14 @@ public abstract class BasePackService {
             zipEntryNode.setParent(parentNode);
             parentNode.getAndInitChildren().add(zipEntryNode);
             if (zipEntry.isDirectory()) {
-                if (CollectionUtil.isNotEmpty(innerClasses)) {
-                    handleInnerClass(classes, innerClasses);
-                    innerClasses.clear();
-                }
-                classes.clear();
+                doReadZipEntryInnerClass(classes, innerClasses);
                 treeNodeMap.put(zipEntry.getName().substring(0, zipEntry.getName().length() - 1), zipEntryNode);
             }
         }
+        doReadZipEntryInnerClass(classes, innerClasses);
+    }
+
+    protected void doReadZipEntryInnerClass(List<TreeNode> classes, List<TreeNode> innerClasses) {
         if (CollectionUtil.isNotEmpty(innerClasses)) {
             handleInnerClass(classes, innerClasses);
             innerClasses.clear();
