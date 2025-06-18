@@ -99,17 +99,11 @@ public class FileTreeCell extends TreeCell<TreeNode> {
             TreeNode originNode = originItem.getValue();
             if (mappedItem != null) {
                 TreeNode mappedNode = mappedItem.getValue();
-                originNode.setMappedNode(mappedNode);
-                originNode.setStatus(TreeNodeStatus.MOD);
-                mappedNode.setMappedNode(originNode);
-                mappedNode.setStatus(TreeNodeStatus.MOD);
-                homeContext.getTotalInfo().incrTotal(TreeNodeStatus.MOD);
+                TreeNodeUtil.mappedNode(homeContext.getTotalInfo(), originNode, mappedNode, TreeNodeStatus.MOD);
             } else {
                 VirtualMappedNode virtualMappedNode = new VirtualMappedNode(originNode);
-                virtualMappedNode.setStatus(TreeNodeStatus.ADD);
-                originNode.setMappedNode(virtualMappedNode);
-                originNode.setStatus(TreeNodeStatus.ADD);
                 virtualMappedNode.setParent(targetItem.getValue());
+                TreeNodeUtil.mappedNode(homeContext.getTotalInfo(), originNode, virtualMappedNode, TreeNodeStatus.ADD);
                 List<TreeNode> children = targetItem.getValue().getAndInitChildren();
                 if (children instanceof SortLinkedList) {
                     int index = ((SortLinkedList<TreeNode>) children).addAndIndex(virtualMappedNode);
@@ -118,7 +112,6 @@ public class FileTreeCell extends TreeCell<TreeNode> {
                     children.add(virtualMappedNode);
                     TreeNodeUtil.buildChildNode(targetItem, virtualMappedNode, OnlyChangeFilter.INSTANCE);
                 }
-                homeContext.getTotalInfo().incrTotal(TreeNodeStatus.ADD);
             }
             Platform.runLater(() -> homeContext.getPatchTree().refresh());
             e.consume();
