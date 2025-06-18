@@ -158,7 +158,33 @@ public abstract class FileUtil {
         try (OutputStream out = new FileOutputStream(file)) {
             out.write(bytes);
         } catch (Exception e) {
-            throw new RuntimeException("写入文件失败", e);
+            throw new AppException("写入文件失败", e);
+        }
+    }
+
+    /**
+     * 创建目录
+     *
+     * @param parent 父级目录
+     * @param name   名称
+     */
+    public static File mkdir(File parent, String name) {
+        File file = new File(parent, name);
+        mkdir(file);
+        return file;
+    }
+
+    /**
+     * 创建目录
+     *
+     * @param file 目录文件
+     */
+    public static void mkdir(File file) {
+        if (file.exists()) {
+            return;
+        }
+        if (!file.mkdirs()) {
+            throw new AppException("目录创建失败");
         }
     }
 

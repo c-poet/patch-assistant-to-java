@@ -106,6 +106,19 @@ public abstract class FileTempUtil {
     }
 
     /**
+     * 创建临时目录
+     *
+     * @param prefix 目录名称前缀
+     * @param name   目录名称
+     * @param attrs  属性
+     * @return 临时目录
+     */
+    public static File createTempDir(String prefix, String name, FileAttribute<?>... attrs) {
+        File file = createTempDir(prefix, attrs).toFile();
+        return FileUtil.mkdir(file, name);
+    }
+
+    /**
      * 删除临时文件
      *
      * @param file 文件信息

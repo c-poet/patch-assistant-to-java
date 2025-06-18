@@ -21,6 +21,7 @@ import javafx.scene.paint.Color;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
@@ -47,16 +48,14 @@ public class FileTreeCell extends TreeCell<TreeNode> {
                 return;
             }
             TreeNode node = getItem();
-            byte[] bytes = node.getBytes();
-            if (bytes == null) {
-                return;
-            }
             Dragboard db = this.startDragAndDrop(TransferMode.COPY);
             Image image = getIconImage(node, in -> new Image(in, 68, 68, true, true));
             db.setDragView(image);
             ClipboardContent content = new ClipboardContent();
             content.putString(node.getName());
-            File file = FileTempUtil.writeFile2TempDir(COPY_FILE_DIR, node.getName(), bytes);
+            File file = node.isDir() ? FileTempUtil.createTempDir(COPY_FILE_DIR, node.getName())
+                    : FileTempUtil.writeFile2TempDir(COPY_FILE_DIR, node.getName(), node.getBytes());
+
             content.putFiles(Collections.singletonList(file));
             db.setContent(content);
             COPY_TREE_ITEM.set(getTreeItem());
@@ -123,6 +122,15 @@ public class FileTreeCell extends TreeCell<TreeNode> {
             files.forEach(FileTempUtil::deleteTempFile);
             e.consume();
         });
+    }
+
+    protected void writeFile2Path(List<File> files, File parentPath, TreeNode node) {
+        if (node.isDir()) {
+            File dir = FileUtil.mkdir(parentPath, node.getName());
+            files.add(dir);
+            return;
+        }
+
     }
 
     @Override
