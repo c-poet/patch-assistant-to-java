@@ -6,6 +6,9 @@ import org.jetbrains.java.decompiler.main.Fernflower;
 import org.jetbrains.java.decompiler.main.extern.IBytecodeProvider;
 
 import java.io.File;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -16,22 +19,34 @@ import java.util.Map;
 public class SingleClassDecompiler extends AbsResultSaver implements IBytecodeProvider {
 
     private final Fernflower engine;
-    private byte[] classBytes;
     private String packageName;
     private String classSource;
+    private Map<String, byte[]> classBytesMap;
 
     public SingleClassDecompiler(Map<String, Object> customProperties) {
         this.engine = new Fernflower(this, this, customProperties, new FernflowerLogger());
     }
 
     public String decompile(byte[] bytes) {
-        this.classBytes = bytes;
-        File classFile = FileTempUtil.createTempFile(SingleClassDecompiler.class.getName(), FileExtConst.DOT_CLASS);
+        return decompile(bytes, Collections.emptyList());
+    }
+
+    public String decompile(byte[] bytes, List<byte[]> innerBytes) {
+        classBytesMap = new HashMap<>();
+        File[] classFiles = new File[innerBytes.size() + 1];
+        for (int i = 0; i < classFiles.length; ++i) {
+            classFiles[i] = FileTempUtil.createTempFile(SingleClassDecompiler.class.getName(), FileExtConst.DOT_CLASS);
+            classBytesMap.put(classFiles[i].getPath(), i == 0 ? bytes : innerBytes.get(i - 1));
+        }
         try {
-            engine.addSource(classFile);
+            for (File classFile : classFiles) {
+                engine.addSource(classFile);
+            }
             engine.decompileContext();
         } finally {
-            FileTempUtil.deleteTempFile(classFile);
+            for (File classFile : classFiles) {
+                FileTempUtil.deleteTempFile(classFile);
+            }
         }
         return classSource;
     }
@@ -46,7 +61,7 @@ public class SingleClassDecompiler extends AbsResultSaver implements IBytecodePr
 
     @Override
     public byte[] getBytecode(String s, String s1) {
-        return classBytes;
+        return classBytesMap.get(s);
     }
 
     @Override
