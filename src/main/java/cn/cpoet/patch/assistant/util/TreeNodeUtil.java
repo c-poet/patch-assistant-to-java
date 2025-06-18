@@ -62,6 +62,23 @@ public abstract class TreeNodeUtil {
     }
 
     /**
+     * 统计文件信息
+     *
+     * @param totalInfo 统计信息
+     * @param node      节点
+     * @param status    状态
+     */
+    public static void countNodeStatus(TotalInfo totalInfo, TreeNode node, TreeNodeStatus status) {
+        if (!node.isDir()) {
+            totalInfo.incrTotal(status);
+            return;
+        }
+        if (CollectionUtil.isNotEmpty(node.getChildren())) {
+            node.getChildren().forEach(child -> countNodeStatus(totalInfo, child, status));
+        }
+    }
+
+    /**
      * 构建节点项
      *
      * @param rootItem 根节点项

@@ -207,6 +207,9 @@ public abstract class TreeNode {
     }
 
     public void setStatus(TreeNodeStatus status) {
+        if (!TreeNodeStatus.NONE.equals(status) && parent != null && TreeNodeStatus.NONE.equals(parent.getStatus())) {
+            parent.setStatus(TreeNodeStatus.CHANGE);
+        }
         this.status = status;
     }
 }

@@ -37,37 +37,26 @@ public class HomeLeftTreeView extends HomeTreeView {
 
     protected void buildAppTreeContextMenu() {
         ContextMenu contextMenu = new ContextMenu();
-        MenuItem markDelMenuItem = new MenuItem();
-        markDelMenuItem.setOnAction(e -> {
+        MenuItem manualDelMenuItem = new MenuItem("删除");
+        manualDelMenuItem.setOnAction(e -> {
             TreeItem<TreeNode> selectedItem = context.appTree.getSelectionModel().getSelectedItem();
             TreeNode selectedNode = selectedItem.getValue();
-            if (selectedNode.getStatus() == TreeNodeStatus.NONE) {
-                selectedNode.setStatus(TreeNodeStatus.MARK_DEL);
-                context.getTotalInfo().incrTotal(TreeNodeStatus.MARK_DEL);
-            } else {
-                selectedNode.setStatus(TreeNodeStatus.NONE);
-                context.getTotalInfo().decrTotal(TreeNodeStatus.MARK_DEL);
-            }
-            context.getAppTree().refresh();
+            TreeNode nodeParent = selectedNode.getParent();
+            nodeParent.getChildren().remove(selectedNode);
+            TreeItem<TreeNode> itemParent = selectedItem.getParent();
+            itemParent.getChildren().remove(selectedItem);
+            TreeNodeUtil.countNodeStatus(context.totalInfo, selectedNode, TreeNodeStatus.MANUAL_DEL);
         });
         MenuItem saveFileMenuItem = new MenuItem("保存文件");
         saveFileMenuItem.setOnAction(e -> saveFile(context.appTree));
         MenuItem saveSourceFileMenuItem = new MenuItem("保存源文件");
         saveSourceFileMenuItem.setOnAction(e -> saveSourceFile(context.appTree));
-        contextMenu.getItems().addAll(markDelMenuItem, saveFileMenuItem, saveSourceFileMenuItem);
+        contextMenu.getItems().addAll(manualDelMenuItem, saveFileMenuItem, saveSourceFileMenuItem);
         contextMenu.setOnShowing(e -> {
             TreeItem<TreeNode> selectedItem = context.appTree.getSelectionModel().getSelectedItem();
             TreeNode selectedNode = selectedItem.getValue();
             TreeNodeStatus status = selectedNode.getStatus();
-            if (status == TreeNodeStatus.NONE) {
-                markDelMenuItem.setText("标记删除");
-                markDelMenuItem.setVisible(true);
-            } else if (status == TreeNodeStatus.MARK_DEL) {
-                markDelMenuItem.setText("取消标记删除");
-                markDelMenuItem.setVisible(true);
-            } else {
-                markDelMenuItem.setVisible(false);
-            }
+            manualDelMenuItem.setDisable(status != TreeNodeStatus.NONE);
             if (selectedNode.isDir()) {
                 saveFileMenuItem.setVisible(false);
                 saveSourceFileMenuItem.setVisible(false);

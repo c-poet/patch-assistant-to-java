@@ -196,7 +196,7 @@ public class FileTreeCell extends TreeCell<TreeNode> {
             case DEL:
                 textLbl.setTextFill(Color.web("#979797"));
                 break;
-            case MARK_DEL:
+            case MANUAL_DEL:
                 textLbl.setTextFill(Color.web("#e65256"));
                 break;
             case NONE:

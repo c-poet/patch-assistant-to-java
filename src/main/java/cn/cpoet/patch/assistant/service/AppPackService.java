@@ -287,7 +287,7 @@ public class AppPackService extends BasePackService {
     protected void writeTreeNode2Pack(ProgressContext context, ZipOutputStream zipOut, ZipEntryNode node) throws IOException {
         // 标记为删除状态的节点不在写入新的包中
         TreeNodeStatus status = node.getStatus();
-        if (TreeNodeStatus.DEL.equals(status) || TreeNodeStatus.MARK_DEL.equals(status)) {
+        if (TreeNodeStatus.DEL.equals(status) || TreeNodeStatus.MANUAL_DEL.equals(status)) {
             context.step("删除文件: " + node.getName());
             return;
         }

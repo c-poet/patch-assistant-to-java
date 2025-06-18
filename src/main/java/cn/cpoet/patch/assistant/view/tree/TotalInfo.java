@@ -27,9 +27,9 @@ public class TotalInfo {
     private final IntegerProperty delTotal = new SimpleIntegerProperty(0);
 
     /**
-     * 标记删除统计
+     * 手动删除统计
      */
-    private final IntegerProperty markDelTotal = new SimpleIntegerProperty(0);
+    private final IntegerProperty manualDelTotal = new SimpleIntegerProperty(0);
 
     public int getAddTotal() {
         return addTotal.get();
@@ -67,23 +67,23 @@ public class TotalInfo {
         this.delTotal.set(delTotal);
     }
 
-    public int getMarkDelTotal() {
-        return markDelTotal.get();
+    public int getManualDelTotal() {
+        return manualDelTotal.get();
     }
 
-    public IntegerProperty markDelTotalProperty() {
-        return markDelTotal;
+    public IntegerProperty manualDelTotalProperty() {
+        return manualDelTotal;
     }
 
-    public void setMarkDelTotal(int markDelTotal) {
-        this.markDelTotal.set(markDelTotal);
+    public void setManualDelTotal(int manualDelTotal) {
+        this.manualDelTotal.set(manualDelTotal);
     }
 
     public void rest() {
         setAddTotal(0);
         setModTotal(0);
         setDelTotal(0);
-        setMarkDelTotal(0);
+        setManualDelTotal(0);
     }
 
     /**
@@ -101,7 +101,7 @@ public class TotalInfo {
      * @return 是否存在变化的节点
      */
     public boolean isChangeNode() {
-        return getAddTotal() > 0 || getModTotal() > 0 || getDelTotal() > 0 || getMarkDelTotal() > 0;
+        return getAddTotal() > 0 || getModTotal() > 0 || getDelTotal() > 0 || getManualDelTotal() > 0;
     }
 
     public void incrTotal(TreeNodeStatus status) {
@@ -115,8 +115,8 @@ public class TotalInfo {
             case DEL:
                 setDelTotal(getDelTotal() + 1);
                 break;
-            case MARK_DEL:
-                setMarkDelTotal(getMarkDelTotal() + 1);
+            case MANUAL_DEL:
+                setManualDelTotal(getManualDelTotal() + 1);
                 break;
             case NONE:
             default:
@@ -134,8 +134,8 @@ public class TotalInfo {
             case DEL:
                 setDelTotal(getDelTotal() - 1);
                 break;
-            case MARK_DEL:
-                setMarkDelTotal(getMarkDelTotal() - 1);
+            case MANUAL_DEL:
+                setManualDelTotal(getManualDelTotal() - 1);
                 break;
             case NONE:
             default:

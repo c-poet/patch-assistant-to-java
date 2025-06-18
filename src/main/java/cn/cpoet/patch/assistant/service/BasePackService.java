@@ -59,7 +59,7 @@ public abstract class BasePackService {
     protected void handleInnerClass(List<TreeNode> classes, List<TreeNode> innerClasses) {
         Map<String, TreeNode> classMap = classes.stream()
                 .filter(node -> node.getName().endsWith(FileExtConst.DOT_CLASS))
-                .collect(Collectors.toMap(node -> FileNameUtil.getName(node.getName()), Function.identity()));
+                .collect(Collectors.toMap(node -> FileNameUtil.getName(node.getPath()), Function.identity()));
         handleInnerClass(classMap, innerClasses, 1);
     }
 
@@ -74,15 +74,15 @@ public abstract class BasePackService {
         Iterator<TreeNode> it = innerClasses.iterator();
         while (it.hasNext()) {
             TreeNode innerClassNode = it.next();
-            int[] indexAndCount = StringUtil.lastIndexOfAndCount(innerClassNode.getName(), '$');
+            int[] indexAndCount = StringUtil.lastIndexOfAndCount(innerClassNode.getPath(), '$');
             if (indexAndCount[1] > level) {
                 continue;
             }
             if (indexAndCount[1] == level) {
-                TreeNode classNode = classMap.get(innerClassNode.getName().substring(0, indexAndCount[0]));
+                TreeNode classNode = classMap.get(innerClassNode.getPath().substring(0, indexAndCount[0]));
                 if (classNode != null) {
                     classNode.getAndInitChildren().add(innerClassNode);
-                    classMap.put(FileNameUtil.getName(innerClassNode.getName()), innerClassNode);
+                    classMap.put(FileNameUtil.getName(innerClassNode.getPath()), innerClassNode);
                 }
             }
             it.remove();
@@ -136,18 +136,11 @@ public abstract class BasePackService {
             zipEntryNode.setParent(parentNode);
             parentNode.getAndInitChildren().add(zipEntryNode);
             if (zipEntry.isDirectory()) {
-                doReadZipEntryInnerClass(classes, innerClasses);
                 treeNodeMap.put(zipEntry.getName().substring(0, zipEntry.getName().length() - 1), zipEntryNode);
             }
         }
-        doReadZipEntryInnerClass(classes, innerClasses);
-    }
-
-    protected void doReadZipEntryInnerClass(List<TreeNode> classes, List<TreeNode> innerClasses) {
-        if (CollectionUtil.isNotEmpty(innerClasses)) {
+        if (CollectionUtil.isNotEmpty(classes) && CollectionUtil.isNotEmpty(innerClasses)) {
             handleInnerClass(classes, innerClasses);
-            innerClasses.clear();
         }
-        classes.clear();
     }
 }

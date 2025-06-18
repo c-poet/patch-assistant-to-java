@@ -22,9 +22,14 @@ public enum TreeNodeStatus {
     MOD,
 
     /**
-     * 标记删除
+     * 删除
      */
-    MARK_DEL,
+    MANUAL_DEL,
+
+    /**
+     * 存在子节点变化
+     */
+    CHANGE,
 
     /**
      * 正常

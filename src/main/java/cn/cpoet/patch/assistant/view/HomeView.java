@@ -124,8 +124,8 @@ public class HomeView extends HomeContext {
                 FXUtil.pre(new Label(), lbl -> lbl.textProperty().bind(totalInfo.modTotalProperty().asString())),
                 FXUtil.pre(new Label("删除: "), StyleConst.FONT_BOLD),
                 FXUtil.pre(new Label(), lbl -> lbl.textProperty().bind(totalInfo.delTotalProperty().asString())),
-                FXUtil.pre(new Label("标记删除: "), StyleConst.FONT_BOLD),
-                FXUtil.pre(new Label(), lbl -> lbl.textProperty().bind(totalInfo.markDelTotalProperty().asString())),
+                FXUtil.pre(new Label("手动删除: "), StyleConst.FONT_BOLD),
+                FXUtil.pre(new Label(), lbl -> lbl.textProperty().bind(totalInfo.manualDelTotalProperty().asString())),
                 FXUtil.pre(new Region(), node -> HBox.setHgrow(node, Priority.ALWAYS)),
                 FXUtil.pre(new Button(), btn -> {
                     btn.setDisable(appTree.getRoot() == null);
