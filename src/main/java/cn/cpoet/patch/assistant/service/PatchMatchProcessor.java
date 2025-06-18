@@ -123,6 +123,7 @@ public class PatchMatchProcessor {
             appNode.setChildren(oldChildren);
         }
         TreeNodeUtil.mappedNode(totalInfo, appNode, patchNode, TreeNodeStatus.MOD);
+        patchPackService.mappedInnerClassNode(totalInfo, appNode, patchNode);
         return true;
     }
 
@@ -133,6 +134,7 @@ public class PatchMatchProcessor {
         TreeNode patchNode = nameMapping.remove(appNode.getName());
         if (patchNode != null) {
             TreeNodeUtil.mappedNode(totalInfo, appNode, patchNode, TreeNodeStatus.MOD);
+            patchPackService.mappedInnerClassNode(totalInfo, appNode, patchNode);
             return true;
         }
         return false;

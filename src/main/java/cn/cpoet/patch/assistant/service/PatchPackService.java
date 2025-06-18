@@ -20,6 +20,9 @@ import java.nio.charset.Charset;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.zip.ZipInputStream;
 
 /**
@@ -164,6 +167,7 @@ public class PatchPackService extends BasePackService {
                 totalInfo.incrTotal(TreeNodeStatus.DEL);
             } else {
                 TreeNodeUtil.mappedNode(totalInfo, appNode, patchNode, TreeNodeStatus.MOD);
+                mappedInnerClassNode(totalInfo, appNode, patchNode);
             }
             return true;
         }
@@ -185,6 +189,43 @@ public class PatchPackService extends BasePackService {
             processor.setAppRootNode(appTreeInfo.getRootNode());
             processor.setPatchRootNode(patchTreeInfo.getCurRootNode());
             processor.exec();
+        }
+    }
+
+    /**
+     * 绑定内部类
+     *
+     * @param totalInfo 统计信息
+     * @param appNode   应用节点
+     * @param patchNode 补丁节点
+     */
+    protected void mappedInnerClassNode(TotalInfo totalInfo, TreeNode appNode, TreeNode patchNode) {
+        if (!appNode.getName().endsWith(FileExtConst.DOT_CLASS) || !patchNode.getName().endsWith(FileExtConst.DOT_CLASS)) {
+            return;
+        }
+        if (CollectionUtil.isEmpty(appNode.getChildren()) && CollectionUtil.isEmpty(patchNode.getChildren())) {
+            return;
+        }
+        Map<String, TreeNode> innerNodeMap = appNode
+                .getChildren()
+                .stream()
+                .collect(Collectors.toMap(TreeNode::getName, Function.identity()));
+        for (TreeNode patchInnerNode : patchNode.getChildren()) {
+            TreeNode appInnerNode = innerNodeMap.get(patchInnerNode.getName());
+            if (appInnerNode == null) {
+                appInnerNode = new VirtualMappedNode(patchInnerNode);
+                TreeNodeUtil.mappedNode(totalInfo, appInnerNode, patchInnerNode, TreeNodeStatus.ADD);
+                continue;
+            }
+            TreeNodeUtil.mappedNode(totalInfo, appInnerNode, patchInnerNode, TreeNodeStatus.MOD);
+            mappedInnerClassNode(totalInfo, appInnerNode, patchInnerNode);
+            innerNodeMap.remove(patchInnerNode.getName());
+        }
+        if (CollectionUtil.isNotEmpty(innerNodeMap)) {
+            innerNodeMap.forEach((k, v) -> {
+                v.setStatus(TreeNodeStatus.DEL);
+                totalInfo.incrTotal(TreeNodeStatus.DEL);
+            });
         }
     }
 
