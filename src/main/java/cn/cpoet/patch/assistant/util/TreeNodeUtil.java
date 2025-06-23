@@ -148,7 +148,7 @@ public abstract class TreeNodeUtil {
      * @param filter 过滤器
      */
     public static void buildChildNode(TreeItem<TreeNode> parent, int index, TreeNode node, Predicate<TreeNode> filter) {
-        if (node.getChildren() != null && node.getChildren().size() == 1) {
+        if (node.getChildren() != null && node.isDir() && node.getChildren().size() == 1) {
             StringBuilder sb = new StringBuilder();
             do {
                 if (sb.length() > 0) {
@@ -156,7 +156,7 @@ public abstract class TreeNodeUtil {
                 }
                 sb.append(node.getName());
                 node = node.getChildren().get(0);
-            } while (node.getChildren() != null && node.getChildren().size() == 1);
+            } while (node.getChildren() != null && node.isDir() && node.getChildren().size() == 1);
             node.setText(sb.append(FileNameUtil.SEPARATOR).append(node.getName()).toString());
         } else {
             node.setText(node.getName());
