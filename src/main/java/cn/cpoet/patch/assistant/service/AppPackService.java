@@ -2,11 +2,13 @@ package cn.cpoet.patch.assistant.service;
 
 import cn.cpoet.patch.assistant.constant.AppConst;
 import cn.cpoet.patch.assistant.constant.FileExtConst;
+import cn.cpoet.patch.assistant.constant.JarInfoConst;
 import cn.cpoet.patch.assistant.core.AppContext;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.core.DockerConf;
 import cn.cpoet.patch.assistant.exception.AppException;
 import cn.cpoet.patch.assistant.util.*;
+import cn.cpoet.patch.assistant.view.HomeContext;
 import cn.cpoet.patch.assistant.view.ProgressContext;
 import cn.cpoet.patch.assistant.view.tree.*;
 import com.jcraft.jsch.Session;
@@ -38,8 +40,8 @@ public class AppPackService extends BasePackService {
      * @param file 文件
      * @return 树形信息
      */
-    public TreeInfo getTreeNode(File file) {
-        TreeInfo treeInfo = new TreeInfo();
+    public AppTreeInfo getTreeNode(File file) {
+        AppTreeInfo treeInfo = new AppTreeInfo();
         FileNode rootNode = new FileNode();
         rootNode.setName(file.getName());
         rootNode.setText(file.getName());
@@ -50,12 +52,36 @@ public class AppPackService extends BasePackService {
              ZipInputStream zin = new ZipInputStream(in)) {
             doReadZipEntry(rootNode, zin, false);
         } catch (IOException ex) {
-            throw new AppException("读取文件失败", ex);
+            throw new AppException("读取应用包失败", ex);
         }
+        TreeNode patchUpSignNode = getPatchUpSignNode(rootNode);
+        treeInfo.setPatchUpSignNode(patchUpSignNode);
         return treeInfo;
     }
 
-    protected void writePatchMeta(ZipOutputStream zipOut, TreeInfo patchTree) throws IOException {
+    protected TreeNode getPatchUpSignNode(TreeNode rootNode) {
+        if (rootNode == null || CollectionUtil.isEmpty(rootNode.getChildren())) {
+            return null;
+        }
+        TreeNode metaInfoNode = null;
+        for (TreeNode childNode : rootNode.getChildren()) {
+            if (JarInfoConst.META_INFO_DIR.equals(childNode.getName())) {
+                metaInfoNode = childNode;
+                break;
+            }
+        }
+        if (metaInfoNode == null || CollectionUtil.isEmpty(metaInfoNode.getChildren())) {
+            return null;
+        }
+        for (TreeNode childNode : metaInfoNode.getChildren()) {
+            if (AppConst.PATCH_UP_SIGN.equals(childNode.getName())) {
+                return childNode;
+            }
+        }
+        return null;
+    }
+
+    protected void writePatchSign(ZipOutputStream zipOut, HomeContext context) throws IOException {
         boolean isWritePathMeta = Boolean.TRUE.equals(Configuration.getInstance().getPatch().getWritePatchSign());
         if (!isWritePathMeta) {
             return;
@@ -118,18 +144,18 @@ public class AppPackService extends BasePackService {
     /**
      * 保存Docker镜像包
      *
-     * @param context    进度上下文
+     * @param progressContext    进度上下文
      * @param file       文件
      * @param appTree    应用树
      * @param dockerfile dockerfile文件内容
      */
-    public void saveDockerPack(ProgressContext context, File file, TreeInfo appTree, TreeInfo patchNode, String dockerfile) {
+    public void saveDockerPack(HomeContext homeContext, ProgressContext progressContext, File file, String dockerfile) {
         byte[] bytes;
         TreeNode rootNode = appTree.getRootNode();
         try (ByteArrayOutputStream out = new ByteArrayOutputStream();
              ZipOutputStream zipOut = new ZipOutputStream(out)) {
-            writePatchMeta(zipOut, patchNode);
-            doSavePack(context, rootNode, zipOut);
+            writePatchSign(zipOut, patchNode);
+            doSavePack(progressContext, rootNode, zipOut);
             bytes = out.toByteArray();
         } catch (Exception e) {
             throw new AppException("生成应用包失败", e);
@@ -137,10 +163,10 @@ public class AppPackService extends BasePackService {
         dockerfile = TemplateUtil.render(dockerfile, Collections.singletonMap("jarName", rootNode.getName()));
         DockerConf docker = Configuration.getInstance().getDocker();
         if (DockerConf.TYPE_REMOTE.equals(docker.getType())) {
-            saveDockerPackWithRemote(context, docker, file, rootNode, bytes, dockerfile);
+            saveDockerPackWithRemote(progressContext, docker, file, rootNode, bytes, dockerfile);
             return;
         }
-        saveDockerPackWithLocal(context, docker, file, rootNode, bytes, dockerfile);
+        saveDockerPackWithLocal(progressContext, docker, file, rootNode, bytes, dockerfile);
     }
 
     protected void saveDockerPackWithRemote(ProgressContext context, DockerConf docker, File file, TreeNode rootNode, byte[] bytes, String dockerfile) {
@@ -265,7 +291,7 @@ public class AppPackService extends BasePackService {
         TreeNode rootNode = appTree.getRootNode();
         try (OutputStream out = new FileOutputStream(file);
              ZipOutputStream zipOut = new ZipOutputStream(out)) {
-            writePatchMeta(zipOut, patchNode);
+            writePatchSign(zipOut, patchNode);
             doSavePack(context, rootNode, zipOut);
         } catch (Exception e) {
             throw new AppException("生成应用包失败", e);

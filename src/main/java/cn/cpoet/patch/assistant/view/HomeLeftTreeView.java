@@ -54,10 +54,12 @@ public class HomeLeftTreeView extends HomeTreeView {
         saveSourceFileMenuItem.setOnAction(e -> saveSourceFile(context.appTree));
         contextMenu.getItems().addAll(manualDelMenuItem, saveFileMenuItem, saveSourceFileMenuItem);
         contextMenu.setOnShowing(e -> {
-            TreeItem<TreeNode> selectedItem = context.appTree.getSelectionModel().getSelectedItem();
-            TreeNode selectedNode = selectedItem.getValue();
-            TreeNodeStatus status = selectedNode.getStatus();
-            manualDelMenuItem.setDisable(status != TreeNodeStatus.NONE);
+            boolean isNoneNode = context.appTree
+                    .getSelectionModel()
+                    .getSelectedItems()
+                    .stream().anyMatch(item -> item.equals(context.appTree.getRoot()) || item.getValue().getStatus() != TreeNodeStatus.NONE);
+            manualDelMenuItem.setVisible(!isNoneNode);
+            TreeNode selectedNode = context.appTree.getSelectionModel().getSelectedItem().getValue();
             if (selectedNode.isDir()) {
                 saveFileMenuItem.setVisible(false);
                 saveSourceFileMenuItem.setVisible(false);
