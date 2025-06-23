@@ -105,6 +105,7 @@ public class HomeLeftTreeView extends HomeTreeView {
     }
 
     protected void buildAppTree() {
+        context.appTree.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         context.appTree.setCellFactory(treeView -> new FileTreeCell(context));
         buildAppTreeContextMenu();
         context.patchTree.addEventHandler(HomeContext.PATCH_TREE_REFRESH, e -> refreshAppTree(false));
