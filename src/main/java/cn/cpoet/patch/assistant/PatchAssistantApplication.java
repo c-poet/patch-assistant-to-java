@@ -1,10 +1,8 @@
 package cn.cpoet.patch.assistant;
 
-import cn.cpoet.patch.assistant.constant.AppConst;
 import cn.cpoet.patch.assistant.constant.IConConst;
 import cn.cpoet.patch.assistant.core.AppContext;
 import cn.cpoet.patch.assistant.core.Configuration;
-import cn.cpoet.patch.assistant.util.FileUtil;
 import cn.cpoet.patch.assistant.util.ImageUtil;
 import cn.cpoet.patch.assistant.view.HomeView;
 import javafx.application.Application;
