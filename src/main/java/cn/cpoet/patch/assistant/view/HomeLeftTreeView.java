@@ -39,13 +39,14 @@ public class HomeLeftTreeView extends HomeTreeView {
         ContextMenu contextMenu = new ContextMenu();
         MenuItem manualDelMenuItem = new MenuItem("删除");
         manualDelMenuItem.setOnAction(e -> {
-            TreeItem<TreeNode> selectedItem = context.appTree.getSelectionModel().getSelectedItem();
-            TreeNode selectedNode = selectedItem.getValue();
-            TreeNode nodeParent = selectedNode.getParent();
-            nodeParent.getChildren().remove(selectedNode);
-            TreeItem<TreeNode> itemParent = selectedItem.getParent();
-            itemParent.getChildren().remove(selectedItem);
-            TreeNodeUtil.countNodeStatus(context.totalInfo, selectedNode, TreeNodeStatus.MANUAL_DEL);
+            context.appTree.getSelectionModel().getSelectedItems().forEach(item -> {
+                TreeNode selectedNode = item.getValue();
+                TreeNode nodeParent = selectedNode.getParent();
+                nodeParent.getChildren().remove(selectedNode);
+                TreeItem<TreeNode> itemParent = item.getParent();
+                itemParent.getChildren().remove(item);
+                TreeNodeUtil.countNodeStatus(context.totalInfo, selectedNode, TreeNodeStatus.MANUAL_DEL);
+            });
         });
         MenuItem saveFileMenuItem = new MenuItem("保存文件");
         saveFileMenuItem.setOnAction(e -> saveFile(context.appTree));
