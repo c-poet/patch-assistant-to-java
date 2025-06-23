@@ -55,7 +55,9 @@ public class HomeRightTreeView extends HomeTreeView {
         saveFileMenuItem.setOnAction(e -> saveFile(context.patchTree));
         MenuItem saveSourceFileMenuItem = new MenuItem("保存源文件");
         saveSourceFileMenuItem.setOnAction(e -> saveSourceFile(context.patchTree));
-        contextMenu.getItems().addAll(markRootMenuItem, saveFileMenuItem, saveSourceFileMenuItem);
+        MenuItem viewPatchSign = new MenuItem("查看签名");
+        viewPatchSign.setOnAction(e -> new PatchSignView(context.patchTreeInfo.getPatchSign()).showDialog(stage));
+        contextMenu.getItems().addAll(markRootMenuItem, saveFileMenuItem, saveSourceFileMenuItem, viewPatchSign);
         contextMenu.setOnShowing(e -> {
             TreeItem<TreeNode> selectedItem = context.patchTree.getSelectionModel().getSelectedItem();
             if (selectedItem == null) {
@@ -80,6 +82,7 @@ public class HomeRightTreeView extends HomeTreeView {
                 saveFileMenuItem.setVisible(true);
                 saveSourceFileMenuItem.setVisible(selectedNode.getText().endsWith(FileExtConst.DOT_CLASS));
             }
+            viewPatchSign.setVisible(selectedItem.equals(context.getPatchTree().getRoot()));
         });
         context.patchTree.setContextMenu(contextMenu);
     }

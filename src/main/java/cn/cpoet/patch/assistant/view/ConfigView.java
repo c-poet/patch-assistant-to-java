@@ -212,9 +212,9 @@ public class ConfigView {
             });
         })), box -> box.setAlignment(Pos.CENTER)));
 
-        patchConfigBox.getChildren().add(FXUtil.pre(new RadioButton("写入补丁元信息"), node -> {
-            node.setSelected(Boolean.TRUE.equals(patch.getWritePatchMeta()));
-            node.setOnAction(e -> patch.setWritePatchMeta(!Boolean.TRUE.equals(patch.getWritePatchMeta())));
+        patchConfigBox.getChildren().add(FXUtil.pre(new RadioButton("写入补丁签名"), node -> {
+            node.setSelected(Boolean.TRUE.equals(patch.getWritePatchSign()));
+            node.setOnAction(e -> patch.setWritePatchSign(!Boolean.TRUE.equals(patch.getWritePatchSign())));
         }));
 
         patchConfigPane.setContent(patchConfigBox);

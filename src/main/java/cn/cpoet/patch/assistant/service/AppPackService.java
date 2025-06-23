@@ -56,7 +56,7 @@ public class AppPackService extends BasePackService {
     }
 
     protected void writePatchMeta(ZipOutputStream zipOut, TreeInfo patchTree) throws IOException {
-        boolean isWritePathMeta = Boolean.TRUE.equals(Configuration.getInstance().getPatch().getWritePatchMeta());
+        boolean isWritePathMeta = Boolean.TRUE.equals(Configuration.getInstance().getPatch().getWritePatchSign());
         if (!isWritePathMeta) {
             return;
         }

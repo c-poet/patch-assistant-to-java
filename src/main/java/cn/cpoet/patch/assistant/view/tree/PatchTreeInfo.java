@@ -1,5 +1,7 @@
 package cn.cpoet.patch.assistant.view.tree;
 
+import cn.cpoet.patch.assistant.model.PatchSign;
+
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -10,6 +12,11 @@ import java.nio.charset.StandardCharsets;
 public class PatchTreeInfo extends TreeInfo {
 
     /**
+     * 补丁签名
+     */
+    private PatchSign patchSign;
+
+    /**
      * 自定义根节点
      */
     private TreeNode customRootNode;
@@ -18,6 +25,14 @@ public class PatchTreeInfo extends TreeInfo {
      * Readme节点信息
      */
     private TreeNode readMeNode;
+
+    public PatchSign getPatchSign() {
+        return patchSign;
+    }
+
+    public void setPatchSign(PatchSign patchSign) {
+        this.patchSign = patchSign;
+    }
 
     public TreeNode getCustomRootNode() {
         return customRootNode;
@@ -33,6 +48,7 @@ public class PatchTreeInfo extends TreeInfo {
 
     public void setReadMeNode(TreeNode readMeNode) {
         this.readMeNode = readMeNode;
+        this.patchSign.setReadme(readMeNode == null ? null : new String(readMeNode.getBytes(), StandardCharsets.UTF_8));
     }
 
     /**
@@ -50,6 +66,6 @@ public class PatchTreeInfo extends TreeInfo {
      * @return Read文本内容
      */
     public String getReadMeText() {
-        return readMeNode == null ? null : new String(readMeNode.getBytes(), StandardCharsets.UTF_8);
+        return patchSign.getReadme();
     }
 }

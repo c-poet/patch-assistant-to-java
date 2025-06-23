@@ -46,4 +46,20 @@ public abstract class HashUtil {
             throw new AppException("未支持MD5算法", e);
         }
     }
+
+    /**
+     * 计算sha1值
+     *
+     * @param bytes 字节数组
+     * @return md5值
+     */
+    public static String sha1(byte[] bytes) {
+        try {
+            MessageDigest messageDigest = MessageDigest.getInstance("SHA-1");
+            byte[] digest = messageDigest.digest(bytes);
+            return toHexString(digest);
+        } catch (NoSuchAlgorithmException e) {
+            throw new AppException("未支持SHA1算法", e);
+        }
+    }
 }

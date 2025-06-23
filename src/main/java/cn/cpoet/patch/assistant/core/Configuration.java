@@ -72,6 +72,18 @@ public class Configuration {
     private Double progressHeight = 560D;
 
     /**
+     * 补丁签名查看窗口宽度
+     */
+    @JacksonXmlProperty
+    private Double patchSignWidth = 680D;
+
+    /**
+     * 补丁签名查看窗口高度
+     */
+    @JacksonXmlProperty
+    private Double patchSighHeight = 280D;
+
+    /**
      * 选中联动
      */
     @JacksonXmlProperty
@@ -217,6 +229,22 @@ public class Configuration {
 
     public void setProgressHeight(Double progressHeight) {
         this.progressHeight = progressHeight;
+    }
+
+    public Double getPatchSignWidth() {
+        return patchSignWidth;
+    }
+
+    public void setPatchSignWidth(Double patchSignWidth) {
+        this.patchSignWidth = patchSignWidth;
+    }
+
+    public Double getPatchSighHeight() {
+        return patchSighHeight;
+    }
+
+    public void setPatchSighHeight(Double patchSighHeight) {
+        this.patchSighHeight = patchSighHeight;
     }
 
     public Boolean getIsSelectedLinked() {

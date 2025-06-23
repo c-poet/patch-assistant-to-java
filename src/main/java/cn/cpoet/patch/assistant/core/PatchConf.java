@@ -25,9 +25,9 @@ public class PatchConf implements Cloneable {
     private Boolean fileNameMatch = Boolean.TRUE;
 
     /**
-     * 写入补丁元信息
+     * 写入补丁签名
      */
-    private Boolean writePatchMeta = Boolean.TRUE;
+    private Boolean writePatchSign = Boolean.TRUE;
 
     public String getReadmeFile() {
         return readmeFile;
@@ -53,12 +53,12 @@ public class PatchConf implements Cloneable {
         this.fileNameMatch = fileNameMatch;
     }
 
-    public Boolean getWritePatchMeta() {
-        return writePatchMeta;
+    public Boolean getWritePatchSign() {
+        return writePatchSign;
     }
 
-    public void setWritePatchMeta(Boolean writePatchMeta) {
-        this.writePatchMeta = writePatchMeta;
+    public void setWritePatchSign(Boolean writePatchSign) {
+        this.writePatchSign = writePatchSign;
     }
 
     @Override

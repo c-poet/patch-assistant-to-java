@@ -6,16 +6,11 @@ import cn.cpoet.patch.assistant.core.AppContext;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.core.PatchConf;
 import cn.cpoet.patch.assistant.exception.AppException;
-import cn.cpoet.patch.assistant.util.CollectionUtil;
-import cn.cpoet.patch.assistant.util.FileNameUtil;
-import cn.cpoet.patch.assistant.util.StringUtil;
-import cn.cpoet.patch.assistant.util.TreeNodeUtil;
+import cn.cpoet.patch.assistant.model.PatchSign;
+import cn.cpoet.patch.assistant.util.*;
 import cn.cpoet.patch.assistant.view.tree.*;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -272,11 +267,14 @@ public class PatchPackService extends BasePackService {
         rootNode.setFile(file);
         rootNode.setPatch(true);
         treeInfo.setRootNode(rootNode);
+        PatchSign patchSign = new PatchSign();
+        patchSign.setName(rootNode.getName());
         if (file.isDirectory()) {
             doGetTreeNodeWithDir(file, rootNode);
         } else {
-            doGetTreeNodeWithZip(file, rootNode);
+            doGetTreeNodeWithZip(patchSign, file, rootNode);
         }
+        treeInfo.setPatchSign(patchSign);
         return treeInfo;
     }
 
@@ -309,12 +307,23 @@ public class PatchPackService extends BasePackService {
         }
     }
 
-    protected void doGetTreeNodeWithZip(File file, TreeNode rootNode) {
-        try (InputStream in = new FileInputStream(file);
-             ZipInputStream zin = new ZipInputStream(in, Charset.forName("GBK"))) {
+    protected void doGetTreeNodeWithZip(PatchSign patchSign, File file, TreeNode rootNode) {
+        byte[] bytes;
+        try (InputStream in = new FileInputStream(file)) {
+            bytes = in.readAllBytes();
+        } catch (IOException ex) {
+            throw new AppException("读取补丁压缩包内容失败", ex);
+        }
+        patchSign.setMd5(HashUtil.md5(bytes));
+        patchSign.setSha1(HashUtil.sha1(bytes));
+        doGetTreeNodeWithZip(new ByteArrayInputStream(bytes), rootNode);
+    }
+
+    protected void doGetTreeNodeWithZip(InputStream in, TreeNode rootNode) {
+        try (ZipInputStream zin = new ZipInputStream(in, Charset.forName("GBK"))) {
             doReadZipEntry(rootNode, zin, true);
         } catch (IOException ex) {
-            throw new AppException("写入文件到压缩包失败", ex);
+            throw new AppException("读取补丁压缩包失败", ex);
         }
     }
 }
