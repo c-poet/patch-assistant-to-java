@@ -21,10 +21,9 @@ import javafx.scene.paint.Color;
 
 import java.io.File;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author CPoet
@@ -53,10 +52,20 @@ public class FileTreeCell extends TreeCell<TreeNode> {
             db.setDragView(image);
             ClipboardContent content = new ClipboardContent();
             content.putString(node.getName());
-            File file = node.isDir() ? FileTempUtil.createTempDir(COPY_FILE_DIR, node.getName())
-                    : FileTempUtil.writeFile2TempDir(COPY_FILE_DIR, node.getName(), node.getBytes());
 
-            content.putFiles(Collections.singletonList(file));
+            List<File> files = getTreeView().getSelectionModel().getSelectedItems()
+                    .stream()
+                    .map(TreeItem::getValue)
+                    .map(treeNode -> {
+                        if (treeNode.isDir()) {
+                            File file = FileTempUtil.createTempDir(COPY_FILE_DIR, treeNode.getName());
+                            deepWriteFile2Path(file, treeNode);
+                            return file;
+                        }
+                        return FileTempUtil.writeFile2TempDir(COPY_FILE_DIR, treeNode.getName(), treeNode.getBytes());
+                    }).collect(Collectors.toList());
+
+            content.putFiles(files);
             db.setContent(content);
             COPY_TREE_ITEM.set(getTreeItem());
             e.consume();
@@ -124,13 +133,21 @@ public class FileTreeCell extends TreeCell<TreeNode> {
         });
     }
 
-    protected void writeFile2Path(List<File> files, File parentPath, TreeNode node) {
-        if (node.isDir()) {
-            File dir = FileUtil.mkdir(parentPath, node.getName());
-            files.add(dir);
+    protected void deepWriteFile2Path(File parent, TreeNode node) {
+        if (CollectionUtil.isEmpty(node.getChildren())) {
             return;
         }
-
+        for (TreeNode childNode : node.getChildren()) {
+            if (childNode.isDir()) {
+                File childDir = FileUtil.mkdir(parent, childNode.getName());
+                deepWriteFile2Path(childDir, childNode);
+                continue;
+            }
+            FileUtil.writeFile(new File(parent, childNode.getName()), childNode.getBytes());
+            if (CollectionUtil.isNotEmpty(childNode.getChildren())) {
+                deepWriteFile2Path(parent, childNode);
+            }
+        }
     }
 
     @Override
