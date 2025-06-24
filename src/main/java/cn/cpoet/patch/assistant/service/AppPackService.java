@@ -18,6 +18,7 @@ import java.io.*;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -54,12 +55,12 @@ public class AppPackService extends BasePackService {
         } catch (IOException ex) {
             throw new AppException("读取应用包失败", ex);
         }
-        TreeNode patchUpSignNode = getPatchUpSignNode(rootNode);
+        TreeNode patchUpSignNode = removePatchUpSignNode(rootNode);
         treeInfo.setPatchUpSignNode(patchUpSignNode);
         return treeInfo;
     }
 
-    protected TreeNode getPatchUpSignNode(TreeNode rootNode) {
+    protected TreeNode removePatchUpSignNode(TreeNode rootNode) {
         if (rootNode == null || CollectionUtil.isEmpty(rootNode.getChildren())) {
             return null;
         }
@@ -73,22 +74,25 @@ public class AppPackService extends BasePackService {
         if (metaInfoNode == null || CollectionUtil.isEmpty(metaInfoNode.getChildren())) {
             return null;
         }
-        for (TreeNode childNode : metaInfoNode.getChildren()) {
+        Iterator<TreeNode> it = metaInfoNode.getChildren().iterator();
+        while (it.hasNext()) {
+            TreeNode childNode = it.next();
             if (AppConst.PATCH_UP_SIGN.equals(childNode.getName())) {
+                it.remove();
                 return childNode;
             }
         }
         return null;
     }
 
-    protected void writePatchSign(ZipOutputStream zipOut, HomeContext context) throws IOException {
+    protected void writePatchSign(ZipOutputStream zipOut, HomeContext context) {
         boolean isWritePathSign = Boolean.TRUE.equals(Configuration.getInstance().getPatch().getWritePatchSign());
         if (!isWritePathSign) {
             return;
         }
         TreeNode patchUpSignNode = context.getAppTree().getTreeInfo().getPatchUpSignNode();
         if (patchUpSignNode != null) {
-            
+
         }
     }
 
