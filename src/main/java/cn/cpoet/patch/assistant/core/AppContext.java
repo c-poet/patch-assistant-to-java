@@ -4,10 +4,7 @@ import cn.cpoet.patch.assistant.constant.AppConst;
 import cn.cpoet.patch.assistant.constant.ThemeEnum;
 import cn.cpoet.patch.assistant.exception.AppException;
 import cn.cpoet.patch.assistant.util.FileUtil;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
+import cn.cpoet.patch.assistant.util.XMLUtil;
 import javafx.scene.Scene;
 
 import java.io.InputStream;
@@ -124,7 +121,7 @@ public class AppContext extends ServiceFactory {
                 configuration = new Configuration();
                 syncConf2File();
             } else {
-                configuration = buildXmlMapper().readValue(in, Configuration.class);
+                configuration = XMLUtil.read(in, Configuration.class);
             }
         } catch (Exception e) {
             throw new AppException("配置文件读取失败", e);
@@ -134,20 +131,11 @@ public class AppContext extends ServiceFactory {
 
     public void syncConf2File() {
         try {
-            byte[] bytes = buildXmlMapper().writeValueAsBytes(configuration);
+            byte[] bytes = XMLUtil.writeAsBytes(configuration);
             FileUtil.writeFile(AppConst.CONFIG_FILE_NAME, bytes);
         } catch (Exception e) {
             throw new AppException("配置文件写入失败", e);
         }
-    }
-
-    private XmlMapper buildXmlMapper() {
-        return XmlMapper.builder()
-                .enable(ToXmlGenerator.Feature.WRITE_XML_DECLARATION)
-                .enable(SerializationFeature.INDENT_OUTPUT)
-                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-                .defaultUseWrapper(true)
-                .build();
     }
 
     public void destroy() {

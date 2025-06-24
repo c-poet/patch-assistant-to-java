@@ -82,15 +82,14 @@ public class AppPackService extends BasePackService {
     }
 
     protected void writePatchSign(ZipOutputStream zipOut, HomeContext context) throws IOException {
-        boolean isWritePathMeta = Boolean.TRUE.equals(Configuration.getInstance().getPatch().getWritePatchSign());
-        if (!isWritePathMeta) {
+        boolean isWritePathSign = Boolean.TRUE.equals(Configuration.getInstance().getPatch().getWritePatchSign());
+        if (!isWritePathSign) {
             return;
         }
-        ZipEntry entry = new ZipEntry("PATCH-INF/" + DateUtil.formatDateTime(LocalDateTime.now()));
-        entry.setTimeLocal(LocalDateTime.now());
-        entry.setComment("Patch meta file");
-        zipOut.putNextEntry(entry);
-        zipOut.write(("Name: " + context.getPatchTree().getTreeInfo().getRootNode().getName()).getBytes());
+        TreeNode patchUpSignNode = context.getAppTree().getTreeInfo().getPatchUpSignNode();
+        if (patchUpSignNode != null) {
+            
+        }
     }
 
     /**
