@@ -7,9 +7,7 @@ import cn.cpoet.patch.assistant.service.AppPackService;
 import cn.cpoet.patch.assistant.util.FXUtil;
 import cn.cpoet.patch.assistant.util.FileUtil;
 import cn.cpoet.patch.assistant.util.TreeNodeUtil;
-import cn.cpoet.patch.assistant.view.tree.FileTreeCell;
-import cn.cpoet.patch.assistant.view.tree.TreeNode;
-import cn.cpoet.patch.assistant.view.tree.TreeNodeStatus;
+import cn.cpoet.patch.assistant.view.tree.*;
 import javafx.event.Event;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -39,7 +37,7 @@ public class HomeLeftTreeView extends HomeTreeView {
         ContextMenu contextMenu = new ContextMenu();
         MenuItem manualDelMenuItem = new MenuItem("删除");
         manualDelMenuItem.setOnAction(e -> {
-            context.appTree.getSelectionModel().getSelectedItems().forEach(item -> {
+            appTree.getSelectionModel().getSelectedItems().forEach(item -> {
                 TreeNode selectedNode = item.getValue();
                 TreeNode nodeParent = selectedNode.getParent();
                 nodeParent.getChildren().remove(selectedNode);
@@ -49,17 +47,17 @@ public class HomeLeftTreeView extends HomeTreeView {
             });
         });
         MenuItem saveFileMenuItem = new MenuItem("保存文件");
-        saveFileMenuItem.setOnAction(e -> saveFile(context.appTree));
+        saveFileMenuItem.setOnAction(e -> saveFile(appTree));
         MenuItem saveSourceFileMenuItem = new MenuItem("保存源文件");
-        saveSourceFileMenuItem.setOnAction(e -> saveSourceFile(context.appTree));
+        saveSourceFileMenuItem.setOnAction(e -> saveSourceFile(appTree));
         contextMenu.getItems().addAll(manualDelMenuItem, saveFileMenuItem, saveSourceFileMenuItem);
         contextMenu.setOnShowing(e -> {
-            boolean isNoneNode = context.appTree
+            boolean isNoneNode = appTree
                     .getSelectionModel()
                     .getSelectedItems()
-                    .stream().anyMatch(item -> item.equals(context.appTree.getRoot()) || item.getValue().getStatus() != TreeNodeStatus.NONE);
+                    .stream().anyMatch(item -> item.equals(appTree.getRoot()) || item.getValue().getStatus() != TreeNodeStatus.NONE);
             manualDelMenuItem.setVisible(!isNoneNode);
-            TreeNode selectedNode = context.appTree.getSelectionModel().getSelectedItem().getValue();
+            TreeNode selectedNode = appTree.getSelectionModel().getSelectedItem().getValue();
             if (selectedNode.isDir()) {
                 saveFileMenuItem.setVisible(false);
                 saveSourceFileMenuItem.setVisible(false);
@@ -68,56 +66,57 @@ public class HomeLeftTreeView extends HomeTreeView {
                 saveSourceFileMenuItem.setVisible(selectedNode.getText().endsWith(FileExtConst.DOT_CLASS));
             }
         });
-        context.appTree.setContextMenu(contextMenu);
+        appTree.setContextMenu(contextMenu);
     }
 
     protected void refreshAppTree(File file) {
-        context.appTreeInfo = AppPackService.getInstance().getTreeNode(file);
+        AppTreeInfo appTreeInfo = AppPackService.getInstance().getTreeNode(file);
+        appTree.setTreeInfo(appTreeInfo);
         refreshAppTree(true);
     }
 
     protected void refreshAppTree(boolean isEmitEvent) {
         if (isEmitEvent) {
-            context.appTree.fireEvent(new Event(HomeContext.APP_TREE_REFRESHING));
+            appTree.fireEvent(new Event(AppTreeView.APP_TREE_REFRESHING));
         }
-        TreeItem<TreeNode> rootItem = context.appTree.getRoot();
+        TreeItem<TreeNode> rootItem = appTree.getRoot();
         if (rootItem == null) {
             rootItem = new TreeItem<>();
-            context.appTree.setRoot(rootItem);
+            appTree.setRoot(rootItem);
         } else {
             rootItem.getChildren().clear();
         }
-        TreeNodeUtil.buildNode(rootItem, context.appTreeInfo.getRootNode(), OnlyChangeFilter.INSTANCE);
+        AppTreeInfo treeInfo = context.getAppTree().getTreeInfo();
+        TreeNodeUtil.buildNode(rootItem, treeInfo.getRootNode(), OnlyChangeFilter.INSTANCE);
         if (isEmitEvent) {
-            context.appTree.fireEvent(new Event(HomeContext.APP_TREE_REFRESH));
+            appTree.fireEvent(new Event(AppTreeView.APP_TREE_REFRESH));
         }
     }
 
     protected void initAppTreeDrag() {
-        context.appTree.setOnDragOver(e -> {
+        appTree.setOnDragOver(e -> {
             List<File> files = e.getDragboard().getFiles();
             if (files.size() == 1 && files.get(0).getName().endsWith(FileExtConst.DOT_JAR)) {
                 e.acceptTransferModes(TransferMode.COPY_OR_MOVE);
             }
             e.consume();
         });
-        context.appTree.setOnDragDropped(e -> {
+        appTree.setOnDragDropped(e -> {
             List<File> files = e.getDragboard().getFiles();
             refreshAppTree(files.get(0));
         });
     }
 
     protected void buildAppTree() {
-        context.appTree.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        context.appTree.setCellFactory(treeView -> new FileTreeCell(context));
+        appTree.setCellFactory(treeView -> new FileTreeCell(context));
         buildAppTreeContextMenu();
-        context.patchTree.addEventHandler(HomeContext.PATCH_TREE_REFRESH, e -> refreshAppTree(false));
-        context.appTree.addEventHandler(HomeContext.APP_TREE_REFRESH_CALL, e -> refreshAppTree(true));
-        context.appTree.getSelectionModel().selectedItemProperty()
-                .addListener((observableValue, oldVal, newVal) -> selectedLink(context.appTree, context.patchTree));
-        context.appTree.setOnMouseClicked(e -> {
+        context.patchTree.addEventHandler(PatchTreeView.PATCH_TREE_REFRESH, e -> refreshAppTree(false));
+        appTree.addEventHandler(AppTreeView.APP_TREE_REFRESH_CALL, e -> refreshAppTree(true));
+        appTree.getSelectionModel().selectedItemProperty()
+                .addListener((observableValue, oldVal, newVal) -> selectedLink(appTree, context.patchTree));
+        appTree.setOnMouseClicked(e -> {
             if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 2) {
-                TreeItem<TreeNode> selectedItem = context.appTree.getSelectionModel().getSelectedItem();
+                TreeItem<TreeNode> selectedItem = appTree.getSelectionModel().getSelectedItem();
                 if (selectedItem != null) {
                     TreeNode selectedTreeNode = selectedItem.getValue();
                     if (selectedTreeNode.getText().endsWith(FileExtConst.DOT_JAR)) {
@@ -151,12 +150,14 @@ public class HomeLeftTreeView extends HomeTreeView {
         appPackPathBox.getChildren().add(FXUtil.pre(new TextField(), node -> {
             node.setEditable(false);
             HBox.setHgrow(node, Priority.ALWAYS);
-            if (context.appTreeInfo != null && context.appTreeInfo.getRootNode() != null) {
-                node.setText(context.appTreeInfo.getRootNode().getPath());
+            AppTreeInfo appTreeInfo = appTree.getTreeInfo();
+            if (appTreeInfo != null && appTreeInfo.getRootNode() != null) {
+                node.setText(appTreeInfo.getRootNode().getPath());
             }
-            context.appTree.addEventHandler(HomeContext.APP_TREE_REFRESH, e -> {
-                if (context.appTreeInfo != null && context.appTreeInfo.getRootNode() != null) {
-                    node.setText(context.appTreeInfo.getRootNode().getPath());
+            appTree.addEventHandler(AppTreeView.APP_TREE_REFRESH, e -> {
+                AppTreeInfo treeInfo = appTree.getTreeInfo();
+                if (treeInfo != null && treeInfo.getRootNode() != null) {
+                    node.setText(treeInfo.getRootNode().getPath());
                 }
             });
             node.textProperty().addListener((observableValue, oldVal, newVal) -> {
@@ -176,7 +177,7 @@ public class HomeLeftTreeView extends HomeTreeView {
             });
         }));
         buildAppTree();
-        VBox.setVgrow(context.appTree, Priority.ALWAYS);
-        return new VBox(appPackPathBox, context.appTree);
+        VBox.setVgrow(appTree, Priority.ALWAYS);
+        return new VBox(appPackPathBox, appTree);
     }
 }

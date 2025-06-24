@@ -6,6 +6,8 @@ import cn.cpoet.patch.assistant.util.FileNameUtil;
 import cn.cpoet.patch.assistant.util.FileUtil;
 import cn.cpoet.patch.assistant.view.content.ContentParser;
 import cn.cpoet.patch.assistant.view.content.ContentSupports;
+import cn.cpoet.patch.assistant.view.tree.AppTreeView;
+import cn.cpoet.patch.assistant.view.tree.PatchTreeView;
 import cn.cpoet.patch.assistant.view.tree.TreeNode;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
@@ -21,10 +23,14 @@ public abstract class HomeTreeView {
 
     protected final Stage stage;
     protected final HomeContext context;
+    protected final AppTreeView appTree;
+    protected final PatchTreeView patchTree;
 
     protected HomeTreeView(Stage stage, HomeContext context) {
         this.stage = stage;
         this.context = context;
+        this.appTree = context.getAppTree();
+        this.patchTree = context.getPatchTree();
     }
 
     protected void selectedLink(TreeView<TreeNode> originTree, TreeView<TreeNode> targetTree) {

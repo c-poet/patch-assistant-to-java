@@ -5,6 +5,8 @@ import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.core.SearchConf;
 import cn.cpoet.patch.assistant.core.SearchItem;
 import cn.cpoet.patch.assistant.util.StringUtil;
+import cn.cpoet.patch.assistant.view.tree.AppTreeInfo;
+import cn.cpoet.patch.assistant.view.tree.PatchTreeInfo;
 import cn.cpoet.patch.assistant.view.tree.TreeNode;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
@@ -73,20 +75,24 @@ public class SearchView {
         }
         String[] paths = keyword.split("[/\\\\]");
         if (paths.length > 1) {
+            AppTreeInfo appTreeInfo = context.getAppTree().getTreeInfo();
+            PatchTreeInfo patchTreeInfo = context.getPatchTree().getTreeInfo();
             SearchKeyword[] searchKeywords = createKeywords(paths);
-            if (context.appTreeInfo != null) {
-                searchNodeWithPath(context.appTreeInfo.getRootNode(), searchKeywords);
+            if (appTreeInfo != null) {
+                searchNodeWithPath(appTreeInfo.getRootNode(), searchKeywords);
             }
-            if (context.patchTreeInfo != null) {
-                searchNodeWithPath(context.patchTreeInfo.getRootNode(), searchKeywords);
+            if (patchTreeInfo != null) {
+                searchNodeWithPath(patchTreeInfo.getRootNode(), searchKeywords);
             }
         } else {
+            AppTreeInfo appTreeInfo = context.getAppTree().getTreeInfo();
+            PatchTreeInfo patchTreeInfo = context.getPatchTree().getTreeInfo();
             SearchKeyword searchKeyword = createKeyword(keyword);
-            if (context.appTreeInfo != null) {
-                searchNode(context.appTreeInfo.getRootNode(), searchKeyword);
+            if (appTreeInfo != null) {
+                searchNode(appTreeInfo.getRootNode(), searchKeyword);
             }
-            if (context.patchTreeInfo != null) {
-                searchNode(context.patchTreeInfo.getRootNode(), searchKeyword);
+            if (patchTreeInfo != null) {
+                searchNode(patchTreeInfo.getRootNode(), searchKeyword);
             }
         }
     }

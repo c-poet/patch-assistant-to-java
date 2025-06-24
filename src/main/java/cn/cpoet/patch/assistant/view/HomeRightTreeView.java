@@ -9,8 +9,7 @@ import cn.cpoet.patch.assistant.util.FXUtil;
 import cn.cpoet.patch.assistant.util.FileUtil;
 import cn.cpoet.patch.assistant.util.StringUtil;
 import cn.cpoet.patch.assistant.util.TreeNodeUtil;
-import cn.cpoet.patch.assistant.view.tree.FileCheckBoxTreeCell;
-import cn.cpoet.patch.assistant.view.tree.TreeNode;
+import cn.cpoet.patch.assistant.view.tree.*;
 import javafx.event.Event;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -42,12 +41,13 @@ public class HomeRightTreeView extends HomeTreeView {
         ContextMenu contextMenu = new ContextMenu();
         MenuItem markRootMenuItem = new MenuItem();
         markRootMenuItem.setOnAction(e -> {
-            TreeItem<TreeNode> selectedItem = context.patchTree.getSelectionModel().getSelectedItem();
-            TreeNode customRootNode = context.patchTreeInfo.getCustomRootNode();
+            TreeItem<TreeNode> selectedItem = patchTree.getSelectionModel().getSelectedItem();
+            PatchTreeInfo patchTreeInfo = patchTree.getTreeInfo();
+            TreeNode customRootNode = patchTreeInfo.getCustomRootNode();
             if (Objects.equals(customRootNode, selectedItem.getValue())) {
-                context.patchTreeInfo.setCustomRootNode(null);
+                patchTreeInfo.setCustomRootNode(null);
             } else {
-                context.patchTreeInfo.setCustomRootNode(selectedItem.getValue());
+                patchTreeInfo.setCustomRootNode(selectedItem.getValue());
             }
             refreshPatchTree(false, true);
         });
@@ -56,18 +56,22 @@ public class HomeRightTreeView extends HomeTreeView {
         MenuItem saveSourceFileMenuItem = new MenuItem("保存源文件");
         saveSourceFileMenuItem.setOnAction(e -> saveSourceFile(context.patchTree));
         MenuItem viewPatchSign = new MenuItem("查看签名");
-        viewPatchSign.setOnAction(e -> new PatchSignView(context.patchTreeInfo.getPatchSign()).showDialog(stage));
+        viewPatchSign.setOnAction(e -> {
+            PatchTreeInfo patchTreeInfo = patchTree.getTreeInfo();
+            new PatchSignView(patchTreeInfo.getPatchSign()).showDialog(stage);
+        });
         contextMenu.getItems().addAll(markRootMenuItem, saveFileMenuItem, saveSourceFileMenuItem, viewPatchSign);
         contextMenu.setOnShowing(e -> {
             TreeItem<TreeNode> selectedItem = context.patchTree.getSelectionModel().getSelectedItem();
             if (selectedItem == null) {
                 return;
             }
+            PatchTreeInfo patchTreeInfo = patchTree.getTreeInfo();
             TreeNode selectedNode = selectedItem.getValue();
-            if (selectedNode != context.patchTreeInfo.getRootNode() &&
+            if (selectedNode != patchTreeInfo.getRootNode() &&
                     selectedNode.getChildren() != null && !selectedNode.getChildren().isEmpty()) {
                 markRootMenuItem.setVisible(true);
-                if (Objects.equals(selectedNode, context.patchTreeInfo.getCustomRootNode())) {
+                if (Objects.equals(selectedNode, patchTreeInfo.getCustomRootNode())) {
                     markRootMenuItem.setText("取消根节点标记");
                 } else {
                     markRootMenuItem.setText("标记为根节点");
@@ -89,13 +93,14 @@ public class HomeRightTreeView extends HomeTreeView {
 
     protected void refreshPatchTree(File file) {
         PatchPackService patchPackService = PatchPackService.getInstance();
-        context.patchTreeInfo = patchPackService.getTreeNode(file);
+        PatchTreeInfo patchTreeInfo = patchPackService.getTreeNode(file);
+        patchTree.setTreeInfo(patchTreeInfo);
         refreshPatchTree(true, true);
     }
 
     protected void refreshPatchTree(boolean isBuildTreeItem, boolean isEmitEvent) {
         if (isEmitEvent) {
-            context.patchTree.fireEvent(new Event(HomeContext.PATCH_TREE_REFRESHING));
+            context.patchTree.fireEvent(new Event(PatchTreeView.PATCH_TREE_REFRESHING));
         }
         TreeItem<TreeNode> rootItem = context.patchTree.getRoot();
         if (isBuildTreeItem) {
@@ -105,20 +110,22 @@ public class HomeRightTreeView extends HomeTreeView {
             } else {
                 rootItem.getChildren().clear();
             }
-            TreeNodeUtil.buildNode(rootItem, context.patchTreeInfo.getRootNode());
+            TreeNodeUtil.buildNode(rootItem, patchTree.getTreeInfo().getRootNode());
         }
         TreeNodeUtil.expendedMappedOrAllNode(context.totalInfo, rootItem);
         if (isEmitEvent) {
-            context.patchTree.fireEvent(new Event(HomeContext.PATCH_TREE_REFRESH));
+            context.patchTree.fireEvent(new Event(PatchTreeView.PATCH_TREE_REFRESH));
         }
     }
 
     protected void refreshPatchMappedNode(boolean isRefreshReadme) {
         PatchPackService patchPackService = PatchPackService.getInstance();
+        AppTreeInfo appTreeInfo = appTree.getTreeInfo();
+        PatchTreeInfo patchTreeInfo = patchTree.getTreeInfo();
         if (isRefreshReadme) {
-            patchPackService.refreshReadmeNode(context.patchTreeInfo);
+            patchPackService.refreshReadmeNode(patchTreeInfo);
         }
-        patchPackService.refreshMappedNode(context.totalInfo, context.appTreeInfo, context.patchTreeInfo);
+        patchPackService.refreshMappedNode(context.totalInfo, appTreeInfo, patchTreeInfo);
     }
 
     protected void initPatchTreeDrag() {
@@ -137,12 +144,11 @@ public class HomeRightTreeView extends HomeTreeView {
     }
 
     protected void buildPatchTree() {
-        context.patchTree.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         context.patchTree.setCellFactory(v -> new FileCheckBoxTreeCell(context));
         buildPatchTreeContextMenu();
-        context.appTree.addEventHandler(HomeContext.APP_TREE_REFRESHING, e -> refreshPatchMappedNode(false));
-        context.appTree.addEventHandler(HomeContext.APP_TREE_REFRESH, e -> refreshPatchTree(false, false));
-        context.patchTree.addEventHandler(HomeContext.PATCH_TREE_REFRESHING, e -> refreshPatchMappedNode(true));
+        context.appTree.addEventHandler(AppTreeView.APP_TREE_REFRESHING, e -> refreshPatchMappedNode(false));
+        context.appTree.addEventHandler(AppTreeView.APP_TREE_REFRESH, e -> refreshPatchTree(false, false));
+        context.patchTree.addEventHandler(PatchTreeView.PATCH_TREE_REFRESHING, e -> refreshPatchMappedNode(true));
         context.patchTree.getSelectionModel().selectedItemProperty()
                 .addListener((observableValue, oldVal, newVal) -> selectedLink(context.patchTree, context.appTree));
         context.patchTree.setOnMouseClicked(e -> {
@@ -193,12 +199,14 @@ public class HomeRightTreeView extends HomeTreeView {
         patchPackPathBox.getChildren().add(FXUtil.pre(new TextField(), node -> {
             node.setEditable(false);
             HBox.setHgrow(node, Priority.ALWAYS);
-            if (context.patchTreeInfo != null && context.patchTreeInfo.getRootNode() != null) {
-                node.setText(context.patchTreeInfo.getRootNode().getPath());
+            PatchTreeInfo patchTreeInfo = patchTree.getTreeInfo();
+            if (patchTreeInfo != null && patchTreeInfo.getRootNode() != null) {
+                node.setText(patchTreeInfo.getRootNode().getPath());
             }
-            context.patchTree.addEventHandler(HomeContext.PATCH_TREE_REFRESH, e -> {
-                if (context.patchTreeInfo != null && context.patchTreeInfo.getRootNode() != null) {
-                    node.setText(context.patchTreeInfo.getRootNode().getPath());
+            context.patchTree.addEventHandler(PatchTreeView.PATCH_TREE_REFRESH, e -> {
+                PatchTreeInfo treeInfo = patchTree.getTreeInfo();
+                if (treeInfo != null && treeInfo.getRootNode() != null) {
+                    node.setText(treeInfo.getRootNode().getPath());
                 }
             });
             node.textProperty().addListener((observableValue, oldVal, newVal) -> {

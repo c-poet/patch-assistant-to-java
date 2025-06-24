@@ -90,19 +90,18 @@ public class AppPackService extends BasePackService {
         entry.setTimeLocal(LocalDateTime.now());
         entry.setComment("Patch meta file");
         zipOut.putNextEntry(entry);
-        zipOut.write(("Name: " + patchTree.getRootNode().getName()).getBytes());
+        zipOut.write(("Name: " + context.getPatchTree().getTreeInfo().getRootNode().getName()).getBytes());
     }
 
     /**
      * 生成并保存应用包
      *
-     * @param context       进度上下文
-     * @param file          文件名
-     * @param appTree       应用树
-     * @param patchNode     补丁树
-     * @param isDockerImage 是否Docker镜像
+     * @param context         上下文
+     * @param progressContext 进度上下文
+     * @param file            文件名
+     * @param isDockerImage   是否Docker镜像
      */
-    public void savePack(ProgressContext context, File file, TreeInfo appTree, TreeInfo patchNode, boolean isDockerImage) {
+    public void savePack(HomeContext context, ProgressContext progressContext, File file, boolean isDockerImage) {
         if (isDockerImage) {
             String dockerfile = FileUtil.readFileAsString(AppConst.DOCKERFILE_FILE_NAME);
             if (StringUtil.isBlank(dockerfile)) {
@@ -110,15 +109,15 @@ public class AppPackService extends BasePackService {
             }
             // 校验远程信息是否配置正确
             Thread thread = new Thread(() -> {
-                context.setRunLater(true);
-                context.step("开始保存镜像包");
+                progressContext.setRunLater(true);
+                progressContext.step("开始保存镜像包");
                 try {
-                    saveDockerPack(context, file, appTree, patchNode, dockerfile);
-                    context.step("完成保存镜像包");
+                    saveDockerPack(context, progressContext, file, dockerfile);
+                    progressContext.step("完成保存镜像包");
                 } catch (Exception e) {
-                    context.step(ExceptionUtil.asString(e));
+                    progressContext.step(ExceptionUtil.asString(e));
                 } finally {
-                    context.end();
+                    progressContext.end();
                 }
             });
             thread.setDaemon(true);
@@ -126,15 +125,15 @@ public class AppPackService extends BasePackService {
             return;
         }
         Thread thread = new Thread(() -> {
-            context.setRunLater(true);
-            context.step("开始保存应用包");
+            progressContext.setRunLater(true);
+            progressContext.step("开始保存应用包");
             try {
-                savePack(context, file, appTree, patchNode);
-                context.step("完成保存应用包");
+                savePack(context, progressContext, file);
+                progressContext.step("完成保存应用包");
             } catch (Exception e) {
-                context.step(ExceptionUtil.asString(e));
+                progressContext.step(ExceptionUtil.asString(e));
             } finally {
-                context.end();
+                progressContext.end();
             }
         });
         thread.setDaemon(true);
@@ -144,17 +143,17 @@ public class AppPackService extends BasePackService {
     /**
      * 保存Docker镜像包
      *
-     * @param progressContext    进度上下文
-     * @param file       文件
-     * @param appTree    应用树
-     * @param dockerfile dockerfile文件内容
+     * @param context         上下文
+     * @param progressContext 进度上下文
+     * @param file            文件
+     * @param dockerfile      dockerfile文件内容
      */
-    public void saveDockerPack(HomeContext homeContext, ProgressContext progressContext, File file, String dockerfile) {
+    public void saveDockerPack(HomeContext context, ProgressContext progressContext, File file, String dockerfile) {
         byte[] bytes;
-        TreeNode rootNode = appTree.getRootNode();
+        TreeNode rootNode = context.getAppTree().getTreeInfo().getRootNode();
         try (ByteArrayOutputStream out = new ByteArrayOutputStream();
              ZipOutputStream zipOut = new ZipOutputStream(out)) {
-            writePatchSign(zipOut, patchNode);
+            writePatchSign(zipOut, context);
             doSavePack(progressContext, rootNode, zipOut);
             bytes = out.toByteArray();
         } catch (Exception e) {
@@ -284,15 +283,17 @@ public class AppPackService extends BasePackService {
     /**
      * 生成并保存应用包
      *
-     * @param file    文件
-     * @param appTree 应用树
+     * @param context         上下文
+     * @param progressContext 进度上下文
+     * @param file            文件
      */
-    public void savePack(ProgressContext context, File file, TreeInfo appTree, TreeInfo patchNode) {
-        TreeNode rootNode = appTree.getRootNode();
+    public void savePack(HomeContext context, ProgressContext progressContext, File file) {
+        AppTreeView appTree = context.getAppTree();
+        TreeNode rootNode = appTree.getTreeInfo().getRootNode();
         try (OutputStream out = new FileOutputStream(file);
              ZipOutputStream zipOut = new ZipOutputStream(out)) {
-            writePatchSign(zipOut, patchNode);
-            doSavePack(context, rootNode, zipOut);
+            writePatchSign(zipOut, context);
+            doSavePack(progressContext, rootNode, zipOut);
         } catch (Exception e) {
             throw new AppException("生成应用包失败", e);
         }

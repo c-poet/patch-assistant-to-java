@@ -21,7 +21,7 @@ public class FileCheckBoxTreeCell extends FileTreeCell {
                 CheckBox checkBox = new CheckBox();
                 checkBox.setSelected(node.isChecked());
                 checkBox.setOnAction(e -> {
-                    TotalInfo totalInfo = homeContext.getTotalInfo();
+                    TotalInfo totalInfo = context.getTotalInfo();
                     if (node.isChecked()) {
                         totalInfo.decrTotal(node.getStatus());
                         node.setChecked(false);

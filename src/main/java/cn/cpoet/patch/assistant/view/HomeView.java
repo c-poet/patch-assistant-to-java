@@ -7,6 +7,9 @@ import cn.cpoet.patch.assistant.service.AppPackService;
 import cn.cpoet.patch.assistant.util.AlterUtil;
 import cn.cpoet.patch.assistant.util.FXUtil;
 import cn.cpoet.patch.assistant.util.ImageUtil;
+import cn.cpoet.patch.assistant.view.tree.AppTreeView;
+import cn.cpoet.patch.assistant.view.tree.PatchTreeInfo;
+import cn.cpoet.patch.assistant.view.tree.PatchTreeView;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -55,7 +58,7 @@ public class HomeView extends HomeContext {
         onlyChanges.setSelected(Boolean.TRUE.equals(configuration.getIsOnlyChanges()));
         onlyChanges.setOnAction(e -> {
             configuration.setIsOnlyChanges(!Boolean.TRUE.equals(configuration.getIsOnlyChanges()));
-            appTree.fireEvent(new Event(HomeContext.APP_TREE_REFRESH_CALL));
+            appTree.fireEvent(new Event(AppTreeView.APP_TREE_REFRESH_CALL));
         });
         headerBox.getChildren().add(onlyChanges);
 
@@ -93,9 +96,11 @@ public class HomeView extends HomeContext {
     protected Node buildBottomCentre() {
         TextArea readMeTextArea = new TextArea();
         readMeTextArea.setEditable(false);
-        patchTree.addEventHandler(HomeContext.PATCH_TREE_REFRESH, (EventHandler<Event>) event -> {
+        patchTree.addEventHandler(PatchTreeView.PATCH_TREE_REFRESH, (EventHandler<Event>) event -> {
+            PatchTreeInfo patchTreeInfo = patchTree.getTreeInfo();
             readMeTextArea.setText(patchTreeInfo.getReadMeText());
         });
+        PatchTreeInfo patchTreeInfo = patchTree.getTreeInfo();
         if (patchTreeInfo != null) {
             readMeTextArea.setText(patchTreeInfo.getReadMeText());
         }
@@ -129,7 +134,7 @@ public class HomeView extends HomeContext {
                 FXUtil.pre(new Region(), node -> HBox.setHgrow(node, Priority.ALWAYS)),
                 FXUtil.pre(new Button(), btn -> {
                     btn.setDisable(appTree.getRoot() == null);
-                    appTree.addEventHandler(APP_TREE_REFRESH, e -> btn.setDisable(appTree.getRoot() == null));
+                    appTree.addEventHandler(AppTreeView.APP_TREE_REFRESH, e -> btn.setDisable(appTree.getRoot() == null));
                     btn.setText("保存");
                     btn.setOnAction(e -> {
                         if (!totalInfo.isChangeNode()) {
@@ -152,8 +157,8 @@ public class HomeView extends HomeContext {
                         if (file == null) {
                             return;
                         }
-                        new ProgressView(fileChooser.getTitle()).showDialog(stage, (context) -> {
-                            AppPackService.getInstance().savePack(context, file, appTreeInfo, patchTreeInfo, isDockerImage);
+                        new ProgressView(fileChooser.getTitle()).showDialog(stage, (progressContext) -> {
+                            AppPackService.getInstance().savePack(this, progressContext, file, isDockerImage);
                         });
                     });
                 })

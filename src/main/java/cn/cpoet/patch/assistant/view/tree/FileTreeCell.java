@@ -34,10 +34,14 @@ public class FileTreeCell extends TreeCell<TreeNode> {
     public final static ThreadLocal<TreeItem<TreeNode>> COPY_TREE_ITEM = new ThreadLocal<>();
 
     protected HBox box;
-    protected final HomeContext homeContext;
+    protected AppTreeView appTree;
+    protected PatchTreeView patchTree;
+    protected final HomeContext context;
 
-    public FileTreeCell(HomeContext homeContext) {
-        this.homeContext = homeContext;
+    public FileTreeCell(HomeContext context) {
+        this.appTree = context.getAppTree();
+        this.patchTree = context.getPatchTree();
+        this.context = context;
         startCellDrag();
     }
 
@@ -78,9 +82,9 @@ public class FileTreeCell extends TreeCell<TreeNode> {
             }
             if (COPY_TREE_ITEM.get() == null
                     || COPY_TREE_ITEM.get().getValue().getMappedNode() != null
-                    || COPY_TREE_ITEM.get().getValue().equals(homeContext.getPatchTreeInfo().getReadMeNode())
+                    || COPY_TREE_ITEM.get().getValue().equals(patchTree.getTreeInfo().getReadMeNode())
                     || ((FileTreeCell) e.getGestureSource()).getTreeView() == this.getTreeView()
-                    || this.getTreeView() != homeContext.getAppTree()) {
+                    || this.getTreeView() != appTree) {
                 return;
             }
             e.acceptTransferModes(TransferMode.COPY);
@@ -107,11 +111,11 @@ public class FileTreeCell extends TreeCell<TreeNode> {
             TreeNode originNode = originItem.getValue();
             if (mappedItem != null) {
                 TreeNode mappedNode = mappedItem.getValue();
-                TreeNodeUtil.mappedNode(homeContext.getTotalInfo(), originNode, mappedNode, TreeNodeStatus.MOD);
+                TreeNodeUtil.mappedNode(context.getTotalInfo(), originNode, mappedNode, TreeNodeStatus.MOD);
             } else {
                 VirtualMappedNode virtualMappedNode = new VirtualMappedNode(originNode);
                 virtualMappedNode.setParent(targetItem.getValue());
-                TreeNodeUtil.mappedNode(homeContext.getTotalInfo(), originNode, virtualMappedNode, TreeNodeStatus.ADD);
+                TreeNodeUtil.mappedNode(context.getTotalInfo(), originNode, virtualMappedNode, TreeNodeStatus.ADD);
                 List<TreeNode> children = targetItem.getValue().getAndInitChildren();
                 if (children instanceof SortLinkedList) {
                     int index = ((SortLinkedList<TreeNode>) children).addAndIndex(virtualMappedNode);
@@ -121,7 +125,7 @@ public class FileTreeCell extends TreeCell<TreeNode> {
                     TreeNodeUtil.buildChildNode(targetItem, virtualMappedNode, OnlyChangeFilter.INSTANCE);
                 }
             }
-            Platform.runLater(() -> homeContext.getPatchTree().refresh());
+            Platform.runLater(() -> patchTree.refresh());
             e.consume();
         });
 
@@ -176,7 +180,7 @@ public class FileTreeCell extends TreeCell<TreeNode> {
     }
 
     protected Image getIconImage(TreeNode node, Function<InputStream, Image> imgFactory) {
-        if (homeContext.isPatchCustomRoot(node)) {
+        if (context.isPatchCustomRoot(node)) {
             return ImageUtil.loadImage(IConConst.FILE_MARK, imgFactory);
         }
         Image image = IConUtil.loadIconByFileExt(node.getName(), imgFactory);
