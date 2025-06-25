@@ -9,6 +9,7 @@ import cn.cpoet.patch.assistant.view.content.ContentSupports;
 import cn.cpoet.patch.assistant.view.tree.AppTreeView;
 import cn.cpoet.patch.assistant.view.tree.PatchTreeView;
 import cn.cpoet.patch.assistant.view.tree.TreeNode;
+import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.stage.FileChooser;
@@ -46,7 +47,9 @@ public abstract class HomeTreeView {
             return;
         }
         TreeItem<TreeNode> targetItem = appNode.getMappedNode().getTreeItem();
-        targetTree.getSelectionModel().select(targetItem);
+        MultipleSelectionModel<TreeItem<TreeNode>> selectionModel = targetTree.getSelectionModel();
+        selectionModel.clearSelection();
+        selectionModel.select(targetItem);
         int targetItemIndex = targetTree.getRow(targetItem);
         targetTree.scrollTo(targetItemIndex);
     }
