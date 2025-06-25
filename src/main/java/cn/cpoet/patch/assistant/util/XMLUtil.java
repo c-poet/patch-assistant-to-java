@@ -1,6 +1,7 @@
 package cn.cpoet.patch.assistant.util;
 
 import cn.cpoet.patch.assistant.exception.AppException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
@@ -30,6 +31,14 @@ public abstract class XMLUtil {
     public static <T> T read(InputStream in, Class<T> clazz) {
         try {
             return getXmlMapper().readValue(in, clazz);
+        } catch (Exception e) {
+            throw new AppException("反序列化失败", e);
+        }
+    }
+
+    public static <T> T read(byte[] bytes, TypeReference<T> typeReference) {
+        try {
+            return getXmlMapper().readValue(bytes, typeReference);
         } catch (Exception e) {
             throw new AppException("反序列化失败", e);
         }

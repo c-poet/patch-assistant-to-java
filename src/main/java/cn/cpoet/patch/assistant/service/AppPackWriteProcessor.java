@@ -2,16 +2,16 @@ package cn.cpoet.patch.assistant.service;
 
 import cn.cpoet.patch.assistant.constant.AppConst;
 import cn.cpoet.patch.assistant.constant.FileExtConst;
+import cn.cpoet.patch.assistant.constant.JarInfoConst;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.core.DockerConf;
 import cn.cpoet.patch.assistant.exception.AppException;
+import cn.cpoet.patch.assistant.model.PatchUpSign;
 import cn.cpoet.patch.assistant.util.*;
 import cn.cpoet.patch.assistant.view.HomeContext;
 import cn.cpoet.patch.assistant.view.ProgressContext;
-import cn.cpoet.patch.assistant.view.tree.AppTreeView;
-import cn.cpoet.patch.assistant.view.tree.TreeNode;
-import cn.cpoet.patch.assistant.view.tree.TreeNodeStatus;
-import cn.cpoet.patch.assistant.view.tree.ZipEntryNode;
+import cn.cpoet.patch.assistant.view.tree.*;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpProgressMonitor;
 
@@ -19,6 +19,8 @@ import java.io.*;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -44,7 +46,7 @@ public class AppPackWriteProcessor {
         if (isDockerImage) {
             String dockerfile = FileUtil.readFileAsString(AppConst.DOCKERFILE_FILE_NAME);
             if (StringUtil.isBlank(dockerfile)) {
-                throw new AppException("Dockerfile模板文件不能为空");
+                throw new AppException("Dockerfile template file cannot be empty");
             }
             createDockerTask(file, dockerfile).start();
             return;
@@ -55,10 +57,10 @@ public class AppPackWriteProcessor {
     private Thread createDockerTask(File file, String dockerfile) {
         Thread thread = new Thread(() -> {
             progressContext.setRunLater(true);
-            progressContext.step("开始保存镜像包");
+            progressContext.step("Start write to Docker image pack");
             try {
                 writeDocker(file, dockerfile);
-                progressContext.step("完成保存镜像包");
+                progressContext.step("Write to Docker image pack finish");
             } catch (Exception e) {
                 progressContext.step(ExceptionUtil.asString(e));
             } finally {
@@ -72,10 +74,10 @@ public class AppPackWriteProcessor {
     private Thread createTask(File file) {
         Thread thread = new Thread(() -> {
             progressContext.setRunLater(true);
-            progressContext.step("开始保存应用包");
+            progressContext.step("Start write to JAR pack");
             try {
                 write(file);
-                progressContext.step("完成保存应用包");
+                progressContext.step("Write to JAR pack finish");
             } catch (Exception e) {
                 progressContext.step(ExceptionUtil.asString(e));
             } finally {
@@ -94,7 +96,7 @@ public class AppPackWriteProcessor {
             doWrite(rootNode, zipOut);
             bytes = out.toByteArray();
         } catch (Exception e) {
-            throw new AppException("生成应用包失败", e);
+            throw new AppException("Generate Application pack fail", e);
         }
         dockerfile = TemplateUtil.render(dockerfile, Collections.singletonMap("jarName", rootNode.getName()));
         DockerConf docker = Configuration.getInstance().getDocker();
@@ -106,40 +108,40 @@ public class AppPackWriteProcessor {
     }
 
     private void writeDockerWithRemote(DockerConf docker, File file, TreeNode rootNode, byte[] bytes, String dockerfile) {
-        progressContext.step("校验Docker服务器信息");
+        progressContext.step("Check Docker server info");
         String host = docker.getHost();
         String username = docker.getUsername();
         String password = docker.getPassword();
         if (StringUtil.isBlank(host) || StringUtil.isBlank(username) || StringUtil.isBlank(password)) {
-            throw new AppException("Docker服务器信息错误，请检查配置");
+            throw new AppException("Docker server info error");
         }
-        progressContext.step("SSH连接到: " + docker.getHost());
+        progressContext.step("SSH-connect: " + docker.getHost());
         Session session = null;
         try {
             password = EncryptUtil.decryptWithRsaSys(password);
             session = SSHUtil.createSession(host, docker.getPort(), username, password);
-            progressContext.step("SSH连接成功");
+            progressContext.step("The SSH connection is successful");
             OutputStream progressOut = progressContext.createOutputStream();
             String command = StringUtil.isBlank(docker.getCommand()) ? DockerConf.DEFAULT_COMMAND : docker.getCommand();
             String workPath = StringUtil.isBlank(docker.getWorkPath()) ? DockerConf.DEFAULT_WORK_PATH : docker.getWorkPath();
-            progressContext.step("上传Dockerfile");
+            progressContext.step("Upload the Dockerfile");
             SSHUtil.uploadFile(session, progressOut, createSftpProgressMonitor(true), workPath, AppConst.DOCKERFILE_FILE_NAME, dockerfile.getBytes());
-            progressContext.step("上传应用包: " + rootNode.getName());
+            progressContext.step("Upload the app package:" + rootNode.getName());
             SSHUtil.uploadFile(session, progressOut, createSftpProgressMonitor(true), workPath, rootNode.getName(), bytes);
-            progressContext.step("生成Docker镜像");
+            progressContext.step("Generate a Docker image");
             int status = SSHUtil.execCmd(session, progressOut, command + " build -t demo:1.0.0 " + workPath);
             if (status != 0) {
-                throw new AppException("生成Docker镜像失败");
+                throw new AppException("Failed to generate a Docker image");
             }
-            progressContext.step("导出Docker镜像");
+            progressContext.step("Export a Docker image");
             status = SSHUtil.execCmd(session, progressOut, command + " save -o " + workPath + "/demo.tar demo:1.0.0");
             if (status != 0) {
-                throw new AppException("导出Docker镜像失败");
+                throw new AppException("Failed to export a Docker image");
             }
-            progressContext.step("下载Docker镜像");
+            progressContext.step("Download the Docker image");
             SSHUtil.downloadFile(session, progressOut, createSftpProgressMonitor(false), workPath + "/demo.tar", file);
         } finally {
-            progressContext.step("关闭SSH连接");
+            progressContext.step("Close the SSH connection");
             SSHUtil.closeSession(session);
         }
     }
@@ -147,22 +149,22 @@ public class AppPackWriteProcessor {
     private void writeDockerWithLocal(DockerConf docker, File file, TreeNode rootNode, byte[] bytes, String dockerfile) {
         String localCommand = StringUtil.isBlank(docker.getLocalCommand()) ? DockerConf.DEFAULT_COMMAND : docker.getLocalCommand();
         String localWorkPath = StringUtil.isBlank(docker.getLocalWorkPath()) ? DockerConf.DEFAULT_WORK_PATH : docker.getLocalWorkPath();
-        progressContext.step("写入Dockerfile到: " + localWorkPath);
+        progressContext.step("Write Dockerfile to:" + localWorkPath);
         FileUtil.writeFile(localWorkPath, AppConst.DOCKERFILE_FILE_NAME, dockerfile.getBytes());
-        progressContext.step("写入应用包到: " + localWorkPath);
+        progressContext.step("Write Application Pack to: " + localWorkPath);
         FileUtil.writeFile(localWorkPath, rootNode.getName(), bytes);
-        progressContext.step("生成Docker镜像");
+        progressContext.step("Generate Docker image");
         OutputStream progressOut = progressContext.createOutputStream();
         int status = CommandUtil.exec(localCommand + " build -t demo:1.0.0 .", localWorkPath, progressOut);
         if (status != 0) {
-            throw new AppException("生成Docker镜像失败");
+            throw new AppException("Generate Docker image fail");
         }
-        progressContext.step("导出Docker镜像");
+        progressContext.step("Export Docker image");
         status = CommandUtil.exec(localCommand + " save -o demo.tar demo:1.0.0", localWorkPath, progressOut);
         if (status != 0) {
-            throw new AppException("导出Docker镜像失败");
+            throw new AppException("Export Docker image fail");
         }
-        progressContext.step("移动Docker镜像");
+        progressContext.step("Move Docker image");
         String sourcePath = FileNameUtil.joinPath(localWorkPath, "demo.tar");
         FileUtil.moveFile(sourcePath, file, StandardCopyOption.REPLACE_EXISTING);
     }
@@ -179,7 +181,7 @@ public class AppPackWriteProcessor {
                 this.opCount = 0;
                 this.src = src;
                 this.desc = dest;
-                String message = isUpload ? "上传 " : "下载 ";
+                String message = isUpload ? "Upload " : "Download ";
                 if (!StringUtil.isBlank(src)) {
                     message += src + " -> ";
                 }
@@ -187,7 +189,7 @@ public class AppPackWriteProcessor {
                     message += dest;
                 }
                 if (max > 0) {
-                    message += " 大小: " + FileUtil.getSizeReadability(max);
+                    message += " Size:" + FileUtil.getSizeReadability(max);
                 }
                 progressContext.step(message);
             }
@@ -195,9 +197,9 @@ public class AppPackWriteProcessor {
             @Override
             public boolean count(long count) {
                 if (opCount == 0) {
-                    progressContext.step((isUpload ? "已上传 " : "已下载 ") + FileUtil.getSizeReadability(opCount += count));
+                    progressContext.step((isUpload ? "Uploaded " : "Downloaded ") + FileUtil.getSizeReadability(opCount += count));
                 } else {
-                    progressContext.overwrite((isUpload ? "已上传 " : "已下载 ") + FileUtil.getSizeReadability(opCount += count));
+                    progressContext.overwrite((isUpload ? "Uploaded " : "Downloaded ") + FileUtil.getSizeReadability(opCount += count));
                 }
                 return true;
 
@@ -205,14 +207,14 @@ public class AppPackWriteProcessor {
 
             @Override
             public void end() {
-                String message = isUpload ? "上传 " : "下载 ";
+                String message = isUpload ? "Upload " : "Download ";
                 if (!StringUtil.isBlank(src)) {
                     message += src + " -> ";
                 }
                 if (!StringUtil.isBlank(desc)) {
                     message += desc;
                 }
-                progressContext.step(message + " 结束");
+                progressContext.step(message + " finish");
             }
         };
     }
@@ -224,38 +226,87 @@ public class AppPackWriteProcessor {
              ZipOutputStream zipOut = new ZipOutputStream(out)) {
             doWrite(rootNode, zipOut);
         } catch (Exception e) {
-            throw new AppException("生成应用包失败", e);
+            throw new AppException("Write fail", e);
         }
     }
 
     private void doWrite(TreeNode rootNode, ZipOutputStream zipOut) throws IOException {
-        progressContext.step("开始写入应用包");
+        progressContext.step("Start write");
+        boolean hasMetaInfoNode = false;
+        TreeNode patchUpSignNode = context.getAppTree().getTreeInfo().getPatchUpSignNode();
+        boolean isPatchSign = Boolean.TRUE.equals(Configuration.getInstance().getPatch().getWritePatchSign());
         if (rootNode.getChildren() != null) {
-            progressContext.step("应用包名称: " + rootNode.getName());
+            progressContext.step("Application pack name:" + rootNode.getName());
             for (TreeNode child : rootNode.getChildren()) {
                 writeTreeNode2Pack(zipOut, (ZipEntryNode) child);
+                // 需要写入补丁签名的情况
+                if (JarInfoConst.META_INFO_DIR.equals(child.getPath()) && (isPatchSign || patchUpSignNode != null)) {
+                    hasMetaInfoNode = true;
+                    writePatchSign(zipOut, patchUpSignNode, isPatchSign);
+                }
             }
         }
+        if (!hasMetaInfoNode && (isPatchSign || patchUpSignNode != null)) {
+            ZipEntry zipEntry = new ZipEntry(JarInfoConst.META_INFO_DIR);
+            zipOut.putNextEntry(zipEntry);
+            writePatchSign(zipOut, patchUpSignNode, isPatchSign);
+        }
         zipOut.finish();
-        progressContext.step("完成应用包写入");
+        progressContext.step("Write finished");
+    }
+
+    private void writePatchSign(ZipOutputStream zipOut, TreeNode patchUpSignNode, boolean isPatchSign) throws IOException {
+        if (patchUpSignNode instanceof ZipEntryNode) {
+            ZipEntry zipEntry = ((ZipEntryNode) patchUpSignNode).getEntry();
+            writePatchSign(zipOut, zipEntry, isPatchSign, patchUpSignNode.getBytes());
+            return;
+        }
+        ZipEntry zipEntry = new ZipEntry(JarInfoConst.META_INFO_DIR + AppConst.PATCH_UP_SIGN);
+        writePatchSign(zipOut, zipEntry, isPatchSign, patchUpSignNode == null ? null : patchUpSignNode.getBytes());
+    }
+
+    private void writePatchSign(ZipOutputStream zipOut, ZipEntry zipEntry, boolean isPatchSign, byte[] bytes) throws IOException {
+        zipOut.putNextEntry(zipEntry);
+        if (isPatchSign) {
+            bytes = updatePatchSignContent(bytes);
+        }
+        zipOut.write(bytes);
+    }
+
+    private byte[] updatePatchSignContent(byte[] bytes) {
+        PatchUpSign patchUpSign = PatchUpSign.of(context.getPatchTree().getTreeInfo().getPatchSign());
+        TotalInfo totalInfo = context.getTotalInfo();
+        patchUpSign.setAddTotal(totalInfo.getAddTotal());
+        patchUpSign.setModTotal(totalInfo.getModTotal());
+        patchUpSign.setDelTotal(totalInfo.getDelTotal());
+        patchUpSign.setManualDelTotal(totalInfo.getManualDelTotal());
+        patchUpSign.setOperTime(new Date());
+        patchUpSign.setOperUser("CPoet");
+        if (bytes == null) {
+            return JsonUtil.writeAsBytes(Collections.singletonList(patchUpSign));
+        }
+        List<PatchUpSign> patchUpSigns = JsonUtil.read(bytes, new TypeReference<>() {
+        });
+        patchUpSigns.add(patchUpSign);
+        return JsonUtil.writeAsBytes(patchUpSigns);
     }
 
     private void writeTreeNode2Pack(ZipOutputStream zipOut, ZipEntryNode node) throws IOException {
         // 标记为删除状态的节点不在写入新的包中
         TreeNodeStatus status = node.getStatus();
         if (TreeNodeStatus.DEL.equals(status) || TreeNodeStatus.MANUAL_DEL.equals(status)) {
-            progressContext.step("删除文件: " + node.getName());
+            progressContext.step("Delete:" + node.getName());
             return;
         }
         if (!node.isDir() && node.getText().endsWith(FileExtConst.DOT_JAR)) {
-            progressContext.step("写入: " + node.getName());
+            progressContext.step("Write:" + node.getName());
             writeTreeNode2PackWithJar(zipOut, node);
             return;
         }
         if (node.getMappedNode() == null) {
             zipOut.putNextEntry(getNewEntryWithZipEntry(node.getEntry()));
             if (!node.isDir()) {
-                progressContext.step("写入: " + node.getName());
+                progressContext.step("Write:" + node.getName());
                 zipOut.write(node.getBytes());
             }
         } else {
@@ -264,7 +315,7 @@ public class AppPackWriteProcessor {
             zipEntry.setTimeLocal(mappedNode.getModifyTime());
             zipOut.putNextEntry(zipEntry);
             if (!zipEntry.isDirectory()) {
-                progressContext.step("写入: " + node.getName());
+                progressContext.step("Write:" + node.getName());
                 zipOut.write(mappedNode.getBytes());
             }
         }

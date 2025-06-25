@@ -12,4 +12,5 @@ module cn.cpoet.patch.assistant {
     exports cn.cpoet.patch.assistant;
 
     opens cn.cpoet.patch.assistant.core to com.fasterxml.jackson.databind;
+    opens cn.cpoet.patch.assistant.model to com.fasterxml.jackson.databind;
 }

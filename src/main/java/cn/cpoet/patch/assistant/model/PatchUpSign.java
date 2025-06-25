@@ -1,5 +1,7 @@
 package cn.cpoet.patch.assistant.model;
 
+import java.util.Date;
+
 /**
  * 打补丁签名信息
  *
@@ -44,7 +46,7 @@ public class PatchUpSign extends PatchSign {
     /**
      * 打补丁的时间
      */
-    private String operTime;
+    private Date operTime;
 
     /**
      * 打补丁的操作人员
@@ -107,11 +109,11 @@ public class PatchUpSign extends PatchSign {
         this.originAppSize = originAppSize;
     }
 
-    public String getOperTime() {
+    public Date getOperTime() {
         return operTime;
     }
 
-    public void setOperTime(String operTime) {
+    public void setOperTime(Date operTime) {
         this.operTime = operTime;
     }
 
@@ -121,5 +123,15 @@ public class PatchUpSign extends PatchSign {
 
     public void setOperUser(String operUser) {
         this.operUser = operUser;
+    }
+
+    public static PatchUpSign of(PatchSign patchSign) {
+        PatchUpSign patchUpSign = new PatchUpSign();
+        patchUpSign.setCode(patchSign.getCode());
+        patchUpSign.setName(patchSign.getName());
+        patchUpSign.setMd5(patchSign.getMd5());
+        patchUpSign.setSha1(patchSign.getSha1());
+        patchUpSign.setReadme(patchSign.getReadme());
+        return patchUpSign;
     }
 }
