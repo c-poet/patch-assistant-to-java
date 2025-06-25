@@ -4,17 +4,16 @@ import cn.cpoet.patch.assistant.constant.AppConst;
 import cn.cpoet.patch.assistant.constant.JarInfoConst;
 import cn.cpoet.patch.assistant.core.AppContext;
 import cn.cpoet.patch.assistant.exception.AppException;
+import cn.cpoet.patch.assistant.model.AppPackSign;
 import cn.cpoet.patch.assistant.util.CollectionUtil;
+import cn.cpoet.patch.assistant.util.HashUtil;
 import cn.cpoet.patch.assistant.view.HomeContext;
 import cn.cpoet.patch.assistant.view.ProgressContext;
 import cn.cpoet.patch.assistant.view.tree.AppTreeInfo;
 import cn.cpoet.patch.assistant.view.tree.FileNode;
 import cn.cpoet.patch.assistant.view.tree.TreeNode;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.Iterator;
 import java.util.zip.ZipInputStream;
 
@@ -43,15 +42,29 @@ public class AppPackService extends BasePackService {
         rootNode.setPath(file.getPath());
         rootNode.setFile(file);
         treeInfo.setRootNode(rootNode);
-        try (InputStream in = new FileInputStream(file);
-             ZipInputStream zin = new ZipInputStream(in)) {
+        byte[] bytes;
+        try (InputStream in = new FileInputStream(file);) {
+            bytes = in.readAllBytes();
+        } catch (IOException ex) {
+            throw new AppException("读取应用包内容失败", ex);
+        }
+        rootNode.setSize(bytes.length);
+        AppPackSign appPackSign = new AppPackSign();
+        appPackSign.setMd5(HashUtil.md5(bytes));
+        appPackSign.setSha1(HashUtil.sha1(bytes));
+        treeInfo.setAppPackSign(appPackSign);
+        getTreeNode(new ByteArrayInputStream(bytes), rootNode);
+        TreeNode patchUpSignNode = removePatchUpSignNode(rootNode);
+        treeInfo.setPatchUpSignNode(patchUpSignNode);
+        return treeInfo;
+    }
+
+    private void getTreeNode(InputStream in, TreeNode rootNode) {
+        try (ZipInputStream zin = new ZipInputStream(in)) {
             doReadZipEntry(rootNode, zin, false);
         } catch (IOException ex) {
             throw new AppException("读取应用包失败", ex);
         }
-        TreeNode patchUpSignNode = removePatchUpSignNode(rootNode);
-        treeInfo.setPatchUpSignNode(patchUpSignNode);
-        return treeInfo;
     }
 
     private TreeNode removePatchUpSignNode(TreeNode rootNode) {

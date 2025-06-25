@@ -1,5 +1,7 @@
 package cn.cpoet.patch.assistant.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import java.util.Date;
 
 /**
@@ -46,6 +48,7 @@ public class PatchUpSign extends PatchSign {
     /**
      * 打补丁的时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date operTime;
 
     /**

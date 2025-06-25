@@ -6,6 +6,7 @@ import cn.cpoet.patch.assistant.constant.JarInfoConst;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.core.DockerConf;
 import cn.cpoet.patch.assistant.exception.AppException;
+import cn.cpoet.patch.assistant.model.AppPackSign;
 import cn.cpoet.patch.assistant.model.PatchUpSign;
 import cn.cpoet.patch.assistant.util.*;
 import cn.cpoet.patch.assistant.view.HomeContext;
@@ -281,7 +282,12 @@ public class AppPackWriteProcessor {
         patchUpSign.setDelTotal(totalInfo.getDelTotal());
         patchUpSign.setManualDelTotal(totalInfo.getManualDelTotal());
         patchUpSign.setOperTime(new Date());
-        patchUpSign.setOperUser("CPoet");
+        patchUpSign.setOperUser(EnvUtil.getUserName());
+        AppTreeInfo treeInfo = context.getAppTree().getTreeInfo();
+        AppPackSign appPackSign = treeInfo.getAppPackSign();
+        patchUpSign.setOriginAppMd5(appPackSign.getMd5());
+        patchUpSign.setOriginAppSha1(appPackSign.getSha1());
+        patchUpSign.setOriginAppSize(treeInfo.getRootNode().getSize());
         if (bytes == null) {
             return JsonUtil.writeAsBytes(Collections.singletonList(patchUpSign));
         }

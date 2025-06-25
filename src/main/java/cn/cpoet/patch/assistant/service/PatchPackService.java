@@ -314,6 +314,7 @@ public class PatchPackService extends BasePackService {
         } catch (IOException ex) {
             throw new AppException("读取补丁压缩包内容失败", ex);
         }
+        rootNode.setSize(bytes.length);
         patchSign.setMd5(HashUtil.md5(bytes));
         patchSign.setSha1(HashUtil.sha1(bytes));
         doGetTreeNodeWithZip(new ByteArrayInputStream(bytes), rootNode);
