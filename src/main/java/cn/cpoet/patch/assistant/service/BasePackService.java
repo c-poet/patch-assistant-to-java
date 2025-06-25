@@ -44,7 +44,7 @@ public abstract class BasePackService {
      * @param parentNode   父级节点
      * @param innerClasses 内部类列表
      */
-    protected void handleInnerClass(TreeNode parentNode, List<TreeNode> innerClasses) {
+    public void handleInnerClass(TreeNode parentNode, List<TreeNode> innerClasses) {
         if (CollectionUtil.isNotEmpty(parentNode.getChildren())) {
             handleInnerClass(parentNode.getChildren(), innerClasses);
         }
@@ -56,7 +56,7 @@ public abstract class BasePackService {
      * @param classes      普通类列表
      * @param innerClasses 内部类列表
      */
-    protected void handleInnerClass(List<TreeNode> classes, List<TreeNode> innerClasses) {
+    public void handleInnerClass(List<TreeNode> classes, List<TreeNode> innerClasses) {
         Map<String, TreeNode> classMap = classes.stream()
                 .filter(node -> node.getName().endsWith(FileExtConst.DOT_CLASS))
                 .collect(Collectors.toMap(node -> FileNameUtil.getName(node.getPath()), Function.identity()));
@@ -70,7 +70,7 @@ public abstract class BasePackService {
      * @param innerClasses 内部类列表
      * @param level        级数
      */
-    protected void handleInnerClass(Map<String, TreeNode> classMap, List<TreeNode> innerClasses, int level) {
+    public void handleInnerClass(Map<String, TreeNode> classMap, List<TreeNode> innerClasses, int level) {
         Iterator<TreeNode> it = innerClasses.iterator();
         while (it.hasNext()) {
             TreeNode innerClassNode = it.next();
@@ -92,7 +92,7 @@ public abstract class BasePackService {
         }
     }
 
-    protected void doReadZipEntry(TreeNode rootNode, ZipInputStream zin, boolean isPatch) throws IOException {
+    public void doReadZipEntry(TreeNode rootNode, ZipInputStream zin, boolean isPatch) throws IOException {
         ZipEntry zipEntry;
         TreeNode manifestNode = null;
         List<TreeNode> classes = new ArrayList<>();

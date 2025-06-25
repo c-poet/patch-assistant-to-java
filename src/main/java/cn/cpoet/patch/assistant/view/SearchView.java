@@ -30,10 +30,10 @@ import java.util.regex.Pattern;
  */
 public class SearchView {
 
-    protected Dialog<?> dialog;
-    protected TextField searchField;
-    protected final HomeContext context;
-    protected ListView<SearchItem> searchList;
+    private Dialog<?> dialog;
+    private TextField searchField;
+    private final HomeContext context;
+    private ListView<SearchItem> searchList;
 
     public SearchView(HomeContext context) {
         this.context = context;
@@ -53,13 +53,13 @@ public class SearchView {
         return box;
     }
 
-    protected Stack<String> createPathStack(boolean isPatch) {
+    private Stack<String> createPathStack(boolean isPatch) {
         Stack<String> stack = new Stack<>();
         stack.push(isPatch ? "R:" : "L:");
         return stack;
     }
 
-    protected void searchHistory() {
+    private void searchHistory() {
         SearchConf search = Configuration.getInstance().getSearch();
         Set<SearchItem> history = search.getHistory();
         if (history != null) {
@@ -67,16 +67,16 @@ public class SearchView {
         }
     }
 
-    protected void searchNode(String keyword) {
+    private void searchNode(String keyword) {
         searchList.getItems().clear();
         if (StringUtil.isBlank(keyword)) {
             searchHistory();
             return;
         }
         String[] paths = keyword.split("[/\\\\]");
+        AppTreeInfo appTreeInfo = context.getAppTree().getTreeInfo();
+        PatchTreeInfo patchTreeInfo = context.getPatchTree().getTreeInfo();
         if (paths.length > 1) {
-            AppTreeInfo appTreeInfo = context.getAppTree().getTreeInfo();
-            PatchTreeInfo patchTreeInfo = context.getPatchTree().getTreeInfo();
             SearchKeyword[] searchKeywords = createKeywords(paths);
             if (appTreeInfo != null) {
                 searchNodeWithPath(appTreeInfo.getRootNode(), searchKeywords);
@@ -85,8 +85,6 @@ public class SearchView {
                 searchNodeWithPath(patchTreeInfo.getRootNode(), searchKeywords);
             }
         } else {
-            AppTreeInfo appTreeInfo = context.getAppTree().getTreeInfo();
-            PatchTreeInfo patchTreeInfo = context.getPatchTree().getTreeInfo();
             SearchKeyword searchKeyword = createKeyword(keyword);
             if (appTreeInfo != null) {
                 searchNode(appTreeInfo.getRootNode(), searchKeyword);
@@ -97,13 +95,13 @@ public class SearchView {
         }
     }
 
-    protected void searchNode(TreeNode node, SearchKeyword keyword) {
+    private void searchNode(TreeNode node, SearchKeyword keyword) {
         if (node.getChildren() != null) {
             node.getChildren().forEach(child -> searchNode(child, keyword, createPathStack(node.isPatch())));
         }
     }
 
-    protected void searchNode(TreeNode node, SearchKeyword keyword, Stack<String> paths) {
+    private void searchNode(TreeNode node, SearchKeyword keyword, Stack<String> paths) {
         if (matchKeyword(keyword, node.getName())) {
             SearchNodeItem item = new SearchNodeItem();
             item.setName(node.getName());
@@ -118,17 +116,17 @@ public class SearchView {
         }
     }
 
-    protected void searchNodeWithPath(TreeNode node, SearchKeyword[] keywords) {
+    private void searchNodeWithPath(TreeNode node, SearchKeyword[] keywords) {
         if (node.getChildren() != null) {
             node.getChildren().forEach(child -> searchNodeWithPath(node, keywords, createPathStack(node.isPatch())));
         }
     }
 
-    protected void searchNodeWithPath(TreeNode node, SearchKeyword[] keywords, Stack<String> pathStack) {
+    private void searchNodeWithPath(TreeNode node, SearchKeyword[] keywords, Stack<String> pathStack) {
         searchNodeWithPath(node, keywords, 0, pathStack);
     }
 
-    protected void searchNodeWithPath(TreeNode node, SearchKeyword[] keywords, int index, Stack<String> paths) {
+    private void searchNodeWithPath(TreeNode node, SearchKeyword[] keywords, int index, Stack<String> paths) {
         if (index < keywords.length) {
             if (matchKeyword(keywords[index], node.getName())) {
                 if (index == keywords.length - 1) {
@@ -151,14 +149,14 @@ public class SearchView {
         }
     }
 
-    protected boolean matchKeyword(SearchKeyword keyword, String name) {
+    private boolean matchKeyword(SearchKeyword keyword, String name) {
         if (keyword.getPattern() != null) {
             return keyword.getPattern().matcher(name).matches();
         }
         return name.contains(keyword.getKeyword());
     }
 
-    protected SearchKeyword[] createKeywords(String[] keywords) {
+    private SearchKeyword[] createKeywords(String[] keywords) {
         SearchKeyword[] searchKeywords = new SearchKeyword[keywords.length];
         for (int i = 0; i < keywords.length; ++i) {
             searchKeywords[i] = createKeyword(keywords[i]);
@@ -166,7 +164,7 @@ public class SearchView {
         return searchKeywords;
     }
 
-    protected SearchKeyword createKeyword(String keyword) {
+    private SearchKeyword createKeyword(String keyword) {
         SearchKeyword searchKeyword = new SearchKeyword();
         searchKeyword.setKeyword(keyword);
         if (keyword.indexOf('*') != -1) {
@@ -197,7 +195,7 @@ public class SearchView {
         dialog.close();
     }
 
-    protected static class SearchListCell extends ListCell<SearchItem> {
+    private static class SearchListCell extends ListCell<SearchItem> {
 
         public SearchListCell(SearchView view) {
             setOnMouseClicked(e -> {

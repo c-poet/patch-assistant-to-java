@@ -37,7 +37,7 @@ public class HomeRightTreeView extends HomeTreeView {
         super(stage, context);
     }
 
-    protected void buildPatchTreeContextMenu() {
+    private void buildPatchTreeContextMenu() {
         ContextMenu contextMenu = new ContextMenu();
         MenuItem markRootMenuItem = new MenuItem();
         markRootMenuItem.setOnAction(e -> {
@@ -91,14 +91,14 @@ public class HomeRightTreeView extends HomeTreeView {
         context.patchTree.setContextMenu(contextMenu);
     }
 
-    protected void refreshPatchTree(File file) {
+    private void refreshPatchTree(File file) {
         PatchPackService patchPackService = PatchPackService.getInstance();
         PatchTreeInfo patchTreeInfo = patchPackService.getTreeNode(file);
         patchTree.setTreeInfo(patchTreeInfo);
         refreshPatchTree(true, true);
     }
 
-    protected void refreshPatchTree(boolean isBuildTreeItem, boolean isEmitEvent) {
+    private void refreshPatchTree(boolean isBuildTreeItem, boolean isEmitEvent) {
         if (isEmitEvent) {
             context.patchTree.fireEvent(new Event(PatchTreeView.PATCH_TREE_REFRESHING));
         }
@@ -118,7 +118,7 @@ public class HomeRightTreeView extends HomeTreeView {
         }
     }
 
-    protected void refreshPatchMappedNode(boolean isRefreshReadme) {
+    private void refreshPatchMappedNode(boolean isRefreshReadme) {
         PatchPackService patchPackService = PatchPackService.getInstance();
         AppTreeInfo appTreeInfo = appTree.getTreeInfo();
         PatchTreeInfo patchTreeInfo = patchTree.getTreeInfo();
@@ -128,7 +128,7 @@ public class HomeRightTreeView extends HomeTreeView {
         patchPackService.refreshMappedNode(context.totalInfo, appTreeInfo, patchTreeInfo);
     }
 
-    protected void initPatchTreeDrag() {
+    private void initPatchTreeDrag() {
         context.patchTree.setOnDragOver(e -> {
             List<File> files = e.getDragboard().getFiles();
             if (files.size() == 1 && (files.get(0).isDirectory() ||
@@ -143,7 +143,7 @@ public class HomeRightTreeView extends HomeTreeView {
         });
     }
 
-    protected void buildPatchTree() {
+    private void buildPatchTree() {
         context.patchTree.setCellFactory(v -> new FileCheckBoxTreeCell(context));
         buildPatchTreeContextMenu();
         context.appTree.addEventHandler(AppTreeView.APP_TREE_REFRESHING, e -> refreshPatchMappedNode(false));
@@ -173,7 +173,7 @@ public class HomeRightTreeView extends HomeTreeView {
         }
     }
 
-    protected File getInitPatchFile() {
+    private File getInitPatchFile() {
         File file = null;
         String startPatchPath = AppContext.getInstance().getArg(ParamNameConst.START_PATCH);
         if (!StringUtil.isBlank(startPatchPath)) {

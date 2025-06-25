@@ -80,7 +80,7 @@ public class PatchPackService extends BasePackService {
         refreshMappedNodeWithPathOrName(totalInfo, appTreeInfo, patchTreeInfo);
     }
 
-    protected void refreshMappedNodeWithReadme(TotalInfo totalInfo, TreeInfo appTreeInfo, PatchTreeInfo patchTreeInfo) {
+    private void refreshMappedNodeWithReadme(TotalInfo totalInfo, TreeInfo appTreeInfo, PatchTreeInfo patchTreeInfo) {
         List<ReadMePathInfo> pathInfos = ReadMeFileService.getInstance().getPathInfos(patchTreeInfo);
         if (CollectionUtil.isEmpty(pathInfos)) {
             return;
@@ -100,7 +100,7 @@ public class PatchPackService extends BasePackService {
         }
     }
 
-    protected void matchMappedNodeWithReadme(TotalInfo totalInfo, ReadMePathInfo pathInfo, TreeInfo appTreeInfo, TreeNode patchNode) {
+    private void matchMappedNodeWithReadme(TotalInfo totalInfo, ReadMePathInfo pathInfo, TreeInfo appTreeInfo, TreeNode patchNode) {
         // 组装完成映射路径
         String appNodePath = pathInfo.getFirstPath();
         if (!StringUtil.isBlank(pathInfo.getSecondPath())) {
@@ -110,7 +110,7 @@ public class PatchPackService extends BasePackService {
         doMatchMappedNodeWithReadme(totalInfo, pathInfo, paths, 0, appTreeInfo.getRootNode().getChildren(), patchNode);
     }
 
-    protected boolean doMatchMappedNodeWithReadme(TotalInfo totalInfo, ReadMePathInfo pathInfo, String[] paths, int index, List<TreeNode> appNodes, TreeNode patchNode) {
+    private boolean doMatchMappedNodeWithReadme(TotalInfo totalInfo, ReadMePathInfo pathInfo, String[] paths, int index, List<TreeNode> appNodes, TreeNode patchNode) {
         if (index >= paths.length) {
             return false;
         }
@@ -152,7 +152,7 @@ public class PatchPackService extends BasePackService {
         return true;
     }
 
-    protected boolean doMatchMappedNodeWithReadme(TotalInfo totalInfo, ReadMePathInfo pathInfo, String[] paths, int index, TreeNode appNode, TreeNode patchNode) {
+    private boolean doMatchMappedNodeWithReadme(TotalInfo totalInfo, ReadMePathInfo pathInfo, String[] paths, int index, TreeNode appNode, TreeNode patchNode) {
         if (!matchPatchName(appNode, paths[index])) {
             return false;
         }
@@ -175,7 +175,7 @@ public class PatchPackService extends BasePackService {
         return false;
     }
 
-    protected void refreshMappedNodeWithPathOrName(TotalInfo totalInfo, TreeInfo appTreeInfo, PatchTreeInfo patchTreeInfo) {
+    private void refreshMappedNodeWithPathOrName(TotalInfo totalInfo, TreeInfo appTreeInfo, PatchTreeInfo patchTreeInfo) {
         PatchConf patch = Configuration.getInstance().getPatch();
         boolean isWithPath = Boolean.TRUE.equals(patch.getPathMatch());
         boolean isWithName = Boolean.TRUE.equals(patch.getFileNameMatch());
@@ -194,7 +194,7 @@ public class PatchPackService extends BasePackService {
      * @param appNode   应用节点
      * @param patchNode 补丁节点
      */
-    protected void mappedInnerClassNode(TotalInfo totalInfo, TreeNode appNode, TreeNode patchNode) {
+    public void mappedInnerClassNode(TotalInfo totalInfo, TreeNode appNode, TreeNode patchNode) {
         if (!appNode.getName().endsWith(FileExtConst.DOT_CLASS) || !patchNode.getName().endsWith(FileExtConst.DOT_CLASS)) {
             return;
         }
@@ -278,7 +278,7 @@ public class PatchPackService extends BasePackService {
         return treeInfo;
     }
 
-    protected void doGetTreeNodeWithDir(File file, TreeNode parentNode) {
+    private void doGetTreeNodeWithDir(File file, TreeNode parentNode) {
         File[] files = file.listFiles();
         if (files != null) {
             List<TreeNode> innerClasses = null;
@@ -307,7 +307,7 @@ public class PatchPackService extends BasePackService {
         }
     }
 
-    protected void doGetTreeNodeWithZip(PatchSign patchSign, File file, TreeNode rootNode) {
+    private void doGetTreeNodeWithZip(PatchSign patchSign, File file, TreeNode rootNode) {
         byte[] bytes;
         try (InputStream in = new FileInputStream(file)) {
             bytes = in.readAllBytes();
@@ -319,7 +319,7 @@ public class PatchPackService extends BasePackService {
         doGetTreeNodeWithZip(new ByteArrayInputStream(bytes), rootNode);
     }
 
-    protected void doGetTreeNodeWithZip(InputStream in, TreeNode rootNode) {
+    private void doGetTreeNodeWithZip(InputStream in, TreeNode rootNode) {
         try (ZipInputStream zin = new ZipInputStream(in, Charset.forName("GBK"))) {
             doReadZipEntry(rootNode, zin, true);
         } catch (IOException ex) {

@@ -45,7 +45,7 @@ public class FileTreeCell extends TreeCell<TreeNode> {
         startCellDrag();
     }
 
-    protected void startCellDrag() {
+    private void startCellDrag() {
         setOnDragDetected(e -> {
             if (isEmpty() || getItem() == null) {
                 return;
@@ -137,7 +137,7 @@ public class FileTreeCell extends TreeCell<TreeNode> {
         });
     }
 
-    protected void deepWriteFile2Path(File parent, TreeNode node) {
+    private void deepWriteFile2Path(File parent, TreeNode node) {
         if (CollectionUtil.isEmpty(node.getChildren())) {
             return;
         }
@@ -171,7 +171,7 @@ public class FileTreeCell extends TreeCell<TreeNode> {
         }
     }
 
-    protected void addIcon(TreeNode node) {
+    private void addIcon(TreeNode node) {
         ImageView icon = new ImageView();
         icon.setFitWidth(16);
         icon.setFitHeight(16);
@@ -179,7 +179,7 @@ public class FileTreeCell extends TreeCell<TreeNode> {
         box.getChildren().add(icon);
     }
 
-    protected Image getIconImage(TreeNode node, Function<InputStream, Image> imgFactory) {
+    private Image getIconImage(TreeNode node, Function<InputStream, Image> imgFactory) {
         if (context.isPatchCustomRoot(node)) {
             return ImageUtil.loadImage(IConConst.FILE_MARK, imgFactory);
         }
@@ -193,7 +193,7 @@ public class FileTreeCell extends TreeCell<TreeNode> {
         return ImageUtil.loadImage(IConConst.FILE, imgFactory);
     }
 
-    protected void addFileDetail(TreeNode node) {
+    private void addFileDetail(TreeNode node) {
         if (Boolean.TRUE.equals(Configuration.getInstance().getIsShowFileDetail())) {
             if (node.isDir()) {
                 return;
@@ -206,7 +206,7 @@ public class FileTreeCell extends TreeCell<TreeNode> {
         }
     }
 
-    protected void fillTextColor(TreeNode node, Label textLbl) {
+    private void fillTextColor(TreeNode node, Label textLbl) {
         TreeNodeStatus status = node.getStatus();
         switch (status) {
             case ADD:

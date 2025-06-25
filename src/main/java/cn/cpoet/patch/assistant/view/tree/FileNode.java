@@ -44,7 +44,7 @@ public class FileNode extends TreeNode {
         return LocalDateTime.ofInstant(Instant.ofEpochMilli(lastModified), ZoneId.systemDefault());
     }
 
-    protected byte[] initFileBaseInfo() {
+    private byte[] initFileBaseInfo() {
         byte[] data = FileUtil.readFile(file);
         size = data.length;
         if (size > 10 * 1024 * 1024) {

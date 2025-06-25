@@ -34,7 +34,7 @@ public class HomeView extends HomeContext {
         this.stage = stage;
     }
 
-    protected Node buildHeader() {
+    private Node buildHeader() {
 
         Configuration configuration = Configuration.getInstance();
 
@@ -93,7 +93,7 @@ public class HomeView extends HomeContext {
         return titledPane;
     }
 
-    protected Node buildBottomCentre() {
+    private Node buildBottomCentre() {
         TextArea readMeTextArea = new TextArea();
         readMeTextArea.setEditable(false);
         patchTree.addEventHandler(PatchTreeView.PATCH_TREE_REFRESH, (EventHandler<Event>) event -> {
@@ -109,7 +109,7 @@ public class HomeView extends HomeContext {
         return titledPane;
     }
 
-    protected Node buildCentre() {
+    private Node buildCentre() {
         StackPane treeStackPane = new StackPane();
         Node leftTree = new HomeLeftTreeView(stage, this).build();
         Node rightTree = new HomeRightTreeView(stage, this).build();
@@ -121,7 +121,7 @@ public class HomeView extends HomeContext {
         return centrePane;
     }
 
-    protected Node buildFooter() {
+    private Node buildFooter() {
         HBox footerBox = new HBox(
                 FXUtil.pre(new Label("新增: "), StyleConst.FONT_BOLD),
                 FXUtil.pre(new Label(), lbl -> lbl.textProperty().bind(totalInfo.addTotalProperty().asString())),
@@ -169,7 +169,7 @@ public class HomeView extends HomeContext {
         return footerBox;
     }
 
-    protected void showSearchView() {
+    private void showSearchView() {
         new SearchView(this).showDialog(stage);
     }
 

@@ -61,7 +61,7 @@ public class PatchMatchProcessor {
         this.patchRootNode = patchRootNode;
     }
 
-    protected boolean checkRootNode() {
+    private boolean checkRootNode() {
         return appRootNode != null && CollectionUtil.isNotEmpty(appRootNode.getChildren())
                 && patchRootNode != null && CollectionUtil.isNotEmpty(patchRootNode.getChildren());
     }
@@ -79,11 +79,11 @@ public class PatchMatchProcessor {
         match(appRootNode.getChildren(), patchRootNode.getChildren(), nameMapping);
     }
 
-    protected boolean match(List<TreeNode> appNodes, List<TreeNode> patchNodes, Map<String, TreeNode> nameMapping) {
+    private boolean match(List<TreeNode> appNodes, List<TreeNode> patchNodes, Map<String, TreeNode> nameMapping) {
         return appNodes.stream().anyMatch(appNode -> match(appNode, patchNodes, nameMapping));
     }
 
-    protected boolean match(TreeNode appNode, List<TreeNode> patchNodes, Map<String, TreeNode> nameMapping) {
+    private boolean match(TreeNode appNode, List<TreeNode> patchNodes, Map<String, TreeNode> nameMapping) {
         if (appNode.getMappedNode() != null) {
             return false;
         }
@@ -100,7 +100,7 @@ public class PatchMatchProcessor {
         return matchWithName(appNode, nameMapping);
     }
 
-    protected boolean matchWithPath(TreeNode appNode, TreeNode patchNode, Map<String, TreeNode> nameMapping) {
+    private boolean matchWithPath(TreeNode appNode, TreeNode patchNode, Map<String, TreeNode> nameMapping) {
         if (!patchPackService.matchPatchName(appNode, patchNode)) {
             return false;
         }
@@ -127,7 +127,7 @@ public class PatchMatchProcessor {
         return true;
     }
 
-    protected boolean matchWithName(TreeNode appNode, Map<String, TreeNode> nameMapping) {
+    private boolean matchWithName(TreeNode appNode, Map<String, TreeNode> nameMapping) {
         if (appNode.getMappedNode() != null || appNode.isDir()) {
             return false;
         }

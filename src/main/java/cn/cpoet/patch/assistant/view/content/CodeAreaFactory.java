@@ -52,7 +52,7 @@ public abstract class CodeAreaFactory {
         return spansBuilder.create();
     }
 
-    protected ContextMenu getContextMenu(CodeArea codeArea) {
+    private ContextMenu getContextMenu(CodeArea codeArea) {
         MenuItem copyItem = new MenuItem("复制");
         copyItem.setOnAction(e -> codeArea.copy());
         MenuItem selectedAllItem = new MenuItem("全选");

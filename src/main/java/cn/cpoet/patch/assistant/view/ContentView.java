@@ -64,7 +64,7 @@ public class ContentView {
         return box;
     }
 
-    protected void dynamicCodeAreaWithDiffModel(VBox box, ContentConf contentConf, CodeAreaFactory codeAreaFactory) {
+    private void dynamicCodeAreaWithDiffModel(VBox box, ContentConf contentConf, CodeAreaFactory codeAreaFactory) {
         // TODO By CPoet 后期建立内容缓存，避免内容解析带来的性能损耗
         Node tarNode;
         if (Boolean.TRUE.equals(contentConf.getDiffModel())) {
@@ -89,11 +89,11 @@ public class ContentView {
         }
     }
 
-    protected VirtualizedScrollPane<CodeArea> crateCodeAreaPane(CodeAreaFactory codeAreaFactory, String text) {
+    private VirtualizedScrollPane<CodeArea> crateCodeAreaPane(CodeAreaFactory codeAreaFactory, String text) {
         return crateCodeAreaPane(codeAreaFactory, codeArea -> codeArea.replaceText(text));
     }
 
-    protected VirtualizedScrollPane<CodeArea> crateCodeAreaPane(CodeAreaFactory codeAreaFactory, Consumer<CodeArea> consumer) {
+    private VirtualizedScrollPane<CodeArea> crateCodeAreaPane(CodeAreaFactory codeAreaFactory, Consumer<CodeArea> consumer) {
         CodeArea codeArea = codeAreaFactory.create();
         consumer.accept(codeArea);
         return new VirtualizedScrollPane<>(codeArea);

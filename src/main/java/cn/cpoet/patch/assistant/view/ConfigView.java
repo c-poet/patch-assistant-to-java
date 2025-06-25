@@ -39,7 +39,7 @@ public class ConfigView {
         search = configuration.getSearch().clone();
     }
 
-    protected Node buildDockerLocalConfig() {
+    private Node buildDockerLocalConfig() {
         VBox box = new VBox();
         box.setSpacing(5);
         HBox commandConfig = new HBox(FXUtil.pre(new Label(), node -> {
@@ -67,7 +67,7 @@ public class ConfigView {
         return box;
     }
 
-    protected Node buildDockerRemoteConfig() {
+    private Node buildDockerRemoteConfig() {
         VBox box = new VBox();
         box.setSpacing(5);
         HBox hostConfig = new HBox(FXUtil.pre(new Label(), node -> {
@@ -144,7 +144,7 @@ public class ConfigView {
         return box;
     }
 
-    protected Node buildDockerConfig() {
+    private Node buildDockerConfig() {
         TitledPane dockerConfigPane = new TitledPane();
         dockerConfigPane.setCollapsible(false);
         dockerConfigPane.setText("Docker配置");
@@ -174,7 +174,7 @@ public class ConfigView {
         return dockerConfigPane;
     }
 
-    protected void swapDockerConfig(Pane pane) {
+    private void swapDockerConfig(Pane pane) {
         Node node = DockerConf.TYPE_REMOTE.equals(docker.getType()) ? buildDockerRemoteConfig() : buildDockerLocalConfig();
         if (pane.getChildren().size() > 1) {
             pane.getChildren().set(1, node);
@@ -183,7 +183,7 @@ public class ConfigView {
         }
     }
 
-    protected Node buildPatchConfig() {
+    private Node buildPatchConfig() {
         TitledPane patchConfigPane = new TitledPane();
         patchConfigPane.setCollapsible(false);
         patchConfigPane.setText("补丁配置");
@@ -221,7 +221,7 @@ public class ConfigView {
         return patchConfigPane;
     }
 
-    protected Node buildSearchConfig() {
+    private Node buildSearchConfig() {
         TitledPane searchConfigPane = new TitledPane();
         searchConfigPane.setCollapsible(false);
         searchConfigPane.setText("搜索配置");
@@ -237,7 +237,7 @@ public class ConfigView {
         return searchConfigPane;
     }
 
-    protected Node buildGeneraConfig() {
+    private Node buildGeneraConfig() {
         TitledPane generaConfigPane = new TitledPane();
         generaConfigPane.setCollapsible(false);
         generaConfigPane.setText("常规配置");

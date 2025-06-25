@@ -32,14 +32,14 @@ public class ProgressContext {
         return end;
     }
 
-    protected void doStep(String msg) {
+    private void doStep(String msg) {
         if (textArea != null) {
             String time = DateUtil.curDateTime();
             textArea.appendText("\n" + time + " " + msg);
         }
     }
 
-    protected void doEnd() {
+    private void doEnd() {
         end = true;
         if (progressBar != null) {
             progressBar.setProgress(1);
@@ -54,7 +54,7 @@ public class ProgressContext {
         }
     }
 
-    protected void doOverwrite(String msg) {
+    private void doOverwrite(String msg) {
         String text = textArea.getText();
         int i = text.lastIndexOf("\n");
         if (i == -1) {

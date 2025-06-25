@@ -33,7 +33,7 @@ public class HomeLeftTreeView extends HomeTreeView {
         super(stage, context);
     }
 
-    protected void buildAppTreeContextMenu() {
+    private void buildAppTreeContextMenu() {
         ContextMenu contextMenu = new ContextMenu();
         MenuItem manualDelMenuItem = new MenuItem("删除");
         manualDelMenuItem.setOnAction(e -> {
@@ -69,13 +69,13 @@ public class HomeLeftTreeView extends HomeTreeView {
         appTree.setContextMenu(contextMenu);
     }
 
-    protected void refreshAppTree(File file) {
+    private void refreshAppTree(File file) {
         AppTreeInfo appTreeInfo = AppPackService.getInstance().getTreeNode(file);
         appTree.setTreeInfo(appTreeInfo);
         refreshAppTree(true);
     }
 
-    protected void refreshAppTree(boolean isEmitEvent) {
+    private void refreshAppTree(boolean isEmitEvent) {
         if (isEmitEvent) {
             appTree.fireEvent(new Event(AppTreeView.APP_TREE_REFRESHING));
         }
@@ -93,7 +93,7 @@ public class HomeLeftTreeView extends HomeTreeView {
         }
     }
 
-    protected void initAppTreeDrag() {
+    private void initAppTreeDrag() {
         appTree.setOnDragOver(e -> {
             List<File> files = e.getDragboard().getFiles();
             if (files.size() == 1 && files.get(0).getName().endsWith(FileExtConst.DOT_JAR)) {
@@ -107,7 +107,7 @@ public class HomeLeftTreeView extends HomeTreeView {
         });
     }
 
-    protected void buildAppTree() {
+    private void buildAppTree() {
         appTree.setCellFactory(treeView -> new FileTreeCell(context));
         buildAppTreeContextMenu();
         context.patchTree.addEventHandler(PatchTreeView.PATCH_TREE_REFRESH, e -> refreshAppTree(false));
@@ -140,7 +140,7 @@ public class HomeLeftTreeView extends HomeTreeView {
         }
     }
 
-    protected Node build() {
+    public Node build() {
         HBox appPackPathBox = FXUtil.pre(new HBox(), node -> {
             node.setAlignment(Pos.CENTER);
             node.setPadding(new Insets(3, 8, 3, 8));
