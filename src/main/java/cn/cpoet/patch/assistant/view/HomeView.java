@@ -4,10 +4,7 @@ import cn.cpoet.patch.assistant.constant.IConConst;
 import cn.cpoet.patch.assistant.constant.StyleConst;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.service.AppPackService;
-import cn.cpoet.patch.assistant.util.AlterUtil;
-import cn.cpoet.patch.assistant.util.FXUtil;
-import cn.cpoet.patch.assistant.util.FileNameUtil;
-import cn.cpoet.patch.assistant.util.ImageUtil;
+import cn.cpoet.patch.assistant.util.*;
 import cn.cpoet.patch.assistant.view.tree.AppTreeView;
 import cn.cpoet.patch.assistant.view.tree.PatchTreeInfo;
 import cn.cpoet.patch.assistant.view.tree.PatchTreeView;
@@ -145,9 +142,14 @@ public class HomeView extends HomeContext {
                             }
                         }
                         // 判断是否Docker模式
-                        String fileName = appTree.getTreeInfo().getRootNode().getName();
-                        boolean isDockerImage = Boolean.TRUE.equals(Configuration.getInstance().getIsDockerImage());
+                        Configuration configuration = Configuration.getInstance();
+                        boolean isDockerImage = Boolean.TRUE.equals(configuration.getIsDockerImage());
                         FileChooser fileChooser = new FileChooser();
+                        String lastSavePackPath = configuration.getLastSavePackPath();
+                        if (!StringUtil.isBlank(lastSavePackPath)) {
+                            fileChooser.setInitialDirectory(new File(lastSavePackPath));
+                        }
+                        String fileName = appTree.getTreeInfo().getRootNode().getName();
                         if (isDockerImage) {
                             fileChooser.setTitle("保存镜像包");
                             fileChooser.setInitialFileName(FileNameUtil.getName(fileName) + ".tar");
@@ -161,6 +163,7 @@ public class HomeView extends HomeContext {
                         if (file == null) {
                             return;
                         }
+                        configuration.setLastSavePackPath(file.getParent());
                         new ProgressView(fileChooser.getTitle()).showDialog(stage, (progressContext) -> {
                             AppPackService.getInstance().savePack(this, progressContext, file, isDockerImage);
                         });

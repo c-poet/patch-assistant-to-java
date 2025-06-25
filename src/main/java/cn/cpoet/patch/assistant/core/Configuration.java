@@ -120,6 +120,12 @@ public class Configuration {
     private String lastPatchPackPath;
 
     /**
+     * 应用包最后保存的路径
+     */
+    @JacksonXmlProperty
+    private String lastSavePackPath;
+
+    /**
      * 常规配置
      */
     private GeneraConf genera = new GeneraConf();
@@ -293,6 +299,14 @@ public class Configuration {
 
     public void setLastPatchPackPath(String lastPatchPackPath) {
         this.lastPatchPackPath = lastPatchPackPath;
+    }
+
+    public String getLastSavePackPath() {
+        return lastSavePackPath;
+    }
+
+    public void setLastSavePackPath(String lastSavePackPath) {
+        this.lastSavePackPath = lastSavePackPath;
     }
 
     public GeneraConf getGenera() {
