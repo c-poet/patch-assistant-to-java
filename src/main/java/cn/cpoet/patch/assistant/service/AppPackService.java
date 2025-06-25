@@ -51,6 +51,7 @@ public class AppPackService extends BasePackService {
         rootNode.setSize(bytes.length);
         AppPackSign appPackSign = new AppPackSign();
         appPackSign.setMd5(HashUtil.md5(bytes));
+        rootNode.setMd5(appPackSign.getMd5());
         appPackSign.setSha1(HashUtil.sha1(bytes));
         treeInfo.setAppPackSign(appPackSign);
         getTreeNode(new ByteArrayInputStream(bytes), rootNode);

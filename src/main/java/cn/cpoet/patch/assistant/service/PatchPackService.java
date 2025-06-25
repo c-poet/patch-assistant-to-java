@@ -316,6 +316,7 @@ public class PatchPackService extends BasePackService {
         }
         rootNode.setSize(bytes.length);
         patchSign.setMd5(HashUtil.md5(bytes));
+        rootNode.setMd5(patchSign.getMd5());
         patchSign.setSha1(HashUtil.sha1(bytes));
         doGetTreeNodeWithZip(new ByteArrayInputStream(bytes), rootNode);
     }
