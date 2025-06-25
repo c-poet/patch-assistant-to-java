@@ -6,6 +6,7 @@ import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.service.AppPackService;
 import cn.cpoet.patch.assistant.util.AlterUtil;
 import cn.cpoet.patch.assistant.util.FXUtil;
+import cn.cpoet.patch.assistant.util.FileNameUtil;
 import cn.cpoet.patch.assistant.util.ImageUtil;
 import cn.cpoet.patch.assistant.view.tree.AppTreeView;
 import cn.cpoet.patch.assistant.view.tree.PatchTreeInfo;
@@ -144,13 +145,16 @@ public class HomeView extends HomeContext {
                             }
                         }
                         // 判断是否Docker模式
+                        String fileName = appTree.getTreeInfo().getRootNode().getName();
                         boolean isDockerImage = Boolean.TRUE.equals(Configuration.getInstance().getIsDockerImage());
                         FileChooser fileChooser = new FileChooser();
                         if (isDockerImage) {
                             fileChooser.setTitle("保存镜像包");
+                            fileChooser.setInitialFileName(FileNameUtil.getName(fileName) + ".tar");
                             fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("应用包", "*.tar"));
                         } else {
                             fileChooser.setTitle("保存应用包");
+                            fileChooser.setInitialFileName(fileName);
                             fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("应用包", "*.jar"));
                         }
                         File file = fileChooser.showSaveDialog(stage);
