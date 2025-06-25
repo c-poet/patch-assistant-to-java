@@ -1,13 +1,13 @@
 package cn.cpoet.patch.assistant.view.tree;
 
-import cn.cpoet.patch.assistant.component.OnlyChangeFilter;
 import cn.cpoet.patch.assistant.constant.AppConst;
 import cn.cpoet.patch.assistant.constant.IConConst;
 import cn.cpoet.patch.assistant.core.Configuration;
-import cn.cpoet.patch.assistant.jdk.SortLinkedList;
+import cn.cpoet.patch.assistant.service.BasePatchMatchProcessor;
 import cn.cpoet.patch.assistant.util.*;
 import cn.cpoet.patch.assistant.view.HomeContext;
 import javafx.application.Platform;
+import javafx.collections.ObservableList;
 import javafx.scene.control.Label;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 public class FileTreeCell extends TreeCell<TreeNode> {
 
     public final static String COPY_FILE_DIR = AppConst.APP_NAME + ".cell-drag";
-    public final static ThreadLocal<TreeItem<TreeNode>> COPY_TREE_ITEM = new ThreadLocal<>();
+    public final static ThreadLocal<FileTreeCellDragInfo> DRAG_INFO_TL = new ThreadLocal<>();
 
     protected HBox box;
     protected AppTreeView appTree;
@@ -56,22 +56,24 @@ public class FileTreeCell extends TreeCell<TreeNode> {
             db.setDragView(image);
             ClipboardContent content = new ClipboardContent();
             content.putString(node.getName());
-
+            FileTreeCellDragInfo dragInfo = new FileTreeCellDragInfo();
+            dragInfo.setOriginTree((CustomTreeView<?>) getTreeView());
             List<File> files = getTreeView().getSelectionModel().getSelectedItems()
                     .stream()
                     .map(TreeItem::getValue)
                     .map(treeNode -> {
                         if (treeNode.isDir()) {
                             File file = FileTempUtil.createTempDir(COPY_FILE_DIR, treeNode.getName());
-                            deepWriteFile2Path(file, treeNode);
+                            deepWriteFile2Path(file, treeNode, dragInfo);
                             return file;
                         }
+                        updateCellDragInfo(dragInfo, treeNode);
                         return FileTempUtil.writeFile2TempDir(COPY_FILE_DIR, treeNode.getName(), treeNode.getBytes());
                     }).collect(Collectors.toList());
 
             content.putFiles(files);
             db.setContent(content);
-            COPY_TREE_ITEM.set(getTreeItem());
+            DRAG_INFO_TL.set(dragInfo);
             e.consume();
         });
 
@@ -80,11 +82,12 @@ public class FileTreeCell extends TreeCell<TreeNode> {
             if (!(source instanceof FileTreeCell) || isEmpty()) {
                 return;
             }
-            if (COPY_TREE_ITEM.get() == null
-                    || COPY_TREE_ITEM.get().getValue().getMappedNode() != null
-                    || COPY_TREE_ITEM.get().getValue().equals(patchTree.getTreeInfo().getReadMeNode())
-                    || ((FileTreeCell) e.getGestureSource()).getTreeView() == this.getTreeView()
-                    || this.getTreeView() != appTree) {
+            FileTreeCellDragInfo dragInfo = DRAG_INFO_TL.get();
+            if (dragInfo == null
+                    || dragInfo.isHasMappedNode()
+                    || dragInfo.isHasReadmeNode()
+                    || dragInfo.getOriginTree() == getTreeView()
+                    || getTreeView() != appTree) {
                 return;
             }
             e.acceptTransferModes(TransferMode.COPY);
@@ -92,64 +95,60 @@ public class FileTreeCell extends TreeCell<TreeNode> {
         });
 
         setOnDragDropped(e -> {
-            Dragboard db = e.getDragboard();
-            TreeItem<TreeNode> originItem = COPY_TREE_ITEM.get();
-            if (originItem == null || !originItem.getValue().getName().equals(db.getString())) {
+            FileTreeCellDragInfo dragInfo = DRAG_INFO_TL.get();
+            if (dragInfo == null) {
                 return;
             }
             TreeItem<TreeNode> targetItem = getTreeItem();
             if (!targetItem.getValue().isDir()) {
                 targetItem = targetItem.getParent();
             }
-            TreeItem<TreeNode> mappedItem = null;
-            for (TreeItem<TreeNode> child : targetItem.getChildren()) {
-                if (child.getValue().getName().equals(originItem.getValue().getName())) {
-                    mappedItem = child;
-                    break;
-                }
-            }
-            TreeNode originNode = originItem.getValue();
-            if (mappedItem != null) {
-                TreeNode mappedNode = mappedItem.getValue();
-                TreeNodeUtil.mappedNode(context.getTotalInfo(), originNode, mappedNode, TreeNodeStatus.MOD);
-            } else {
-                VirtualMappedNode virtualMappedNode = new VirtualMappedNode(originNode);
-                virtualMappedNode.setParent(targetItem.getValue());
-                TreeNodeUtil.mappedNode(context.getTotalInfo(), originNode, virtualMappedNode, TreeNodeStatus.ADD);
-                List<TreeNode> children = targetItem.getValue().getAndInitChildren();
-                if (children instanceof SortLinkedList) {
-                    int index = ((SortLinkedList<TreeNode>) children).addAndIndex(virtualMappedNode);
-                    TreeNodeUtil.buildChildNode(targetItem, index, virtualMappedNode, OnlyChangeFilter.INSTANCE);
-                } else {
-                    children.add(virtualMappedNode);
-                    TreeNodeUtil.buildChildNode(targetItem, virtualMappedNode, OnlyChangeFilter.INSTANCE);
-                }
-            }
-            Platform.runLater(() -> patchTree.refresh());
+//            ObservableList<TreeItem<TreeNode>> selectedItems = dragInfo.getOriginTree().getSelectionModel().getSelectedItems();
+//            new BasePatchMatchProcessor(context.getTotalInfo(), true, true) {
+//                @Override
+//                protected List<TreeNode> getAppNodes() {
+//                    return;
+//                }
+//
+//                @Override
+//                protected List<TreeNode> getPatchNodes() {
+//                    return super.getPatchNodes();
+//                }
+//            }.exec();
+//            Platform.runLater(() -> patchTree.refresh());
             e.consume();
         });
 
         setOnDragDone(e -> {
-            COPY_TREE_ITEM.remove();
+            DRAG_INFO_TL.remove();
             List<File> files = e.getDragboard().getFiles();
             files.forEach(FileTempUtil::deleteTempFile);
             e.consume();
         });
     }
 
-    private void deepWriteFile2Path(File parent, TreeNode node) {
+    private void updateCellDragInfo(FileTreeCellDragInfo dragInfo, TreeNode node) {
+        if (node.getMappedNode() != null) {
+            dragInfo.setHasMappedNode(true);
+        } else if (node.equals(patchTree.getTreeInfo().getReadMeNode())) {
+            dragInfo.setHasMappedNode(true);
+        }
+    }
+
+    private void deepWriteFile2Path(File parent, TreeNode node, FileTreeCellDragInfo dragInfo) {
+        updateCellDragInfo(dragInfo, node);
         if (CollectionUtil.isEmpty(node.getChildren())) {
             return;
         }
         for (TreeNode childNode : node.getChildren()) {
             if (childNode.isDir()) {
                 File childDir = FileUtil.mkdir(parent, childNode.getName());
-                deepWriteFile2Path(childDir, childNode);
+                deepWriteFile2Path(childDir, childNode, dragInfo);
                 continue;
             }
             FileUtil.writeFile(new File(parent, childNode.getName()), childNode.getBytes());
             if (CollectionUtil.isNotEmpty(childNode.getChildren())) {
-                deepWriteFile2Path(parent, childNode);
+                deepWriteFile2Path(parent, childNode, dragInfo);
             }
         }
     }

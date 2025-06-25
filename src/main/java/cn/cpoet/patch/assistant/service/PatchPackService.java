@@ -180,7 +180,7 @@ public class PatchPackService extends BasePackService {
         boolean isWithPath = Boolean.TRUE.equals(patch.getPathMatch());
         boolean isWithName = Boolean.TRUE.equals(patch.getFileNameMatch());
         if (isWithPath || isWithName) {
-            PatchMatchProcessor processor = new PatchMatchProcessor(this, totalInfo, isWithPath, isWithName);
+            PatchMatchProcessor processor = new PatchMatchProcessor(totalInfo, isWithPath, isWithName);
             processor.setAppRootNode(appTreeInfo.getRootNode());
             processor.setPatchRootNode(patchTreeInfo.getCurRootNode());
             processor.exec();
