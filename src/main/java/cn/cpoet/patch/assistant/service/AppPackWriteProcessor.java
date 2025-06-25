@@ -287,7 +287,7 @@ public class AppPackWriteProcessor {
         }
         List<PatchUpSign> patchUpSigns = JsonUtil.read(bytes, new TypeReference<>() {
         });
-        patchUpSigns.add(patchUpSign);
+        patchUpSigns.add(0, patchUpSign);
         return JsonUtil.writeAsBytes(patchUpSigns);
     }
 
