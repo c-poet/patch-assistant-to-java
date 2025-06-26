@@ -112,7 +112,8 @@ public class HomeRightTreeView extends HomeTreeView {
             }
             TreeNodeUtil.buildNode(rootItem, patchTree.getTreeInfo().getRootNode());
         }
-        TreeNodeUtil.expendedMappedOrAllNode(context.totalInfo, rootItem);
+        TreeItem<TreeNode> curRootItem = patchTree.getTreeInfo().getCurRootNode().getTreeItem();
+        TreeNodeUtil.expendedMappedOrCurRoot(context.totalInfo, rootItem, curRootItem);
         if (isEmitEvent) {
             context.patchTree.fireEvent(new Event(PatchTreeView.PATCH_TREE_REFRESH));
         }

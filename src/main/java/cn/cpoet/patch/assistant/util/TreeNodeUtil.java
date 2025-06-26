@@ -201,18 +201,6 @@ public abstract class TreeNodeUtil {
     }
 
     /**
-     * 展开所有节点
-     *
-     * @param rootItem 根节点
-     */
-    public static void expandedAllNode(TreeItem<TreeNode> rootItem) {
-        rootItem.setExpanded(true);
-        if (rootItem.getChildren() != null && !rootItem.getChildren().isEmpty()) {
-            rootItem.getChildren().forEach(TreeNodeUtil::expandedAllNode);
-        }
-    }
-
-    /**
      * 展开绑定的节点
      *
      * @param rootItem 根节点
@@ -235,15 +223,15 @@ public abstract class TreeNodeUtil {
     }
 
     /**
-     * 存在绑定的节点时仅展开绑定的节点否则那个全部
+     * 存在绑定的节点时仅展开绑定的节点否则展开根节点
      *
      * @param rootItem 根节点
      */
-    public static void expendedMappedOrAllNode(TotalInfo totalInfo, TreeItem<TreeNode> rootItem) {
+    public static void expendedMappedOrCurRoot(TotalInfo totalInfo, TreeItem<TreeNode> rootItem, TreeItem<TreeNode> curRoot) {
         if (totalInfo.isMappedAddOrModNode()) {
             expandedMappedNode(rootItem);
-        } else {
-            expandedAllNode(rootItem);
+            return;
         }
+        curRoot.setExpanded(true);
     }
 }

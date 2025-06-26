@@ -3,7 +3,6 @@ package cn.cpoet.patch.assistant.view.tree;
 import cn.cpoet.patch.assistant.constant.AppConst;
 import cn.cpoet.patch.assistant.constant.IConConst;
 import cn.cpoet.patch.assistant.core.Configuration;
-import cn.cpoet.patch.assistant.service.BasePatchMatchProcessor;
 import cn.cpoet.patch.assistant.util.*;
 import cn.cpoet.patch.assistant.view.HomeContext;
 import javafx.application.Platform;
@@ -103,26 +102,17 @@ public class FileTreeCell extends TreeCell<TreeNode> {
             if (!targetItem.getValue().isDir()) {
                 targetItem = targetItem.getParent();
             }
-//            ObservableList<TreeItem<TreeNode>> selectedItems = dragInfo.getOriginTree().getSelectionModel().getSelectedItems();
-//            new BasePatchMatchProcessor(context.getTotalInfo(), true, true) {
-//                @Override
-//                protected List<TreeNode> getAppNodes() {
-//                    return;
-//                }
-//
-//                @Override
-//                protected List<TreeNode> getPatchNodes() {
-//                    return super.getPatchNodes();
-//                }
-//            }.exec();
-//            Platform.runLater(() -> patchTree.refresh());
+            ObservableList<TreeItem<TreeNode>> appTreeItems = targetItem.getChildren();
+            ObservableList<TreeItem<TreeNode>> patchTreeItems = dragInfo.getOriginTree().getSelectionModel().getSelectedItems();
+            new TreeNodeMatchProcessor(context.getTotalInfo(), appTreeItems, patchTreeItems).exec();
+            // Platform.runLater(() -> patchTree.refresh());
             e.consume();
         });
 
         setOnDragDone(e -> {
             DRAG_INFO_TL.remove();
-            List<File> files = e.getDragboard().getFiles();
-            files.forEach(FileTempUtil::deleteTempFile);
+            // List<File> files = e.getDragboard().getFiles();
+            // files.forEach(FileTempUtil::deleteTempFile);
             e.consume();
         });
     }
