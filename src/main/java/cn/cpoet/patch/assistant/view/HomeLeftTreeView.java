@@ -8,6 +8,7 @@ import cn.cpoet.patch.assistant.util.FXUtil;
 import cn.cpoet.patch.assistant.util.FileUtil;
 import cn.cpoet.patch.assistant.util.TreeNodeUtil;
 import cn.cpoet.patch.assistant.view.tree.*;
+import javafx.collections.ObservableList;
 import javafx.event.Event;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -23,6 +24,7 @@ import javafx.stage.Stage;
 
 import java.io.File;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author CPoet
@@ -37,13 +39,14 @@ public class HomeLeftTreeView extends HomeTreeView {
         ContextMenu contextMenu = new ContextMenu();
         MenuItem manualDelMenuItem = new MenuItem("删除");
         manualDelMenuItem.setOnAction(e -> {
-            appTree.getSelectionModel().getSelectedItems().forEach(item -> {
-                TreeNode selectedNode = item.getValue();
-                TreeNode nodeParent = selectedNode.getParent();
-                nodeParent.getChildren().remove(selectedNode);
-                TreeItem<TreeNode> itemParent = item.getParent();
-                itemParent.getChildren().remove(item);
-                TreeNodeUtil.countNodeStatus(context.totalInfo, selectedNode, TreeNodeStatus.MANUAL_DEL);
+            List<TreeNode> treeNodes = appTree.getSelectionModel().getSelectedItems().stream()
+                    .map(TreeItem::getValue)
+                    .collect(Collectors.toList());
+            treeNodes.forEach(node -> {
+                TreeItem<TreeNode> item = node.getTreeItem();
+                item.getParent().getChildren().remove(item);
+                node.getParent().getChildren().remove(node);
+                TreeNodeUtil.countNodeStatus(context.totalInfo, node, TreeNodeStatus.MANUAL_DEL);
             });
         });
         MenuItem saveFileMenuItem = new MenuItem("保存文件");
@@ -52,18 +55,15 @@ public class HomeLeftTreeView extends HomeTreeView {
         saveSourceFileMenuItem.setOnAction(e -> saveSourceFile(appTree));
         contextMenu.getItems().addAll(manualDelMenuItem, saveFileMenuItem, saveSourceFileMenuItem);
         contextMenu.setOnShowing(e -> {
-            boolean isNoneNode = appTree
-                    .getSelectionModel()
-                    .getSelectedItems()
-                    .stream().anyMatch(item -> item.equals(appTree.getRoot()) || item.getValue().getStatus() != TreeNodeStatus.NONE);
+            ObservableList<TreeItem<TreeNode>> selectedItems = appTree.getSelectionModel().getSelectedItems();
+            boolean isNoneNode = selectedItems.stream().anyMatch(item -> item.equals(appTree.getRoot()) || item.getValue().getStatus() != TreeNodeStatus.NONE);
             manualDelMenuItem.setVisible(!isNoneNode);
-            TreeNode selectedNode = appTree.getSelectionModel().getSelectedItem().getValue();
-            if (selectedNode.isDir()) {
+            if (selectedItems.size() != 1 || selectedItems.get(0).getValue().isDir()) {
                 saveFileMenuItem.setVisible(false);
                 saveSourceFileMenuItem.setVisible(false);
             } else {
                 saveFileMenuItem.setVisible(true);
-                saveSourceFileMenuItem.setVisible(selectedNode.getText().endsWith(FileExtConst.DOT_CLASS));
+                saveSourceFileMenuItem.setVisible(selectedItems.get(0).getValue().getText().endsWith(FileExtConst.DOT_CLASS));
             }
         });
         appTree.setContextMenu(contextMenu);
