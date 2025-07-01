@@ -1,12 +1,12 @@
 package cn.cpoet.patch.assistant.view;
 
+import cn.cpoet.patch.assistant.constant.AppConst;
 import cn.cpoet.patch.assistant.constant.IConConst;
+import cn.cpoet.patch.assistant.util.FileUtil;
 import cn.cpoet.patch.assistant.util.ImageUtil;
+import cn.cpoet.patch.assistant.util.StringUtil;
 import javafx.scene.Node;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.DialogPane;
-import javafx.scene.control.Label;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
@@ -42,6 +42,14 @@ public class AboutView {
                         "\n 邮箱：llzero54@foxmail.com"
         );
         vBox.getChildren().add(descLbl);
+
+        String changelog = FileUtil.readFileAsString(AppConst.CHANGELOG_FILE);
+        if (!StringUtil.isBlank(changelog)) {
+            TextArea changelogTextArea = new TextArea(changelog);
+            changelogTextArea.setEditable(false);
+            vBox.getChildren().add(changelogTextArea);
+        }
+
         hBox.getChildren().add(vBox);
         return hBox;
     }

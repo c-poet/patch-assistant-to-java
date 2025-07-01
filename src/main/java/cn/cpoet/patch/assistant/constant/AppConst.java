@@ -17,6 +17,11 @@ public interface AppConst {
     String APP_PROJECT_NAME = "patch-assistant-to-java";
 
     /**
+     * 版本变更文件
+     */
+    String CHANGELOG_FILE = "changelog.txt";
+
+    /**
      * 配置文件名
      */
     String CONFIG_FILE_NAME = "application.xml";
