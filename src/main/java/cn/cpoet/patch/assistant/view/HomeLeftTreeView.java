@@ -87,7 +87,9 @@ public class HomeLeftTreeView extends HomeTreeView {
             rootItem.getChildren().clear();
         }
         AppTreeInfo treeInfo = context.getAppTree().getTreeInfo();
-        TreeNodeUtil.buildNode(rootItem, treeInfo.getRootNode(), OnlyChangeFilter.INSTANCE);
+        if (treeInfo != null) {
+            TreeNodeUtil.buildNode(rootItem, treeInfo.getRootNode(), OnlyChangeFilter.INSTANCE);
+        }
         if (isEmitEvent) {
             appTree.fireEvent(new Event(AppTreeView.APP_TREE_REFRESH));
         }

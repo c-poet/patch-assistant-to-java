@@ -103,6 +103,7 @@ public class HomeRightTreeView extends HomeTreeView {
             context.patchTree.fireEvent(new Event(PatchTreeView.PATCH_TREE_REFRESHING));
         }
         TreeItem<TreeNode> rootItem = context.patchTree.getRoot();
+
         if (isBuildTreeItem) {
             if (rootItem == null) {
                 rootItem = new CheckBoxTreeItem<>();
@@ -110,10 +111,14 @@ public class HomeRightTreeView extends HomeTreeView {
             } else {
                 rootItem.getChildren().clear();
             }
-            TreeNodeUtil.buildNode(rootItem, patchTree.getTreeInfo().getRootNode());
+            if (patchTree.getTreeInfo() != null) {
+                TreeNodeUtil.buildNode(rootItem, patchTree.getTreeInfo().getRootNode());
+            }
         }
-        TreeItem<TreeNode> curRootItem = patchTree.getTreeInfo().getCurRootNode().getTreeItem();
-        TreeNodeUtil.expendedMappedOrCurRoot(context.totalInfo, rootItem, curRootItem);
+        if (patchTree.getTreeInfo() != null) {
+            TreeItem<TreeNode> curRootItem = patchTree.getTreeInfo().getCurRootNode().getTreeItem();
+            TreeNodeUtil.expendedMappedOrCurRoot(context.totalInfo, rootItem, curRootItem);
+        }
         if (isEmitEvent) {
             context.patchTree.fireEvent(new Event(PatchTreeView.PATCH_TREE_REFRESH));
         }
