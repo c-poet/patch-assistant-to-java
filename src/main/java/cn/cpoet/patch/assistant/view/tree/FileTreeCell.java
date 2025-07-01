@@ -5,8 +5,6 @@ import cn.cpoet.patch.assistant.constant.IConConst;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.util.*;
 import cn.cpoet.patch.assistant.view.HomeContext;
-import javafx.application.Platform;
-import javafx.collections.ObservableList;
 import javafx.scene.control.Label;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
@@ -57,19 +55,20 @@ public class FileTreeCell extends TreeCell<TreeNode> {
             content.putString(node.getName());
             FileTreeCellDragInfo dragInfo = new FileTreeCellDragInfo();
             dragInfo.setOriginTree((CustomTreeView<?>) getTreeView());
-            List<File> files = getTreeView().getSelectionModel().getSelectedItems()
+            List<TreeNode> patchNodes = getTreeView().getSelectionModel().getSelectedItems()
                     .stream()
                     .map(TreeItem::getValue)
-                    .map(treeNode -> {
-                        if (treeNode.isDir()) {
-                            File file = FileTempUtil.createTempDir(COPY_FILE_DIR, treeNode.getName());
-                            deepWriteFile2Path(file, treeNode, dragInfo);
-                            return file;
-                        }
-                        updateCellDragInfo(dragInfo, treeNode);
-                        return FileTempUtil.writeFile2TempDir(COPY_FILE_DIR, treeNode.getName(), treeNode.getBytes());
-                    }).collect(Collectors.toList());
-
+                    .collect(Collectors.toList());
+            dragInfo.setTreeNodes(patchNodes);
+            List<File> files = patchNodes.stream().map(patchNode -> {
+                if (patchNode.isDir()) {
+                    File file = FileTempUtil.createTempDir(COPY_FILE_DIR, patchNode.getName());
+                    deepWriteFile2Path(file, patchNode, dragInfo);
+                    return file;
+                }
+                updateCellDragInfo(dragInfo, patchNode);
+                return FileTempUtil.writeFile2TempDir(COPY_FILE_DIR, patchNode.getName(), patchNode.getBytes());
+            }).collect(Collectors.toList());
             content.putFiles(files);
             db.setContent(content);
             DRAG_INFO_TL.set(dragInfo);
@@ -95,17 +94,12 @@ public class FileTreeCell extends TreeCell<TreeNode> {
 
         setOnDragDropped(e -> {
             FileTreeCellDragInfo dragInfo = DRAG_INFO_TL.get();
-            if (dragInfo == null) {
+            if (dragInfo == null || appTree != getTreeView()) {
                 return;
             }
-            TreeItem<TreeNode> targetItem = getTreeItem();
-            if (!targetItem.getValue().isDir()) {
-                targetItem = targetItem.getParent();
-            }
-            ObservableList<TreeItem<TreeNode>> appTreeItems = targetItem.getChildren();
-            ObservableList<TreeItem<TreeNode>> patchTreeItems = dragInfo.getOriginTree().getSelectionModel().getSelectedItems();
-            new TreeNodeMatchProcessor(context.getTotalInfo(), appTreeItems, patchTreeItems).exec();
-            // Platform.runLater(() -> patchTree.refresh());
+            new TreeNodeMatchProcessor(context.getTotalInfo(), getTreeItem().getValue(), dragInfo.getTreeNodes()).exec();
+            appTree.refresh();
+            patchTree.refresh();
             e.consume();
         });
 

@@ -136,15 +136,13 @@ public class PatchPackService extends BasePackService {
                 VirtualTreeNode virtualTreeNode = new VirtualTreeNode();
                 virtualTreeNode.setName(paths[index]);
                 virtualTreeNode.setText(paths[index]);
-                virtualTreeNode.setPath(sb.append(paths[index]).toString());
-                virtualTreeNode.setDir(index + 1 < paths.length);
+                virtualTreeNode.setDir(true);
                 virtualTreeNode.setModifyTime(now);
                 newAppNode = virtualTreeNode;
             }
-            if (parent.getChildren() == null) {
-                parent.setChildren(new ArrayList<>());
-            }
-            parent.getChildren().add(newAppNode);
+            newAppNode.setParent(parent);
+            newAppNode.setPath(sb.append(paths[index]).toString());
+            parent.getAndInitChildren().add(newAppNode);
             parent = newAppNode;
             ++index;
         }
@@ -209,6 +207,9 @@ public class PatchPackService extends BasePackService {
             TreeNode appInnerNode = innerNodeMap.get(patchInnerNode.getName());
             if (appInnerNode == null) {
                 appInnerNode = new VirtualMappedNode(patchInnerNode);
+                appInnerNode.setParent(appNode);
+                appInnerNode.setPath(FileNameUtil.joinPath(FileNameUtil.getDirPath(appNode.getPath()), patchInnerNode.getName()));
+                appNode.getAndInitChildren().add(appInnerNode);
                 TreeNodeUtil.mappedNode(totalInfo, appInnerNode, patchInnerNode, TreeNodeStatus.ADD);
                 continue;
             }

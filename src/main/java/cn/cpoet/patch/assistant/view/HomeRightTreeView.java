@@ -131,6 +131,9 @@ public class HomeRightTreeView extends HomeTreeView {
 
     private void initPatchTreeDrag() {
         context.patchTree.setOnDragOver(e -> {
+            if (isDragFromTree(e)) {
+                return;
+            }
             List<File> files = e.getDragboard().getFiles();
             if (files.size() == 1 && (files.get(0).isDirectory() ||
                     files.get(0).getName().endsWith(FileExtConst.DOT_ZIP))) {

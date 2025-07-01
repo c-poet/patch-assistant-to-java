@@ -239,7 +239,7 @@ public class AppPackWriteProcessor {
         if (rootNode.getChildren() != null) {
             progressContext.step("Application pack name:" + rootNode.getName());
             for (TreeNode child : rootNode.getChildren()) {
-                writeTreeNode2Pack(zipOut, (ZipEntryNode) child);
+                writeTreeNode2Pack(zipOut, child);
                 // 需要写入补丁签名的情况
                 if (JarInfoConst.META_INFO_DIR.equals(child.getPath()) && (isPatchSign || patchUpSignNode != null)) {
                     hasMetaInfoNode = true;
@@ -297,7 +297,7 @@ public class AppPackWriteProcessor {
         return JsonUtil.writeAsBytes(patchUpSigns);
     }
 
-    private void writeTreeNode2Pack(ZipOutputStream zipOut, ZipEntryNode node) throws IOException {
+    private void writeTreeNode2Pack(ZipOutputStream zipOut, TreeNode node) throws IOException {
         // 标记为删除状态的节点不在写入新的包中
         TreeNodeStatus status = node.getStatus();
         if (TreeNodeStatus.DEL.equals(status) || TreeNodeStatus.MANUAL_DEL.equals(status)) {
@@ -306,18 +306,18 @@ public class AppPackWriteProcessor {
         }
         if (!node.isDir() && node.getText().endsWith(FileExtConst.DOT_JAR)) {
             progressContext.step("Write:" + node.getName());
-            writeTreeNode2PackWithJar(zipOut, node);
+            writeTreeNode2PackWithJar(zipOut, (ZipEntryNode) node);
             return;
         }
         if (node.getMappedNode() == null) {
-            zipOut.putNextEntry(getNewEntryWithZipEntry(node.getEntry()));
+            zipOut.putNextEntry(getNewEntryWithZipEntry(node));
             if (!node.isDir()) {
                 progressContext.step("Write:" + node.getName());
                 zipOut.write(node.getBytes());
             }
         } else {
             TreeNode mappedNode = node.getMappedNode();
-            ZipEntry zipEntry = getNewEntryWithZipEntry(node.getEntry());
+            ZipEntry zipEntry = getNewEntryWithZipEntry(node);
             zipEntry.setTimeLocal(mappedNode.getModifyTime());
             zipOut.putNextEntry(zipEntry);
             if (!zipEntry.isDirectory()) {
@@ -327,7 +327,7 @@ public class AppPackWriteProcessor {
         }
         if (node.getChildren() != null) {
             for (TreeNode child : node.getChildren()) {
-                writeTreeNode2Pack(zipOut, (ZipEntryNode) child);
+                writeTreeNode2Pack(zipOut, child);
             }
         }
     }
@@ -353,11 +353,22 @@ public class AppPackWriteProcessor {
         try (ByteArrayOutputStream out = new ByteArrayOutputStream();
              ZipOutputStream zipOut = new ZipOutputStream(out)) {
             for (TreeNode child : jarNode.getChildren()) {
-                writeTreeNode2Pack(zipOut, (ZipEntryNode) child);
+                writeTreeNode2Pack(zipOut, child);
             }
             zipOut.finish();
             return out.toByteArray();
         }
+    }
+
+    private ZipEntry getNewEntryWithZipEntry(TreeNode node) {
+        if (node instanceof ZipEntryNode) {
+            return getNewEntryWithZipEntry(((ZipEntryNode) node).getEntry());
+        }
+        ZipEntry entry = new ZipEntry(node.getPath());
+        if (node.getName().endsWith(FileExtConst.DOT_JAR)) {
+            entry.setMethod(ZipEntry.STORED);
+        }
+        return entry;
     }
 
     private ZipEntry getNewEntryWithZipEntry(ZipEntry zipEntry) {

@@ -1,5 +1,7 @@
 package cn.cpoet.patch.assistant.view.tree;
 
+import java.util.List;
+
 /**
  * Cell拖动信息
  *
@@ -21,6 +23,11 @@ public class FileTreeCellDragInfo {
      * 存在已经绑定的节点
      */
     private boolean hasMappedNode;
+
+    /**
+     * 操作的节点列表
+     */
+    private List<TreeNode> treeNodes;
 
     public CustomTreeView<?> getOriginTree() {
         return originTree;
@@ -44,5 +51,13 @@ public class FileTreeCellDragInfo {
 
     public void setHasMappedNode(boolean hasMappedNode) {
         this.hasMappedNode = hasMappedNode;
+    }
+
+    public List<TreeNode> getTreeNodes() {
+        return treeNodes;
+    }
+
+    public void setTreeNodes(List<TreeNode> treeNodes) {
+        this.treeNodes = treeNodes;
     }
 }

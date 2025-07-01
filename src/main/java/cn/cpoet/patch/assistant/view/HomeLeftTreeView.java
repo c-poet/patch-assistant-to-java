@@ -95,6 +95,9 @@ public class HomeLeftTreeView extends HomeTreeView {
 
     private void initAppTreeDrag() {
         appTree.setOnDragOver(e -> {
+            if (isDragFromTree(e)) {
+                return;
+            }
             List<File> files = e.getDragboard().getFiles();
             if (files.size() == 1 && files.get(0).getName().endsWith(FileExtConst.DOT_JAR)) {
                 e.acceptTransferModes(TransferMode.COPY_OR_MOVE);

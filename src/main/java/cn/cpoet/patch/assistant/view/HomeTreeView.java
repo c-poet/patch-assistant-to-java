@@ -10,8 +10,10 @@ import cn.cpoet.patch.assistant.view.tree.AppTreeView;
 import cn.cpoet.patch.assistant.view.tree.PatchTreeView;
 import cn.cpoet.patch.assistant.view.tree.TreeNode;
 import javafx.scene.control.MultipleSelectionModel;
+import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
+import javafx.scene.input.DragEvent;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -89,5 +91,9 @@ public abstract class HomeTreeView {
         ContentParser parser = ContentSupports.getContentParser(node);
         String content = parser.parse(node);
         doSaveFile(node, content.getBytes(), FileExtConst.JAVA);
+    }
+
+    protected boolean isDragFromTree(DragEvent event) {
+        return event.getGestureSource() instanceof TreeCell;
     }
 }

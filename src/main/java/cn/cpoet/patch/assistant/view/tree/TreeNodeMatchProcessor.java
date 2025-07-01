@@ -2,8 +2,9 @@ package cn.cpoet.patch.assistant.view.tree;
 
 import cn.cpoet.patch.assistant.service.PatchPackService;
 import cn.cpoet.patch.assistant.util.CollectionUtil;
+import cn.cpoet.patch.assistant.util.FileNameUtil;
 import cn.cpoet.patch.assistant.util.TreeNodeUtil;
-import javafx.scene.control.TreeItem;
+import javafx.application.Platform;
 
 import java.util.List;
 
@@ -15,54 +16,76 @@ import java.util.List;
 public class TreeNodeMatchProcessor {
 
     private final TotalInfo totalInfo;
+    private final TreeNode appNode;
+    private final List<TreeNode> patchNodes;
     private final PatchPackService patchPackService;
-    private final List<TreeItem<TreeNode>> appTreeItems;
-    private final List<TreeItem<TreeNode>> patchTreeItems;
 
-    public TreeNodeMatchProcessor(TotalInfo totalInfo, List<TreeItem<TreeNode>> appTreeItems, List<TreeItem<TreeNode>> patchTreeItems) {
+    public TreeNodeMatchProcessor(TotalInfo totalInfo, TreeNode appNode, List<TreeNode> patchNodes) {
         this.totalInfo = totalInfo;
-        this.appTreeItems = appTreeItems;
-        this.patchTreeItems = patchTreeItems;
+        this.appNode = appNode;
+        this.patchNodes = patchNodes;
         this.patchPackService = PatchPackService.getInstance();
     }
 
     public void exec() {
-        if (CollectionUtil.isEmpty(patchTreeItems)) {
+        if (CollectionUtil.isEmpty(patchNodes)) {
             return;
         }
-        patchTreeItems.forEach(patchItem -> match(patchItem, appTreeItems));
-    }
-
-    private void match(TreeItem<TreeNode> patchItem, List<TreeItem<TreeNode>> appTreeItems) {
-        TreeNode patchNode = patchItem.getValue();
-        for (TreeItem<TreeNode> appItem : appTreeItems) {
-            TreeNode appNode = appItem.getValue();
-            if (patchPackService.matchPatchName(appNode, patchNode)) {
-
+        Platform.runLater(() -> {
+            if (patchNodes.size() == 1 && patchNodes.get(0).isDir() && appNode.isDir()) {
+                matchWithDir(patchNodes.get(0), appNode);
                 return;
             }
-        }
-        createAppItem(patchItem, appTreeItems);
+            TreeNode tarAppNode = appNode.isDir() ? appNode : appNode.getParent();
+            patchNodes.forEach(patchNode -> match(patchNode, tarAppNode));
+        });
     }
 
-    private void createAppItem(TreeItem<TreeNode> patchItem, List<TreeItem<TreeNode>> appTreeItems) {
-        System.out.println("aaa");
-        TreeNode patchNode = patchItem.getValue();
-        System.out.println(patchNode.getName());
-        TreeNode appNode = new VirtualMappedNode(patchNode);
-        System.out.println("99999");
-        FileTreeItem appItem = new FileTreeItem();
-        System.out.println("1111111");
-        appNode.setTreeItem(appItem);
-        appItem.setValue(appNode);
-        System.out.println("bbbbbbbbb");
-        appTreeItems.add(appItem);
-        if (patchNode.isDir()) {
-            TreeNodeUtil.mappedNode(appNode, patchNode, TreeNodeStatus.ADD);
-        } else {
-            TreeNodeUtil.mappedNode(totalInfo, appNode, patchNode, TreeNodeStatus.ADD);
+    private void matchWithDir(TreeNode patchNode, TreeNode appNode) {
+        if (CollectionUtil.isEmpty(patchNode.getChildren())) {
+            return;
         }
-        System.out.println(appNode.getName());
-        patchItem.getChildren().forEach(childItem -> match(childItem, appItem.getChildren()));
+        patchNode.getChildren().forEach(childNode -> match(childNode, appNode));
+    }
+
+    private void match(TreeNode patchNode, TreeNode appNode) {
+        if (CollectionUtil.isNotEmpty(appNode.getChildren())) {
+            for (TreeNode childNode : appNode.getChildren()) {
+                if (patchPackService.matchPatchName(childNode, patchNode)) {
+                    return;
+                }
+            }
+        }
+        createAppItem(patchNode, appNode);
+    }
+
+    private void createAppItem(TreeNode patchNode, TreeNode appNode) {
+        TreeNode childNode;
+        if (patchNode.isDir()) {
+            VirtualTreeNode virtualTreeNode = new VirtualTreeNode();
+            virtualTreeNode.setName(patchNode.getName());
+            virtualTreeNode.setText(patchNode.getText());
+            virtualTreeNode.setModifyTime(patchNode.getModifyTime());
+            virtualTreeNode.setDir(true);
+            childNode = virtualTreeNode;
+        } else {
+            childNode = new VirtualMappedNode(patchNode);
+        }
+        childNode.setPath(FileNameUtil.joinPath(appNode.getPath(), childNode.getName()));
+        if (childNode.isDir()) {
+            childNode.setPath(childNode.getPath() + FileNameUtil.SEPARATOR);
+        }
+        childNode.setParent(appNode);
+        appNode.getAndInitChildren().add(childNode);
+        FileTreeItem childItem = new FileTreeItem();
+        childNode.setTreeItem(childItem);
+        childItem.setValue(childNode);
+        appNode.getTreeItem().getChildren().add(childItem);
+        if (!patchNode.isDir()) {
+            TreeNodeUtil.mappedNode(totalInfo, childNode, patchNode, TreeNodeStatus.ADD);
+        }
+        if (CollectionUtil.isNotEmpty(patchNode.getChildren())) {
+            patchNode.getChildren().forEach(node -> match(node, childNode));
+        }
     }
 }
