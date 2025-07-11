@@ -14,6 +14,7 @@ import cn.cpoet.patch.assistant.view.tree.FileNode;
 import cn.cpoet.patch.assistant.view.tree.TreeNode;
 
 import java.io.*;
+import java.nio.charset.Charset;
 import java.util.Iterator;
 import java.util.zip.ZipInputStream;
 
@@ -61,9 +62,9 @@ public class AppPackService extends BasePackService {
     }
 
     private void getTreeNode(InputStream in, TreeNode rootNode) {
-        try (ZipInputStream zin = new ZipInputStream(in)) {
+        try (ZipInputStream zin = new ZipInputStream(in, Charset.forName("GBK"))) {
             doReadZipEntry(rootNode, zin, false);
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             throw new AppException("读取应用包失败", ex);
         }
     }
