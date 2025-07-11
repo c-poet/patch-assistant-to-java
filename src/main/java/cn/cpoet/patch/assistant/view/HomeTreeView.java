@@ -24,6 +24,9 @@ import java.io.File;
  */
 public abstract class HomeTreeView {
 
+    /** 选中联动标记，避免重复进入 */
+    private static final ThreadLocal<Boolean> SELECTED_LINK_FLAG_TL = new ThreadLocal<>();
+
     protected final Stage stage;
     protected final HomeContext context;
     protected final AppTreeView appTree;
@@ -40,20 +43,28 @@ public abstract class HomeTreeView {
         if (!Boolean.TRUE.equals(Configuration.getInstance().getIsSelectedLinked())) {
             return;
         }
-        TreeItem<TreeNode> originItem = originTree.getSelectionModel().getSelectedItem();
-        if (originItem == null) {
+        if (Boolean.TRUE.equals(SELECTED_LINK_FLAG_TL.get())) {
             return;
         }
-        TreeNode appNode = originItem.getValue();
-        if (appNode.getMappedNode() == null) {
-            return;
+        try {
+            SELECTED_LINK_FLAG_TL.set(Boolean.TRUE);
+            TreeItem<TreeNode> originItem = originTree.getSelectionModel().getSelectedItem();
+            if (originItem == null) {
+                return;
+            }
+            TreeNode appNode = originItem.getValue();
+            if (appNode.getMappedNode() == null) {
+                return;
+            }
+            TreeItem<TreeNode> targetItem = appNode.getMappedNode().getTreeItem();
+            MultipleSelectionModel<TreeItem<TreeNode>> selectionModel = targetTree.getSelectionModel();
+            selectionModel.clearSelection();
+            selectionModel.select(targetItem);
+            int targetItemIndex = targetTree.getRow(targetItem);
+            targetTree.scrollTo(targetItemIndex);
+        } finally {
+            SELECTED_LINK_FLAG_TL.remove();
         }
-        TreeItem<TreeNode> targetItem = appNode.getMappedNode().getTreeItem();
-        MultipleSelectionModel<TreeItem<TreeNode>> selectionModel = targetTree.getSelectionModel();
-        selectionModel.clearSelection();
-        selectionModel.select(targetItem);
-        int targetItemIndex = targetTree.getRow(targetItem);
-        targetTree.scrollTo(targetItemIndex);
     }
 
     protected void doSaveFile(TreeNode node, byte[] content, String ext) {
