@@ -216,7 +216,7 @@ public abstract class FileUtil {
      * @return 是否删除成功
      */
     public static boolean deleteFile(File file) {
-        return file.delete();
+        return !file.exists() || file.delete();
     }
 
     /**

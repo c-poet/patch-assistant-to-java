@@ -19,6 +19,7 @@ import javafx.scene.paint.Color;
 import java.io.File;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Stack;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -63,11 +64,13 @@ public class FileTreeCell extends TreeCell<TreeNode> {
             List<File> files = patchNodes.stream().map(patchNode -> {
                 if (patchNode.isDir()) {
                     File file = FileTempUtil.createTempDir(COPY_FILE_DIR, patchNode.getName());
+                    updateCellDragInfo(dragInfo, patchNode, file);
                     deepWriteFile2Path(file, patchNode, dragInfo);
                     return file;
                 }
-                updateCellDragInfo(dragInfo, patchNode);
-                return FileTempUtil.writeFile2TempDir(COPY_FILE_DIR, patchNode.getName(), patchNode.getBytes());
+                File file = FileTempUtil.writeFile2TempDir(COPY_FILE_DIR, patchNode.getName(), patchNode.getBytes());
+                updateCellDragInfo(dragInfo, patchNode, file);
+                return file;
             }).collect(Collectors.toList());
             content.putFiles(files);
             db.setContent(content);
@@ -104,14 +107,21 @@ public class FileTreeCell extends TreeCell<TreeNode> {
         });
 
         setOnDragDone(e -> {
+            FileTreeCellDragInfo dragInfo = DRAG_INFO_TL.get();
+            if (dragInfo == null) {
+                return;
+            }
             DRAG_INFO_TL.remove();
-            // List<File> files = e.getDragboard().getFiles();
-            // files.forEach(FileTempUtil::deleteTempFile);
+            Stack<File> tempFileStack = dragInfo.getTempFileStack();
+            while (!tempFileStack.empty()) {
+                FileTempUtil.deleteTempFile(tempFileStack.pop());
+            }
             e.consume();
         });
     }
 
-    private void updateCellDragInfo(FileTreeCellDragInfo dragInfo, TreeNode node) {
+    private void updateCellDragInfo(FileTreeCellDragInfo dragInfo, TreeNode node, File file) {
+        dragInfo.addTempFile(file);
         if (node.getMappedNode() != null) {
             dragInfo.setHasMappedNode(true);
         } else if (node.equals(patchTree.getTreeInfo().getReadMeNode())) {
@@ -120,17 +130,19 @@ public class FileTreeCell extends TreeCell<TreeNode> {
     }
 
     private void deepWriteFile2Path(File parent, TreeNode node, FileTreeCellDragInfo dragInfo) {
-        updateCellDragInfo(dragInfo, node);
         if (CollectionUtil.isEmpty(node.getChildren())) {
             return;
         }
         for (TreeNode childNode : node.getChildren()) {
             if (childNode.isDir()) {
                 File childDir = FileUtil.mkdir(parent, childNode.getName());
+                updateCellDragInfo(dragInfo, childNode, childDir);
                 deepWriteFile2Path(childDir, childNode, dragInfo);
                 continue;
             }
-            FileUtil.writeFile(new File(parent, childNode.getName()), childNode.getBytes());
+            File file = new File(parent, childNode.getName());
+            FileUtil.writeFile(file, childNode.getBytes());
+            updateCellDragInfo(dragInfo, childNode, file);
             if (CollectionUtil.isNotEmpty(childNode.getChildren())) {
                 deepWriteFile2Path(parent, childNode, dragInfo);
             }
