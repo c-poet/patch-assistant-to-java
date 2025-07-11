@@ -56,7 +56,7 @@ public class HomeView extends HomeContext {
         onlyChanges.setSelected(Boolean.TRUE.equals(configuration.getIsOnlyChanges()));
         onlyChanges.setOnAction(e -> {
             configuration.setIsOnlyChanges(!Boolean.TRUE.equals(configuration.getIsOnlyChanges()));
-            appTree.fireEvent(new Event(AppTreeView.APP_TREE_REFRESH_CALL));
+            appTree.fireEvent(new Event(AppTreeView.ONLY_CHANGE_FILTER_CALL));
         });
         headerBox.getChildren().add(onlyChanges);
 
