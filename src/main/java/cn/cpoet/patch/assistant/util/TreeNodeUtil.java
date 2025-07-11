@@ -1,9 +1,6 @@
 package cn.cpoet.patch.assistant.util;
 
-import cn.cpoet.patch.assistant.view.tree.FileTreeItem;
-import cn.cpoet.patch.assistant.view.tree.TotalInfo;
-import cn.cpoet.patch.assistant.view.tree.TreeNode;
-import cn.cpoet.patch.assistant.view.tree.TreeNodeStatus;
+import cn.cpoet.patch.assistant.view.tree.*;
 import javafx.scene.control.TreeItem;
 
 import java.util.function.Predicate;
@@ -19,6 +16,22 @@ public abstract class TreeNodeUtil {
     }
 
     /**
+     * 从父级节点中移出指定节点
+     *
+     * @param node 节点
+     */
+    public static void removeNodeChild(TreeNode node) {
+        TreeNode parent = node.getParent();
+        if (parent != null) {
+            parent.getChildren().remove(node);
+            TreeItem<TreeNode> treeItem = node.getTreeItem();
+            if (treeItem != null) {
+                parent.getTreeItem().getChildren().remove(treeItem);
+            }
+        }
+    }
+
+    /**
      * 清理绑定的节点
      *
      * @param node 节点
@@ -27,10 +40,13 @@ public abstract class TreeNodeUtil {
         if (node == null) {
             return;
         }
-        node.setMappedNode(null);
-        node.setStatus(TreeNodeStatus.NONE);
         if (CollectionUtil.isNotEmpty(node.getChildren())) {
             node.getChildren().forEach(TreeNodeUtil::cleanMappedNode);
+        }
+        node.setMappedNode(null);
+        node.setStatus(TreeNodeStatus.NONE);
+        if (!node.isPatch() && (node instanceof VirtualTreeNode || node instanceof VirtualMappedNode)) {
+            removeNodeChild(node);
         }
     }
 
@@ -99,7 +115,9 @@ public abstract class TreeNodeUtil {
     @SuppressWarnings("unchecked")
     public static <T extends TreeNode> void buildNode(TreeItem<T> rootItem, T treeNode, Predicate<T> filter) {
         rootItem.setValue(treeNode);
+        rootItem.setExpanded(treeNode.isExpanded());
         treeNode.setTreeItem((TreeItem<TreeNode>) rootItem);
+        bindTreeNodeAndItem(treeNode, (TreeItem<TreeNode>) rootItem);
         buildNodeChildren(rootItem, treeNode, filter);
     }
 
@@ -162,8 +180,7 @@ public abstract class TreeNodeUtil {
             node.setText(node.getName());
         }
         TreeItem<TreeNode> childItem = new FileTreeItem();
-        childItem.setValue(node);
-        node.setTreeItem(childItem);
+        bindTreeNodeAndItem(node, childItem);
         if (node.getChildren() != null && !node.getChildren().isEmpty()) {
             node.getChildren().forEach(child -> buildChildNode(childItem, child, filter));
         }
@@ -176,6 +193,13 @@ public abstract class TreeNodeUtil {
         } else {
             node.setTreeItem(null);
         }
+    }
+
+    public static void bindTreeNodeAndItem(TreeNode node, TreeItem<TreeNode> item) {
+        item.setValue(node);
+        item.setExpanded(node.isExpanded());
+        node.setTreeItem(item);
+        item.expandedProperty().addListener((observableValue, oldVal, newVal) -> node.setExpanded(newVal));
     }
 
     /**

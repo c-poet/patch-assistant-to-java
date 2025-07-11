@@ -83,7 +83,6 @@ public class TotalInfo {
         setAddTotal(0);
         setModTotal(0);
         setDelTotal(0);
-        setManualDelTotal(0);
     }
 
     /**

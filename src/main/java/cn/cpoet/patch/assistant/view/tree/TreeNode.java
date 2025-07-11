@@ -76,6 +76,11 @@ public abstract class TreeNode {
     protected long size;
 
     /**
+     * 节点是否展开，用以保留展开状态
+     */
+    protected boolean expanded;
+
+    /**
      * 节点状态
      */
     protected TreeNodeStatus status = TreeNodeStatus.NONE;
@@ -201,6 +206,14 @@ public abstract class TreeNode {
      * @return 当前节点的更新时间
      */
     public abstract LocalDateTime getModifyTime();
+
+    public boolean isExpanded() {
+        return expanded;
+    }
+
+    public void setExpanded(boolean expanded) {
+        this.expanded = expanded;
+    }
 
     public TreeNodeStatus getStatus() {
         return status;

@@ -50,6 +50,7 @@ public class HomeRightTreeView extends HomeTreeView {
                 patchTreeInfo.setCustomRootNode(selectedItem.getValue());
             }
             refreshPatchTree(false, true);
+            patchTree.refresh();
         });
         MenuItem saveFileMenuItem = new MenuItem("保存文件");
         saveFileMenuItem.setOnAction(e -> saveFile(context.patchTree));

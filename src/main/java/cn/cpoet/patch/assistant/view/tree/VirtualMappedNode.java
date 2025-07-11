@@ -26,10 +26,12 @@ public class VirtualMappedNode extends TreeNode {
     @Override
     public void setMappedNode(TreeNode mappedNode) {
         super.setMappedNode(mappedNode);
-        setName(mappedNode.getName());
-        setText(mappedNode.getText());
-        setMd5(mappedNode.getMd5());
-        setSize(mappedNode.getSize());
-        setBytes(mappedNode.getBytes());
+        if (mappedNode != null) {
+            setName(mappedNode.getName());
+            setText(mappedNode.getText());
+            setMd5(mappedNode.getMd5());
+            setSize(mappedNode.getSize());
+            setBytes(mappedNode.getBytes());
+        }
     }
 }

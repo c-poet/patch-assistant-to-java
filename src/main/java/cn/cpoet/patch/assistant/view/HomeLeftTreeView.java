@@ -43,9 +43,7 @@ public class HomeLeftTreeView extends HomeTreeView {
                     .map(TreeItem::getValue)
                     .collect(Collectors.toList());
             treeNodes.forEach(node -> {
-                TreeItem<TreeNode> item = node.getTreeItem();
-                item.getParent().getChildren().remove(item);
-                node.getParent().getChildren().remove(node);
+                TreeNodeUtil.removeNodeChild(node);
                 TreeNodeUtil.countNodeStatus(context.totalInfo, node, TreeNodeStatus.MANUAL_DEL);
             });
         });
