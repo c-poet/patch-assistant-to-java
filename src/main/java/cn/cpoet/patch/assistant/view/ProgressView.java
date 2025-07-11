@@ -41,7 +41,7 @@ public class ProgressView extends ProgressContext {
     }
 
     public void showDialog(Stage stage, Consumer<ProgressContext> consumer) {
-        Dialog<?> dialog = new Dialog<>();
+        dialog = new Dialog<>();
         dialog.initOwner(stage);
         dialog.initModality(Modality.WINDOW_MODAL);
         dialog.setResizable(true);

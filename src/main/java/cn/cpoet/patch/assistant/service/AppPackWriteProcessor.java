@@ -62,10 +62,10 @@ public class AppPackWriteProcessor {
             try {
                 writeDocker(file, dockerfile);
                 progressContext.step("Write to Docker image pack finish");
+                progressContext.end(true);
             } catch (Exception e) {
                 progressContext.step(ExceptionUtil.asString(e));
-            } finally {
-                progressContext.end();
+                progressContext.end(false);
             }
         });
         thread.setDaemon(true);
@@ -79,10 +79,10 @@ public class AppPackWriteProcessor {
             try {
                 write(file);
                 progressContext.step("Write to JAR pack finish");
+                progressContext.end(true);
             } catch (Exception e) {
                 progressContext.step(ExceptionUtil.asString(e));
-            } finally {
-                progressContext.end();
+                progressContext.end(false);
             }
         });
         thread.setDaemon(true);

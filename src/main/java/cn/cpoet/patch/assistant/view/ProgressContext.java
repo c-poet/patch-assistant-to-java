@@ -2,6 +2,7 @@ package cn.cpoet.patch.assistant.view;
 
 import cn.cpoet.patch.assistant.util.DateUtil;
 import javafx.application.Platform;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextArea;
 
@@ -15,6 +16,7 @@ import java.io.OutputStream;
  */
 public class ProgressContext {
 
+    protected Dialog<?> dialog;
     protected TextArea textArea;
     protected volatile boolean end;
     protected ProgressBar progressBar;
@@ -73,11 +75,18 @@ public class ProgressContext {
         }
     }
 
-    public void end() {
+    public void end(boolean isClose) {
         if (runLater) {
             Platform.runLater(this::doEnd);
         } else {
             doEnd();
+        }
+        if (isClose && dialog != null) {
+            if (runLater) {
+                Platform.runLater(dialog::close);
+            } else {
+                dialog.close();
+            }
         }
     }
 
