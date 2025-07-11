@@ -52,12 +52,22 @@ public class TreeNodeMatchProcessor {
         if (CollectionUtil.isNotEmpty(appNode.getChildren())) {
             for (TreeNode childNode : appNode.getChildren()) {
                 if (patchPackService.matchPatchName(childNode, patchNode)) {
-                    TreeNodeUtil.mappedNode(totalInfo, childNode, patchNode, TreeNodeStatus.MOD);
+                    matchMapping(childNode, patchNode);
                     return;
                 }
             }
         }
         createAppItem(patchNode, appNode);
+    }
+
+    private void matchMapping(TreeNode appNode, TreeNode patchNode) {
+        if (appNode instanceof VirtualTreeNode || appNode instanceof VirtualMappedNode) {
+            TreeNodeUtil.removeNodeChild(appNode);
+            createAppItem(patchNode, appNode);
+            return;
+        }
+        TreeNodeUtil.mappedNode(totalInfo, appNode, patchNode, TreeNodeStatus.MOD);
+        matchWithDir(appNode, patchNode);
     }
 
     private void createAppItem(TreeNode patchNode, TreeNode appNode) {
