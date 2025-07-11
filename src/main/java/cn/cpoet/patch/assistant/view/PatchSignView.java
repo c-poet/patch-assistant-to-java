@@ -27,11 +27,6 @@ public class PatchSignView {
     public Node build() {
         VBox vBox = new VBox();
         vBox.setSpacing(8);
-        vBox.getChildren().add(new HBox(new Label("编码："), FXUtil.pre(new TextField(), node -> {
-            node.setText("无");
-            node.setEditable(false);
-            HBox.setHgrow(node, Priority.ALWAYS);
-        })));
         vBox.getChildren().add(new HBox(new Label("名称："), FXUtil.pre(new TextField(), node -> {
             node.setText(patchSign.getName());
             node.setEditable(false);
