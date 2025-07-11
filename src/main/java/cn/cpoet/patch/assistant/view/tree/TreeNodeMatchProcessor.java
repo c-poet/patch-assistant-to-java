@@ -52,6 +52,7 @@ public class TreeNodeMatchProcessor {
         if (CollectionUtil.isNotEmpty(appNode.getChildren())) {
             for (TreeNode childNode : appNode.getChildren()) {
                 if (patchPackService.matchPatchName(childNode, patchNode)) {
+                    TreeNodeUtil.mappedNode(totalInfo, childNode, patchNode, TreeNodeStatus.MOD);
                     return;
                 }
             }
