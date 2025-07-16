@@ -147,7 +147,7 @@ public class HomeView extends HomeContext {
                         FileChooser fileChooser = new FileChooser();
                         String lastSavePackPath = configuration.getLastSavePackPath();
                         if (!StringUtil.isBlank(lastSavePackPath)) {
-                            fileChooser.setInitialDirectory(new File(lastSavePackPath));
+                            fileChooser.setInitialDirectory(FileUtil.getExistsDirOrFile(lastSavePackPath));
                         }
                         String fileName = appTree.getTreeInfo().getRootNode().getName();
                         if (isDockerImage) {
