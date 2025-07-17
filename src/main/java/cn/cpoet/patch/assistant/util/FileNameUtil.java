@@ -31,12 +31,12 @@ public abstract class FileNameUtil {
     }
 
     public static String getName(String fileName) {
-        int i = fileName.indexOf(C_EXT_SEPARATOR);
+        int i = fileName.lastIndexOf(C_EXT_SEPARATOR);
         return i == -1 ? fileName : fileName.substring(0, i);
     }
 
     public static String getExt(String fileName) {
-        int i = fileName.indexOf(C_EXT_SEPARATOR);
+        int i = fileName.lastIndexOf(C_EXT_SEPARATOR);
         return i == -1 ? null : fileName.substring(i + 1);
     }
 
