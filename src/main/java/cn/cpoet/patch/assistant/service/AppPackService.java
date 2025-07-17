@@ -6,6 +6,7 @@ import cn.cpoet.patch.assistant.core.AppContext;
 import cn.cpoet.patch.assistant.exception.AppException;
 import cn.cpoet.patch.assistant.model.AppPackSign;
 import cn.cpoet.patch.assistant.util.CollectionUtil;
+import cn.cpoet.patch.assistant.util.FileNameUtil;
 import cn.cpoet.patch.assistant.util.HashUtil;
 import cn.cpoet.patch.assistant.view.HomeContext;
 import cn.cpoet.patch.assistant.view.ProgressContext;
@@ -86,7 +87,7 @@ public class AppPackService extends BasePackService {
         Iterator<TreeNode> it = metaInfoNode.getChildren().iterator();
         while (it.hasNext()) {
             TreeNode childNode = it.next();
-            if (AppConst.PATCH_UP_SIGN.equals(childNode.getName())) {
+            if (AppConst.PATCH_UP_SIGN.equals(FileNameUtil.getFileName(childNode.getName()))) {
                 it.remove();
                 return childNode;
             }
