@@ -258,7 +258,7 @@ public class AppPackWriteProcessor {
 
     private void writePatchSign(ZipOutputStream zipOut, TreeNode patchUpSignNode, boolean isPatchSign) throws IOException {
         if (patchUpSignNode instanceof ZipEntryNode) {
-            ZipEntry zipEntry = ((ZipEntryNode) patchUpSignNode).getEntry();
+            ZipEntry zipEntry = getNewEntryWithZipEntry(patchUpSignNode);
             writePatchSign(zipOut, zipEntry, isPatchSign, patchUpSignNode.getBytes());
             return;
         }
