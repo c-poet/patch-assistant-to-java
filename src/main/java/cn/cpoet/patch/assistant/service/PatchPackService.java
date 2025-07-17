@@ -293,6 +293,7 @@ public class PatchPackService extends BasePackService {
                 fileNode.setPatch(true);
                 if (childFile.isDirectory()) {
                     doGetTreeNodeWithDir(childFile, fileNode);
+                    parentNode.getAndInitChildren().add(fileNode);
                 } else if (childFile.getName().endsWith(FileExtConst.DOT_CLASS) && childFile.getName().indexOf('$') != -1) {
                     if (innerClasses == null) {
                         innerClasses = new ArrayList<>();
