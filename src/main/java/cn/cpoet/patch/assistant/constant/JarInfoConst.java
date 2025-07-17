@@ -6,11 +6,15 @@ package cn.cpoet.patch.assistant.constant;
  * @author CPoet
  */
 public interface JarInfoConst {
+    /**
+     * Jar MetaInf目录
+     */
+    String META_INFO = "META-INF";
 
     /**
      * Jar MetaInf目录
      */
-    String META_INFO_DIR = "META-INF/";
+    String META_INFO_DIR = META_INFO + "/";
 
     /**
      * Jar元信息文件

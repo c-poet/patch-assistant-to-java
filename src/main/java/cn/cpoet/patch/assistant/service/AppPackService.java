@@ -76,7 +76,7 @@ public class AppPackService extends BasePackService {
         }
         TreeNode metaInfoNode = null;
         for (TreeNode childNode : rootNode.getChildren()) {
-            if (JarInfoConst.META_INFO_DIR.equals(childNode.getName())) {
+            if (JarInfoConst.META_INFO.equals(childNode.getName())) {
                 metaInfoNode = childNode;
                 break;
             }
@@ -87,7 +87,7 @@ public class AppPackService extends BasePackService {
         Iterator<TreeNode> it = metaInfoNode.getChildren().iterator();
         while (it.hasNext()) {
             TreeNode childNode = it.next();
-            if (AppConst.PATCH_UP_SIGN.equals(FileNameUtil.getFileName(childNode.getName()))) {
+            if (AppConst.PATCH_UP_SIGN.equals(childNode.getName())) {
                 it.remove();
                 return childNode;
             }
