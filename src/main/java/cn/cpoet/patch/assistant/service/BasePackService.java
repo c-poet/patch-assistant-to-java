@@ -59,7 +59,7 @@ public abstract class BasePackService {
     public void handleInnerClass(List<TreeNode> classes, List<TreeNode> innerClasses) {
         Map<String, TreeNode> classMap = classes.stream()
                 .filter(node -> node.getName().endsWith(FileExtConst.DOT_CLASS))
-                .collect(Collectors.toMap(node -> FileNameUtil.getName(node.getPath()), Function.identity()));
+                .collect(Collectors.toMap(node -> FileNameUtil.getFileName(node.getPath()), Function.identity()));
         handleInnerClass(classMap, innerClasses, 1);
     }
 
