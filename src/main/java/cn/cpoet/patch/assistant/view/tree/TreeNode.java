@@ -30,11 +30,6 @@ public abstract class TreeNode {
     protected TreeNode mappedNode;
 
     /**
-     * 是否选中
-     */
-    protected boolean checked = true;
-
-    /**
      * 是否补丁
      */
     protected boolean isPatch = false;
@@ -99,14 +94,6 @@ public abstract class TreeNode {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public boolean isChecked() {
-        return checked;
-    }
-
-    public void setChecked(boolean checked) {
-        this.checked = checked;
     }
 
     public boolean isPatch() {

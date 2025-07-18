@@ -154,7 +154,7 @@ public class HomeRightTreeView extends HomeTreeView {
     }
 
     private void buildPatchTree() {
-        context.patchTree.setCellFactory(v -> new FileCheckBoxTreeCell(context));
+        context.patchTree.setCellFactory(v -> new FileTreeCell(context));
         buildPatchTreeContextMenu();
         context.appTree.addEventHandler(AppTreeView.APP_TREE_REFRESHING, e -> refreshPatchMappedNode(false));
         context.appTree.addEventHandler(AppTreeView.APP_TREE_REFRESH, e -> refreshPatchTree(PatchTreeView.REFRESH_FLAG_NONE));

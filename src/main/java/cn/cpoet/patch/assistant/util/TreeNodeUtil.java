@@ -44,7 +44,6 @@ public abstract class TreeNodeUtil {
             node.getChildren().forEach(TreeNodeUtil::cleanMappedNode);
         }
         node.setMappedNode(null);
-        node.setChecked(true);
         node.setStatus(TreeNodeStatus.NONE);
         if (!node.isPatch() && (node instanceof VirtualTreeNode || node instanceof VirtualMappedNode)) {
             removeNodeChild(node);
