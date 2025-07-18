@@ -16,10 +16,26 @@ public abstract class ContentSupports {
     }
 
     public static ContentParser getContentParser(String ext) {
-        if ("class".equals(ext)) {
-            return new ClassContentParser();
+        if (ext != null) {
+            switch (ext) {
+                case "class":
+                    return new ClassContentParser();
+                case "java":
+                case "txt":
+                case "yaml":
+                case "yml":
+                case "xml":
+                case "properties":
+                case "js":
+                case "html":
+                case "htm":
+                case "css":
+                case "sql":
+                    return new TextContentParser();
+                default:
+            }
         }
-        return new TextContentParser();
+        return null;
     }
 
 

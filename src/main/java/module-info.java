@@ -1,4 +1,5 @@
 module cn.cpoet.patch.assistant {
+    requires java.desktop;
     requires javafx.controls;
     requires com.fasterxml.jackson.databind;
     requires com.fasterxml.jackson.dataformat.xml;

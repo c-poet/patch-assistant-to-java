@@ -1,16 +1,21 @@
 package cn.cpoet.patch.assistant.view;
 
+import cn.cpoet.patch.assistant.constant.AppConst;
 import cn.cpoet.patch.assistant.control.DialogPurePane;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.core.ContentConf;
+import cn.cpoet.patch.assistant.exception.AppException;
+import cn.cpoet.patch.assistant.util.FileTempUtil;
 import cn.cpoet.patch.assistant.util.TextDiffUtil;
 import cn.cpoet.patch.assistant.view.content.CodeAreaFactory;
 import cn.cpoet.patch.assistant.view.content.ContentParser;
 import cn.cpoet.patch.assistant.view.content.ContentSupports;
 import cn.cpoet.patch.assistant.view.content.DiffLineNumberFactory;
+import cn.cpoet.patch.assistant.view.tree.FileNode;
 import cn.cpoet.patch.assistant.view.tree.TreeNode;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.*;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -19,6 +24,8 @@ import javafx.stage.Stage;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.CodeArea;
 
+import java.awt.*;
+import java.io.File;
 import java.util.function.Consumer;
 
 /**
@@ -28,12 +35,14 @@ import java.util.function.Consumer;
  */
 public class ContentView {
 
+    private final TreeNode tarNode;
     private final TreeNode leftNode;
     private final TreeNode rightNode;
     private String leftContent;
     private String rightContent;
 
     public ContentView(TreeNode node) {
+        tarNode = node;
         if (node.getMappedNode() != null && node.isPatch()) {
             leftNode = node.getMappedNode();
             rightNode = node;
@@ -99,11 +108,30 @@ public class ContentView {
         return new VirtualizedScrollPane<>(codeArea);
     }
 
+    private void openWithSystem() {
+        File file;
+        if (tarNode instanceof FileNode) {
+            file = ((FileNode) tarNode).getFile();
+        } else {
+            file = FileTempUtil.writeFile2TempDir(AppConst.APP_NAME, tarNode.getName(), tarNode.getBytes());
+        }
+        Desktop desktop = Desktop.getDesktop();
+        try {
+            desktop.open(file);
+        } catch (Exception e) {
+            throw new AppException("Calling the system to open the file failed", e);
+        }
+    }
+
     public void showDialog(Stage stage) {
         if (leftNode.isDir()) {
             return;
         }
         ContentParser parser = ContentSupports.getContentParser(leftNode);
+        if (parser == null) {
+            openWithSystem();
+            return;
+        }
         leftContent = parser.parse(leftNode);
         if (rightNode != null) {
             rightContent = parser.parse(rightNode);
