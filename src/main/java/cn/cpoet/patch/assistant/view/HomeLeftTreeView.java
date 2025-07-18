@@ -70,11 +70,11 @@ public class HomeLeftTreeView extends HomeTreeView {
     private void refreshAppTree(File file) {
         AppTreeInfo appTreeInfo = AppPackService.getInstance().getTreeNode(file);
         appTree.setTreeInfo(appTreeInfo);
-        refreshAppTree(true);
+        refreshAppTree(AppTreeView.REFRESH_FLAG_EMIT_EVENT);
     }
 
-    private void refreshAppTree(boolean isEmitEvent) {
-        if (isEmitEvent) {
+    private void refreshAppTree(int refreshFlag) {
+        if ((refreshFlag & AppTreeView.REFRESH_FLAG_EMIT_EVENT) == AppTreeView.REFRESH_FLAG_EMIT_EVENT) {
             appTree.fireEvent(new Event(AppTreeView.APP_TREE_REFRESHING));
         }
         TreeItem<TreeNode> rootItem = appTree.getRoot();
@@ -88,7 +88,7 @@ public class HomeLeftTreeView extends HomeTreeView {
         if (treeInfo != null) {
             TreeNodeUtil.buildNode(rootItem, treeInfo.getRootNode(), OnlyChangeFilter.INSTANCE);
         }
-        if (isEmitEvent) {
+        if ((refreshFlag & AppTreeView.REFRESH_FLAG_EMIT_EVENT) == AppTreeView.REFRESH_FLAG_EMIT_EVENT) {
             appTree.fireEvent(new Event(AppTreeView.APP_TREE_REFRESH));
         }
     }
@@ -113,8 +113,8 @@ public class HomeLeftTreeView extends HomeTreeView {
     private void buildAppTree() {
         appTree.setCellFactory(treeView -> new FileTreeCell(context));
         buildAppTreeContextMenu();
-        context.patchTree.addEventHandler(PatchTreeView.PATCH_TREE_REFRESH, e -> refreshAppTree(false));
-        appTree.addEventHandler(AppTreeView.ONLY_CHANGE_FILTER_CALL, e -> refreshAppTree(false));
+        context.patchTree.addEventHandler(PatchTreeView.PATCH_TREE_REFRESH, e -> refreshAppTree(AppTreeView.REFRESH_FLAG_NONE));
+        appTree.addEventHandler(AppTreeView.ONLY_CHANGE_FILTER_CALL, e -> refreshAppTree(AppTreeView.REFRESH_FLAG_NONE));
         appTree.getSelectionModel().selectedItemProperty()
                 .addListener((observableValue, oldVal, newVal) -> selectedLink(appTree, context.patchTree));
         appTree.setOnMouseClicked(e -> {
