@@ -67,7 +67,7 @@ public class TreeNodeMatchProcessor {
             return;
         }
         TreeNodeUtil.mappedNode(totalInfo, appNode, patchNode, TreeNodeStatus.MOD);
-        matchWithDir(appNode, patchNode);
+        matchWithDir(patchNode, appNode);
     }
 
     private void createAppItem(TreeNode patchNode, TreeNode appNode) {
@@ -82,7 +82,18 @@ public class TreeNodeMatchProcessor {
         } else {
             childNode = new VirtualMappedNode(patchNode);
         }
-        childNode.setPath(FileNameUtil.joinPath(appNode.getPath(), childNode.getName()));
+        TreeNode dirNode = appNode;
+        while (!dirNode.isDir()) {
+            dirNode = dirNode.getParent();
+            if (dirNode == null) {
+                break;
+            }
+        }
+        if (dirNode == null) {
+            childNode.setPath(FileNameUtil.SEPARATOR + childNode.getName());
+        } else {
+            childNode.setPath(FileNameUtil.joinPath(dirNode.getPath(), childNode.getName()));
+        }
         if (childNode.isDir()) {
             childNode.setPath(childNode.getPath() + FileNameUtil.SEPARATOR);
         }

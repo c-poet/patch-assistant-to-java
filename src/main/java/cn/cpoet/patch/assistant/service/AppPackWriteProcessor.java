@@ -300,11 +300,11 @@ public class AppPackWriteProcessor {
     private void writeTreeNode2Pack(ZipOutputStream zipOut, TreeNode node) throws IOException {
         // 标记为删除状态的节点不在写入新的包中
         TreeNodeStatus status = node.getStatus();
-        if (TreeNodeStatus.DEL.equals(status) || TreeNodeStatus.MANUAL_DEL.equals(status)) {
+        if (TreeNodeStatus.DEL.equals(status)) {
             progressContext.step("Delete:" + node.getName());
             return;
         }
-        if (!node.isDir() && node.getText().endsWith(FileExtConst.DOT_JAR)) {
+        if (!node.isDir() && node.getName().endsWith(FileExtConst.DOT_JAR)) {
             progressContext.step("Write:" + node.getName());
             writeTreeNode2PackWithJar(zipOut, (ZipEntryNode) node);
             return;
@@ -325,7 +325,7 @@ public class AppPackWriteProcessor {
                 zipOut.write(mappedNode.getBytes());
             }
         }
-        if (node.getChildren() != null) {
+        if (CollectionUtil.isNotEmpty(node.getChildren())) {
             for (TreeNode child : node.getChildren()) {
                 writeTreeNode2Pack(zipOut, child);
             }
