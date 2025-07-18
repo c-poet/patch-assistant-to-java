@@ -37,21 +37,25 @@ public class HomeRightTreeView extends HomeTreeView {
         super(stage, context);
     }
 
+    private void handleMarkRoot() {
+        TreeItem<TreeNode> selectedItem = patchTree.getSelectionModel().getSelectedItem();
+        PatchTreeInfo patchTreeInfo = patchTree.getTreeInfo();
+        TreeNode customRootNode = patchTreeInfo.getCustomRootNode();
+        if (Objects.equals(customRootNode, selectedItem.getValue())) {
+            patchTreeInfo.setCustomRootNode(null);
+        } else {
+            patchTreeInfo.setCustomRootNode(selectedItem.getValue());
+        }
+        refreshPatchTree(PatchTreeView.REFRESH_FLAG_EMIT_EVENT);
+        patchTree.refresh();
+    }
+
     private void buildPatchTreeContextMenu() {
         ContextMenu contextMenu = new ContextMenu();
         MenuItem markRootMenuItem = new MenuItem();
-        markRootMenuItem.setOnAction(e -> {
-            TreeItem<TreeNode> selectedItem = patchTree.getSelectionModel().getSelectedItem();
-            PatchTreeInfo patchTreeInfo = patchTree.getTreeInfo();
-            TreeNode customRootNode = patchTreeInfo.getCustomRootNode();
-            if (Objects.equals(customRootNode, selectedItem.getValue())) {
-                patchTreeInfo.setCustomRootNode(null);
-            } else {
-                patchTreeInfo.setCustomRootNode(selectedItem.getValue());
-            }
-            refreshPatchTree(PatchTreeView.REFRESH_FLAG_EMIT_EVENT);
-            patchTree.refresh();
-        });
+        markRootMenuItem.setOnAction(e -> handleMarkRoot());
+        MenuItem cancelMappedMenuItem = new MenuItem("取消关联");
+        cancelMappedMenuItem.setOnAction(e -> cancelMapped(patchTree));
         MenuItem saveFileMenuItem = new MenuItem("保存文件");
         saveFileMenuItem.setOnAction(e -> saveFile(context.patchTree));
         MenuItem saveSourceFileMenuItem = new MenuItem("保存源文件");
@@ -61,7 +65,7 @@ public class HomeRightTreeView extends HomeTreeView {
             PatchTreeInfo patchTreeInfo = patchTree.getTreeInfo();
             new PatchSignView(patchTreeInfo.getPatchSign()).showDialog(stage);
         });
-        contextMenu.getItems().addAll(markRootMenuItem, saveFileMenuItem, saveSourceFileMenuItem, viewPatchSign);
+        contextMenu.getItems().addAll(cancelMappedMenuItem, markRootMenuItem, saveFileMenuItem, saveSourceFileMenuItem, viewPatchSign);
         contextMenu.setOnShowing(e -> {
             TreeItem<TreeNode> selectedItem = context.patchTree.getSelectionModel().getSelectedItem();
             if (selectedItem == null) {
@@ -69,6 +73,7 @@ public class HomeRightTreeView extends HomeTreeView {
             }
             PatchTreeInfo patchTreeInfo = patchTree.getTreeInfo();
             TreeNode selectedNode = selectedItem.getValue();
+            cancelMappedMenuItem.setVisible(selectedNode.getMappedNode() != null);
             if (selectedNode != patchTreeInfo.getRootNode() &&
                     selectedNode.getChildren() != null && !selectedNode.getChildren().isEmpty()) {
                 markRootMenuItem.setVisible(true);

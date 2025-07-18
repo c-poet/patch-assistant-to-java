@@ -4,9 +4,11 @@ import cn.cpoet.patch.assistant.constant.FileExtConst;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.util.FileNameUtil;
 import cn.cpoet.patch.assistant.util.FileUtil;
+import cn.cpoet.patch.assistant.util.TreeNodeUtil;
 import cn.cpoet.patch.assistant.view.content.ContentParser;
 import cn.cpoet.patch.assistant.view.content.ContentSupports;
 import cn.cpoet.patch.assistant.view.tree.AppTreeView;
+import cn.cpoet.patch.assistant.view.tree.CustomTreeView;
 import cn.cpoet.patch.assistant.view.tree.PatchTreeView;
 import cn.cpoet.patch.assistant.view.tree.TreeNode;
 import javafx.scene.control.MultipleSelectionModel;
@@ -37,6 +39,16 @@ public abstract class HomeTreeView {
         this.context = context;
         this.appTree = context.getAppTree();
         this.patchTree = context.getPatchTree();
+    }
+
+    protected void cancelMapped(CustomTreeView<?> treeView) {
+        TreeItem<TreeNode> selectedItem = treeView.getSelectionModel().getSelectedItem();
+        TreeNode selectedNode = selectedItem.getValue();
+        TreeNode mappedNode = selectedNode.getMappedNode();
+        TreeNodeUtil.cleanMappedNode(context.totalInfo, selectedNode);
+        TreeNodeUtil.cleanMappedNode(mappedNode);
+        appTree.refresh();
+        patchTree.refresh();
     }
 
     protected void selectedLink(TreeView<TreeNode> originTree, TreeView<TreeNode> targetTree) {

@@ -79,12 +79,6 @@ public class TotalInfo {
         this.manualDelTotal.set(manualDelTotal);
     }
 
-    public void rest() {
-        setAddTotal(0);
-        setModTotal(0);
-        setDelTotal(0);
-    }
-
     /**
      * 判断是否存在绑定的节点（非删除的）
      *

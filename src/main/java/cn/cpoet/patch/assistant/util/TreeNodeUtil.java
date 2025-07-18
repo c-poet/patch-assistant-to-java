@@ -37,11 +37,24 @@ public abstract class TreeNodeUtil {
      * @param node 节点
      */
     public static void cleanMappedNode(TreeNode node) {
+        cleanMappedNode(null, node);
+    }
+
+    /**
+     * 清理绑定的节点
+     *
+     * @param totalInfo 统计信息
+     * @param node      节点
+     */
+    public static void cleanMappedNode(TotalInfo totalInfo, TreeNode node) {
         if (node == null) {
             return;
         }
         if (CollectionUtil.isNotEmpty(node.getChildren())) {
-            node.getChildren().forEach(TreeNodeUtil::cleanMappedNode);
+            node.getChildren().forEach(child -> cleanMappedNode(totalInfo, child));
+        }
+        if (totalInfo != null) {
+            totalInfo.decrTotal(node.getStatus());
         }
         node.setMappedNode(null);
         node.setStatus(TreeNodeStatus.NONE);

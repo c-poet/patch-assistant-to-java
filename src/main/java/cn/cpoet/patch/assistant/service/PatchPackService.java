@@ -67,12 +67,11 @@ public class PatchPackService extends BasePackService {
      */
     public void refreshMappedNode(TotalInfo totalInfo, TreeInfo appTreeInfo, PatchTreeInfo patchTreeInfo) {
         if (appTreeInfo != null) {
-            TreeNodeUtil.cleanMappedNode(appTreeInfo.getRootNode());
+            TreeNodeUtil.cleanMappedNode(totalInfo, appTreeInfo.getRootNode());
         }
         if (patchTreeInfo != null) {
             TreeNodeUtil.cleanMappedNode(patchTreeInfo.getRootNode());
         }
-        totalInfo.rest();
         if (appTreeInfo == null || patchTreeInfo == null) {
             return;
         }
