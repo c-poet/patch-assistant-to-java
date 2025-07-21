@@ -36,13 +36,4 @@ public enum I18NEnum {
         }
         return EN_US;
     }
-
-    public static I18NEnum ofName(String name) {
-        for (I18NEnum value : values()) {
-            if (Objects.equals(name, value.name)) {
-                return value;
-            }
-        }
-        return null;
-    }
 }

@@ -33,13 +33,4 @@ public enum ThemeEnum {
         }
         return null;
     }
-
-    public static ThemeEnum ofName(String name) {
-        for (ThemeEnum value : values()) {
-            if (value.name.equals(name)) {
-                return value;
-            }
-        }
-        return null;
-    }
 }

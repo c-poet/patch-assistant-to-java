@@ -3,6 +3,8 @@ package cn.cpoet.patch.assistant.view;
 import cn.cpoet.patch.assistant.constant.IConConst;
 import cn.cpoet.patch.assistant.constant.StyleConst;
 import cn.cpoet.patch.assistant.core.Configuration;
+import cn.cpoet.patch.assistant.model.PatchSign;
+import cn.cpoet.patch.assistant.model.PatchUpSign;
 import cn.cpoet.patch.assistant.service.AppPackService;
 import cn.cpoet.patch.assistant.util.*;
 import cn.cpoet.patch.assistant.view.tree.AppTreeView;
@@ -23,6 +25,8 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
+import java.util.List;
+import java.util.Objects;
 
 public class HomeView extends HomeContext {
 
@@ -139,6 +143,18 @@ public class HomeView extends HomeContext {
                             ButtonType buttonType = AlterUtil.warn(stage, I18nUtil.t("app.view.home.app-not-changed-tip"), ButtonType.YES, ButtonType.NO);
                             if (ButtonType.NO.equals(buttonType)) {
                                 return;
+                            }
+                        } else {
+                            // 判断是否重复打补丁
+                            List<PatchUpSign> patchUpSigns = appTree.getTreeInfo().listPatchUpSign();
+                            if (CollectionUtil.isNotEmpty(patchUpSigns) && patchUpSigns.stream().anyMatch(patchUpSign -> {
+                                PatchSign patchSign = patchTree.getTreeInfo().getPatchSign();
+                                return Objects.equals(patchSign.getSha1(), patchUpSign.getSha1());
+                            })) {
+                                ButtonType buttonType = AlterUtil.warn(stage, I18nUtil.t("app.view.home.patch-duplication-tip"), ButtonType.YES, ButtonType.NO);
+                                if (ButtonType.NO.equals(buttonType)) {
+                                    return;
+                                }
                             }
                         }
                         // 判断是否Docker模式

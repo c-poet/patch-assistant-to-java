@@ -1,6 +1,8 @@
 package cn.cpoet.patch.assistant.core;
 
 import cn.cpoet.patch.assistant.constant.AppConst;
+import cn.cpoet.patch.assistant.util.EnvUtil;
+import cn.cpoet.patch.assistant.util.StringUtil;
 
 /**
  * 补丁配置
@@ -8,6 +10,11 @@ import cn.cpoet.patch.assistant.constant.AppConst;
  * @author CPoet
  */
 public class PatchConf implements Cloneable {
+
+    /**
+     * 当前补丁操作人
+     */
+    private String username;
 
     /**
      * 说明文件名称
@@ -28,6 +35,18 @@ public class PatchConf implements Cloneable {
      * 写入补丁签名
      */
     private Boolean writePatchSign = Boolean.TRUE;
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getUsernameOrEnv() {
+        return StringUtil.isBlank(username) ? EnvUtil.getUserName() : username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
     public String getReadmeFile() {
         return readmeFile;

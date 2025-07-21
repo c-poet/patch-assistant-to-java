@@ -6,6 +6,8 @@ import cn.cpoet.patch.assistant.exception.AppException;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -16,10 +18,15 @@ import java.util.*;
 public abstract class I18nUtil {
 
     private static final String I18N_FILE_PREFIX = "/messages/i18n";
+    private static final String I18N_FILE_EXT = ".properties";
 
-    /** 当前Locale */
+    /**
+     * 当前Locale
+     */
     private static I18NEnum i18NEnum;
-    /** I18n资源 */
+    /**
+     * I18n资源
+     */
     private static Properties i18nProperties;
 
     static {
@@ -85,8 +92,9 @@ public abstract class I18nUtil {
         } else {
             i18nProperties.clear();
         }
-        try (InputStream in = FileUtil.getFileAsStream(I18N_FILE_PREFIX + "_" + language.getCode() + ".properties")) {
-            i18nProperties.load(in);
+        try (InputStream in = FileUtil.getFileAsStream(I18N_FILE_PREFIX + "_" + language.getCode() + I18N_FILE_EXT);
+             InputStreamReader reader = new InputStreamReader(in, StandardCharsets.UTF_8)) {
+            i18nProperties.load(reader);
             I18nUtil.i18NEnum = language;
         } catch (IOException e) {
             throw new AppException("Load I18n failed", e);

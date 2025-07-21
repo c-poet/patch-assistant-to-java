@@ -3,6 +3,7 @@ package cn.cpoet.patch.assistant.view;
 import cn.cpoet.patch.assistant.constant.I18NEnum;
 import cn.cpoet.patch.assistant.constant.ThemeEnum;
 import cn.cpoet.patch.assistant.control.IntegerField;
+import cn.cpoet.patch.assistant.control.StringMappingConverter;
 import cn.cpoet.patch.assistant.core.*;
 import cn.cpoet.patch.assistant.util.EncryptUtil;
 import cn.cpoet.patch.assistant.util.FXUtil;
@@ -18,7 +19,6 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.util.StringConverter;
 
 /**
  * 配置界面
@@ -191,6 +191,14 @@ public class ConfigView {
         VBox patchConfigBox = new VBox();
         patchConfigBox.setSpacing(10);
 
+        patchConfigBox.getChildren().add(FXUtil.pre(new HBox(new Label(I18nUtil.t("app.view.config.patch-username")), FXUtil.pre(new TextField(), node -> {
+            HBox.setHgrow(node, Priority.ALWAYS);
+            node.setText(patch.getUsernameOrEnv());
+            node.textProperty().addListener((e, oldVal, newVal) -> {
+                patch.setUsername(newVal);
+            });
+        })), box -> box.setAlignment(Pos.CENTER)));
+
         patchConfigBox.getChildren().add(FXUtil.pre(new HBox(
                 FXUtil.pre(new RadioButton(I18nUtil.t("app.view.config.patch-path-match")), node -> {
                     node.setSelected(Boolean.TRUE.equals(patch.getPathMatch()));
@@ -248,17 +256,7 @@ public class ConfigView {
         HBox langConfig = new HBox(new Label(I18nUtil.t("app.view.config.genera-lang")), FXUtil.pre(new ComboBox<I18NEnum>(), node -> {
             HBox.setHgrow(node, Priority.ALWAYS);
             node.getItems().addAll(I18NEnum.values());
-            node.setConverter(new StringConverter<>() {
-                @Override
-                public String toString(I18NEnum i18NEnum) {
-                    return i18NEnum == null ? null : i18NEnum.getName();
-                }
-
-                @Override
-                public I18NEnum fromString(String name) {
-                    return I18NEnum.ofName(name);
-                }
-            });
+            node.setConverter(new StringMappingConverter<>(lang -> I18nUtil.t("app.view.config.genera-lang." + lang.getCode())));
             node.valueProperty().addListener((e, oldVal, newVal) -> genera.setLanguage(newVal.getCode()));
             node.setValue(I18NEnum.ofCode(genera.getLanguage()));
         }));
@@ -267,17 +265,7 @@ public class ConfigView {
         HBox themeConfig = new HBox(new Label(I18nUtil.t("app.view.config.genera-theme")), FXUtil.pre(new ComboBox<ThemeEnum>(), node -> {
             HBox.setHgrow(node, Priority.ALWAYS);
             node.getItems().addAll(ThemeEnum.values());
-            node.setConverter(new StringConverter<>() {
-                @Override
-                public String toString(ThemeEnum themeEnum) {
-                    return themeEnum == null ? null : themeEnum.getName();
-                }
-
-                @Override
-                public ThemeEnum fromString(String name) {
-                    return ThemeEnum.ofName(name);
-                }
-            });
+            node.setConverter(new StringMappingConverter<>(theme -> I18nUtil.t("app.view.config.genera-theme." + theme.getCode())));
             node.valueProperty().addListener((e, oldVal, newVal) -> genera.setTheme(newVal.getCode()));
             node.setValue(ThemeEnum.ofCode(genera.getTheme()));
         }));

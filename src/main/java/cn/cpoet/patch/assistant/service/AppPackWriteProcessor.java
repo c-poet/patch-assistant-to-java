@@ -5,6 +5,7 @@ import cn.cpoet.patch.assistant.constant.FileExtConst;
 import cn.cpoet.patch.assistant.constant.JarInfoConst;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.core.DockerConf;
+import cn.cpoet.patch.assistant.core.PatchConf;
 import cn.cpoet.patch.assistant.exception.AppException;
 import cn.cpoet.patch.assistant.model.AppPackSign;
 import cn.cpoet.patch.assistant.model.PatchUpSign;
@@ -275,6 +276,7 @@ public class AppPackWriteProcessor {
     }
 
     private byte[] updatePatchSignContent(byte[] bytes) {
+        PatchConf patchConf = Configuration.getInstance().getPatch();
         PatchUpSign patchUpSign = PatchUpSign.of(context.getPatchTree().getTreeInfo().getPatchSign());
         TotalInfo totalInfo = context.getTotalInfo();
         patchUpSign.setAddTotal(totalInfo.getAddTotal());
@@ -282,7 +284,7 @@ public class AppPackWriteProcessor {
         patchUpSign.setDelTotal(totalInfo.getDelTotal());
         patchUpSign.setManualDelTotal(totalInfo.getManualDelTotal());
         patchUpSign.setOperTime(new Date());
-        patchUpSign.setOperUser(EnvUtil.getUserName());
+        patchUpSign.setOperUser(patchConf.getUsernameOrEnv());
         AppTreeInfo treeInfo = context.getAppTree().getTreeInfo();
         AppPackSign appPackSign = treeInfo.getAppPackSign();
         patchUpSign.setOriginAppMd5(appPackSign.getMd5());

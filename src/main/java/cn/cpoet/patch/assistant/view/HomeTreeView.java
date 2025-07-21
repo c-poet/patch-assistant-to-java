@@ -4,6 +4,7 @@ import cn.cpoet.patch.assistant.constant.FileExtConst;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.util.FileNameUtil;
 import cn.cpoet.patch.assistant.util.FileUtil;
+import cn.cpoet.patch.assistant.util.I18nUtil;
 import cn.cpoet.patch.assistant.util.TreeNodeUtil;
 import cn.cpoet.patch.assistant.view.content.ContentParser;
 import cn.cpoet.patch.assistant.view.content.ContentSupports;
@@ -26,7 +27,9 @@ import java.io.File;
  */
 public abstract class HomeTreeView {
 
-    /** 选中联动标记，避免重复进入 */
+    /**
+     * 选中联动标记，避免重复进入
+     */
     private static final ThreadLocal<Boolean> SELECTED_LINK_FLAG_TL = new ThreadLocal<>();
 
     protected final Stage stage;
@@ -81,13 +84,13 @@ public abstract class HomeTreeView {
 
     protected void doSaveFile(TreeNode node, byte[] content, String ext) {
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("保存文件");
+        fileChooser.setTitle(I18nUtil.t("app.view.tree.save-file"));
         String name = FileNameUtil.getName(FileNameUtil.getFileName(node.getText()));
         if (ext == null) {
             fileChooser.setInitialFileName(name);
         } else {
             fileChooser.setInitialFileName(name + FileNameUtil.C_EXT_SEPARATOR + ext);
-            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(ext.toUpperCase() + "文件", "*." + ext));
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(ext.toUpperCase() + " " + I18nUtil.t("app.view.tree.file"), "*." + ext));
         }
         File file = fileChooser.showSaveDialog(stage);
         if (file == null) {

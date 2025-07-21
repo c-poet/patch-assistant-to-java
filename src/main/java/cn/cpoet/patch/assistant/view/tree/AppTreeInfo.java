@@ -1,6 +1,11 @@
 package cn.cpoet.patch.assistant.view.tree;
 
 import cn.cpoet.patch.assistant.model.AppPackSign;
+import cn.cpoet.patch.assistant.model.PatchUpSign;
+import cn.cpoet.patch.assistant.util.JsonUtil;
+import com.fasterxml.jackson.core.type.TypeReference;
+
+import java.util.List;
 
 /**
  * 应用信息
@@ -33,5 +38,14 @@ public class AppTreeInfo extends TreeInfo {
 
     public void setPatchUpSignNode(TreeNode patchUpSignNode) {
         this.patchUpSignNode = patchUpSignNode;
+    }
+
+    public List<PatchUpSign> listPatchUpSign() {
+        if (patchUpSignNode == null) {
+            return null;
+        }
+        byte[] bytes = patchUpSignNode.getBytes();
+        return bytes == null ? null : JsonUtil.read(bytes, new TypeReference<>() {
+        });
     }
 }
