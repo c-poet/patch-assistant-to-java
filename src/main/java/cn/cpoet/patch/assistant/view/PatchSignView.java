@@ -3,6 +3,7 @@ package cn.cpoet.patch.assistant.view;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.model.PatchSign;
 import cn.cpoet.patch.assistant.util.FXUtil;
+import cn.cpoet.patch.assistant.util.I18nUtil;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
@@ -27,17 +28,17 @@ public class PatchSignView {
     public Node build() {
         VBox vBox = new VBox();
         vBox.setSpacing(8);
-        vBox.getChildren().add(new HBox(new Label("名称："), FXUtil.pre(new TextField(), node -> {
+        vBox.getChildren().add(new HBox(new Label(I18nUtil.t("app.view.patch-sign.name")), FXUtil.pre(new TextField(), node -> {
             node.setText(patchSign.getName());
             node.setEditable(false);
             HBox.setHgrow(node, Priority.ALWAYS);
         })));
-        vBox.getChildren().add(new HBox(new Label("MD5："), FXUtil.pre(new TextField(), node -> {
+        vBox.getChildren().add(new HBox(new Label(I18nUtil.t("app.view.patch-sign.md5")), FXUtil.pre(new TextField(), node -> {
             node.setText(patchSign.getMd5());
             node.setEditable(false);
             HBox.setHgrow(node, Priority.ALWAYS);
         })));
-        vBox.getChildren().add(new HBox(new Label("SHA1："), FXUtil.pre(new TextField(), node -> {
+        vBox.getChildren().add(new HBox(new Label(I18nUtil.t("app.view.patch-sign.sha1")), FXUtil.pre(new TextField(), node -> {
             node.setText(patchSign.getSha1());
             node.setEditable(false);
             HBox.setHgrow(node, Priority.ALWAYS);
@@ -51,7 +52,7 @@ public class PatchSignView {
         dialog.initOwner(stage);
         dialog.initModality(Modality.WINDOW_MODAL);
         dialog.setResizable(true);
-        dialog.setTitle("补丁签名信息");
+        dialog.setTitle(I18nUtil.t("app.view.patch-sign.title"));
         DialogPane dialogPane = new DialogPane();
         Configuration configuration = Configuration.getInstance();
         dialogPane.setPrefSize(configuration.getPatchSignWidth(), configuration.getPatchSighHeight());

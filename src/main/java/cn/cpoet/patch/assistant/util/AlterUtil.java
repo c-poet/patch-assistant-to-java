@@ -50,6 +50,7 @@ public abstract class AlterUtil {
         if (stage != null) {
             alert.initOwner(stage);
         }
+        alert.setTitle(I18nUtil.t("app.alter.title-" + type.name().toLowerCase()));
         alert.setHeaderText(null);
         return alert.showAndWait().orElse(null);
     }

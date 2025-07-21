@@ -38,12 +38,12 @@ public class HomeView extends HomeContext {
 
         HBox headerBox = new HBox();
         headerBox.setSpacing(10);
-        CheckBox checkSelectedLink = new CheckBox("选中联动");
+        CheckBox checkSelectedLink = new CheckBox(I18nUtil.t("app.view.home.select-linkage"));
         checkSelectedLink.setSelected(Boolean.TRUE.equals(configuration.getIsSelectedLinked()));
         checkSelectedLink.setOnAction(e -> configuration.setIsSelectedLinked(!Boolean.TRUE.equals(configuration.getIsSelectedLinked())));
         headerBox.getChildren().add(checkSelectedLink);
 
-        CheckBox showFileDetail = new CheckBox("文件详情");
+        CheckBox showFileDetail = new CheckBox(I18nUtil.t("app.view.home.file-detail"));
         showFileDetail.setSelected(Boolean.TRUE.equals(configuration.getIsShowFileDetail()));
         showFileDetail.setOnAction(e -> {
             configuration.setIsShowFileDetail(!Boolean.TRUE.equals(configuration.getIsShowFileDetail()));
@@ -52,7 +52,7 @@ public class HomeView extends HomeContext {
         });
         headerBox.getChildren().add(showFileDetail);
 
-        CheckBox onlyChanges = new CheckBox("仅看变动");
+        CheckBox onlyChanges = new CheckBox(I18nUtil.t("app.view.home.only-show-change"));
         onlyChanges.setSelected(Boolean.TRUE.equals(configuration.getIsOnlyChanges()));
         onlyChanges.setOnAction(e -> {
             configuration.setIsOnlyChanges(!Boolean.TRUE.equals(configuration.getIsOnlyChanges()));
@@ -60,7 +60,7 @@ public class HomeView extends HomeContext {
         });
         headerBox.getChildren().add(onlyChanges);
 
-        CheckBox checkDockerImage = new CheckBox("Docker镜像");
+        CheckBox checkDockerImage = new CheckBox(I18nUtil.t("app.view.home.docker-image"));
         checkDockerImage.setSelected(Boolean.TRUE.equals(configuration.getIsDockerImage()));
         checkDockerImage.setOnAction(e -> configuration.setIsDockerImage(!Boolean.TRUE.equals(configuration.getIsDockerImage())));
         headerBox.getChildren().add(checkDockerImage);
@@ -76,17 +76,17 @@ public class HomeView extends HomeContext {
         searchBtn.setOnAction(e -> showSearchView());
         headerBox.getChildren().add(searchBtn);
 
-        Button configBtn = new Button("配置");
+        Button configBtn = new Button(I18nUtil.t("app.view.home.config"));
         configBtn.setOnAction(e -> new ConfigView().showDialog(stage));
         headerBox.getChildren().add(configBtn);
 
-        Button aboutBtn = new Button("关于");
+        Button aboutBtn = new Button(I18nUtil.t("app.view.home.about"));
         aboutBtn.setOnAction(e -> new AboutView().showDialog(stage));
         headerBox.getChildren().add(aboutBtn);
         headerBox.setPadding(new Insets(3, 8, 3, 8));
         headerBox.setAlignment(Pos.CENTER);
 
-        TitledPane titledPane = new TitledPane("选项", headerBox);
+        TitledPane titledPane = new TitledPane(I18nUtil.t("app.view.home.option"), headerBox);
         titledPane.setCollapsible(false);
         return titledPane;
     }
@@ -102,7 +102,7 @@ public class HomeView extends HomeContext {
         if (patchTreeInfo != null) {
             readMeTextArea.setText(patchTreeInfo.getReadMeText());
         }
-        TitledPane titledPane = new TitledPane("补丁信息", readMeTextArea);
+        TitledPane titledPane = new TitledPane(I18nUtil.t("app.view.home.patch-info"), readMeTextArea);
         titledPane.setCollapsible(false);
         return titledPane;
     }
@@ -121,22 +121,22 @@ public class HomeView extends HomeContext {
 
     private Node buildFooter() {
         HBox footerBox = new HBox(
-                FXUtil.pre(new Label("新增: "), StyleConst.FONT_BOLD),
+                FXUtil.pre(new Label(I18nUtil.t("app.view.home.patch-add")), StyleConst.FONT_BOLD),
                 FXUtil.pre(new Label(), lbl -> lbl.textProperty().bind(totalInfo.addTotalProperty().asString())),
-                FXUtil.pre(new Label("更新: "), StyleConst.FONT_BOLD),
+                FXUtil.pre(new Label(I18nUtil.t("app.view.home.patch-mod")), StyleConst.FONT_BOLD),
                 FXUtil.pre(new Label(), lbl -> lbl.textProperty().bind(totalInfo.modTotalProperty().asString())),
-                FXUtil.pre(new Label("删除: "), StyleConst.FONT_BOLD),
+                FXUtil.pre(new Label(I18nUtil.t("app.view.home.patch-del")), StyleConst.FONT_BOLD),
                 FXUtil.pre(new Label(), lbl -> lbl.textProperty().bind(totalInfo.delTotalProperty().asString())),
-                FXUtil.pre(new Label("手动删除: "), StyleConst.FONT_BOLD),
+                FXUtil.pre(new Label(I18nUtil.t("app.view.home.patch-manual-del")), StyleConst.FONT_BOLD),
                 FXUtil.pre(new Label(), lbl -> lbl.textProperty().bind(totalInfo.manualDelTotalProperty().asString())),
                 FXUtil.pre(new Region(), node -> HBox.setHgrow(node, Priority.ALWAYS)),
                 FXUtil.pre(new Button(), btn -> {
                     btn.setDisable(appTree.getRoot() == null);
                     appTree.addEventHandler(AppTreeView.APP_TREE_REFRESH, e -> btn.setDisable(appTree.getRoot() == null));
-                    btn.setText("保存");
+                    btn.setText(I18nUtil.t("app.view.home.save"));
                     btn.setOnAction(e -> {
                         if (!totalInfo.isChangeNode()) {
-                            ButtonType buttonType = AlterUtil.warn(stage, "应用包未改变，是否继续？", ButtonType.YES, ButtonType.NO);
+                            ButtonType buttonType = AlterUtil.warn(stage, I18nUtil.t("app.view.home.app-not-changed-tip"), ButtonType.YES, ButtonType.NO);
                             if (ButtonType.NO.equals(buttonType)) {
                                 return;
                             }
@@ -151,13 +151,13 @@ public class HomeView extends HomeContext {
                         }
                         String fileName = appTree.getTreeInfo().getRootNode().getName();
                         if (isDockerImage) {
-                            fileChooser.setTitle("保存镜像包");
+                            fileChooser.setTitle(I18nUtil.t("app.view.home.save-docker-image"));
                             fileChooser.setInitialFileName(FileNameUtil.getName(fileName) + ".tar");
-                            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("应用包", "*.tar"));
+                            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(I18nUtil.t("app.view.home.docker-image"), "*.tar"));
                         } else {
-                            fileChooser.setTitle("保存应用包");
+                            fileChooser.setTitle(I18nUtil.t("app.view.home.save-jar"));
                             fileChooser.setInitialFileName(fileName);
-                            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("应用包", "*.jar"));
+                            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(I18nUtil.t("app.view.home.java-package"), "*.jar"));
                         }
                         File file = fileChooser.showSaveDialog(stage);
                         if (file == null) {

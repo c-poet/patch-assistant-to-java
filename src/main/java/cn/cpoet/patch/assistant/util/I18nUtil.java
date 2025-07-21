@@ -1,5 +1,8 @@
 package cn.cpoet.patch.assistant.util;
 
+import cn.cpoet.patch.assistant.constant.I18NEnum;
+import cn.cpoet.patch.assistant.core.Configuration;
+
 import java.util.Locale;
 import java.util.Objects;
 import java.util.ResourceBundle;
@@ -11,7 +14,7 @@ import java.util.ResourceBundle;
  */
 public abstract class I18nUtil {
 
-    private static final String I18N_FILE_PREFIX = "messages/";
+    private static final String I18N_FILE_PREFIX = "messages/i18n";
 
     /** I18n资源 */
     private static ResourceBundle resourceBundle;
@@ -60,8 +63,9 @@ public abstract class I18nUtil {
         return message == null || message.isBlank() ? message : String.format(message, params);
     }
 
-    public static String getLanguage() {
-        return "en";
+    public static I18NEnum getLanguage() {
+        String language = Configuration.getInstance().getGenera().getLanguage();
+        return I18NEnum.ofCode(language);
     }
 
     private static void initLocale() {
@@ -69,7 +73,7 @@ public abstract class I18nUtil {
     }
 
     public static void updateLocale() {
-        Locale locale = new Locale(getLanguage());
+        Locale locale = getLanguage().toLocale();
         if (resourceBundle != null && Objects.equals(resourceBundle.getLocale(), locale)) {
             return;
         }

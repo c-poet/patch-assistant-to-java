@@ -6,6 +6,7 @@ import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.service.AppPackService;
 import cn.cpoet.patch.assistant.util.FXUtil;
 import cn.cpoet.patch.assistant.util.FileUtil;
+import cn.cpoet.patch.assistant.util.I18nUtil;
 import cn.cpoet.patch.assistant.util.TreeNodeUtil;
 import cn.cpoet.patch.assistant.view.tree.*;
 import javafx.collections.ObservableList;
@@ -37,7 +38,7 @@ public class HomeLeftTreeView extends HomeTreeView {
 
     private void buildAppTreeContextMenu() {
         ContextMenu contextMenu = new ContextMenu();
-        MenuItem manualDelMenuItem = new MenuItem("删除");
+        MenuItem manualDelMenuItem = new MenuItem(I18nUtil.t("app.view.left-tree.delete"));
         manualDelMenuItem.setOnAction(e -> {
             List<TreeNode> treeNodes = appTree.getSelectionModel().getSelectedItems().stream()
                     .map(TreeItem::getValue)
@@ -47,9 +48,9 @@ public class HomeLeftTreeView extends HomeTreeView {
                 TreeNodeUtil.countNodeStatus(context.totalInfo, node, TreeNodeStatus.MANUAL_DEL);
             });
         });
-        MenuItem saveFileMenuItem = new MenuItem("保存文件");
+        MenuItem saveFileMenuItem = new MenuItem(I18nUtil.t("app.view.left-tree.save-file"));
         saveFileMenuItem.setOnAction(e -> saveFile(appTree));
-        MenuItem saveSourceFileMenuItem = new MenuItem("保存源文件");
+        MenuItem saveSourceFileMenuItem = new MenuItem(I18nUtil.t("app.view.left-tree.save-source-file"));
         saveSourceFileMenuItem.setOnAction(e -> saveSourceFile(appTree));
         contextMenu.getItems().addAll(manualDelMenuItem, saveFileMenuItem, saveSourceFileMenuItem);
         contextMenu.setOnShowing(e -> {
@@ -149,7 +150,7 @@ public class HomeLeftTreeView extends HomeTreeView {
             node.setPadding(new Insets(3, 8, 3, 8));
             node.setSpacing(3);
         });
-        appPackPathBox.getChildren().add(new Label("应用包:"));
+        appPackPathBox.getChildren().add(new Label(I18nUtil.t("app.view.left-tree.app-package")));
         appPackPathBox.getChildren().add(FXUtil.pre(new TextField(), node -> {
             node.setEditable(false);
             HBox.setHgrow(node, Priority.ALWAYS);
@@ -167,11 +168,11 @@ public class HomeLeftTreeView extends HomeTreeView {
                 Configuration.getInstance().setLastAppPackPath(newVal);
             });
         }));
-        appPackPathBox.getChildren().add(FXUtil.pre(new Button("选择"), node -> {
+        appPackPathBox.getChildren().add(FXUtil.pre(new Button(I18nUtil.t("app.view.left-tree.select")), node -> {
             node.setOnAction(e -> {
                 FileChooser fileChooser = new FileChooser();
-                fileChooser.setTitle("选择应用包");
-                fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("应用包", "*.jar"));
+                fileChooser.setTitle(I18nUtil.t("app.view.left-tree.select-jar"));
+                fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(I18nUtil.t("app.view.left-tree.java-package"), "*.jar"));
                 File file = fileChooser.showOpenDialog(stage);
                 if (file == null) {
                     return;

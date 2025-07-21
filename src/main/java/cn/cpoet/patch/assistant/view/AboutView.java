@@ -3,6 +3,7 @@ package cn.cpoet.patch.assistant.view;
 import cn.cpoet.patch.assistant.constant.AppConst;
 import cn.cpoet.patch.assistant.constant.IConConst;
 import cn.cpoet.patch.assistant.util.FileUtil;
+import cn.cpoet.patch.assistant.util.I18nUtil;
 import cn.cpoet.patch.assistant.util.ImageUtil;
 import cn.cpoet.patch.assistant.util.StringUtil;
 import javafx.scene.Node;
@@ -58,7 +59,7 @@ public class AboutView {
         Dialog<Boolean> dialog = new Dialog<>();
         dialog.initOwner(stage);
         dialog.initModality(Modality.WINDOW_MODAL);
-        dialog.setTitle("关于");
+        dialog.setTitle(I18nUtil.t("app.view.about.title"));
         DialogPane dialogPane = new DialogPane();
         dialogPane.getButtonTypes().add(ButtonType.CLOSE);
         dialogPane.setContent(this.build());

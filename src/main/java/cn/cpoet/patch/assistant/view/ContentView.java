@@ -6,6 +6,7 @@ import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.core.ContentConf;
 import cn.cpoet.patch.assistant.exception.AppException;
 import cn.cpoet.patch.assistant.util.FileTempUtil;
+import cn.cpoet.patch.assistant.util.I18nUtil;
 import cn.cpoet.patch.assistant.util.TextDiffUtil;
 import cn.cpoet.patch.assistant.view.content.CodeAreaFactory;
 import cn.cpoet.patch.assistant.view.content.ContentParser;
@@ -61,7 +62,7 @@ public class ContentView {
         box.setPadding(Insets.EMPTY);
         ContentConf contentConf = Configuration.getInstance().getContent();
         ToolBar toolBar = new ToolBar();
-        CheckBox diffModeCheckBox = new CheckBox("差异模式");
+        CheckBox diffModeCheckBox = new CheckBox(I18nUtil.t("app.view.content.diff-show-mode"));
         diffModeCheckBox.setSelected(Boolean.TRUE.equals(contentConf.getDiffModel()));
         diffModeCheckBox.setOnAction(e -> {
             contentConf.setDiffModel(!Boolean.TRUE.equals(contentConf.getDiffModel()));

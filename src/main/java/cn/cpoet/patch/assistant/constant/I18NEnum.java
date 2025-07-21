@@ -1,5 +1,6 @@
 package cn.cpoet.patch.assistant.constant;
 
+import java.util.Locale;
 import java.util.Objects;
 
 /**
@@ -26,6 +27,10 @@ public enum I18NEnum {
 
     public String getName() {
         return name;
+    }
+
+    public Locale toLocale() {
+        return new Locale(code);
     }
 
     public static I18NEnum ofCode(String code) {

@@ -5,10 +5,7 @@ import cn.cpoet.patch.assistant.constant.ParamNameConst;
 import cn.cpoet.patch.assistant.core.AppContext;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.service.PatchPackService;
-import cn.cpoet.patch.assistant.util.FXUtil;
-import cn.cpoet.patch.assistant.util.FileUtil;
-import cn.cpoet.patch.assistant.util.StringUtil;
-import cn.cpoet.patch.assistant.util.TreeNodeUtil;
+import cn.cpoet.patch.assistant.util.*;
 import cn.cpoet.patch.assistant.view.tree.*;
 import javafx.event.Event;
 import javafx.geometry.Insets;
@@ -54,13 +51,13 @@ public class HomeRightTreeView extends HomeTreeView {
         ContextMenu contextMenu = new ContextMenu();
         MenuItem markRootMenuItem = new MenuItem();
         markRootMenuItem.setOnAction(e -> handleMarkRoot());
-        MenuItem cancelMappedMenuItem = new MenuItem("取消关联");
+        MenuItem cancelMappedMenuItem = new MenuItem(I18nUtil.t("app.view.right-tree.cancel-binding"));
         cancelMappedMenuItem.setOnAction(e -> cancelMapped(patchTree));
-        MenuItem saveFileMenuItem = new MenuItem("保存文件");
+        MenuItem saveFileMenuItem = new MenuItem(I18nUtil.t("app.view.right-tree.save-file"));
         saveFileMenuItem.setOnAction(e -> saveFile(context.patchTree));
-        MenuItem saveSourceFileMenuItem = new MenuItem("保存源文件");
+        MenuItem saveSourceFileMenuItem = new MenuItem(I18nUtil.t("app.view.right-tree.save-source-file"));
         saveSourceFileMenuItem.setOnAction(e -> saveSourceFile(context.patchTree));
-        MenuItem viewPatchSign = new MenuItem("查看签名");
+        MenuItem viewPatchSign = new MenuItem(I18nUtil.t("app.view.right-tree.view-sign"));
         viewPatchSign.setOnAction(e -> {
             PatchTreeInfo patchTreeInfo = patchTree.getTreeInfo();
             new PatchSignView(patchTreeInfo.getPatchSign()).showDialog(stage);
@@ -78,9 +75,9 @@ public class HomeRightTreeView extends HomeTreeView {
                     selectedNode.getChildren() != null && !selectedNode.getChildren().isEmpty()) {
                 markRootMenuItem.setVisible(true);
                 if (Objects.equals(selectedNode, patchTreeInfo.getCustomRootNode())) {
-                    markRootMenuItem.setText("取消根节点标记");
+                    markRootMenuItem.setText(I18nUtil.t("app.view.right-tree.cancel-root-mark"));
                 } else {
-                    markRootMenuItem.setText("标记为根节点");
+                    markRootMenuItem.setText(I18nUtil.t("app.view.right-tree.mark-root"));
                 }
             } else {
                 markRootMenuItem.setVisible(false);
@@ -210,7 +207,7 @@ public class HomeRightTreeView extends HomeTreeView {
             node.setPadding(new Insets(3, 8, 3, 8));
             node.setSpacing(3);
         });
-        patchPackPathBox.getChildren().add(new Label("补丁包:"));
+        patchPackPathBox.getChildren().add(new Label(I18nUtil.t("app.view.right-tree.patch-package")));
         patchPackPathBox.getChildren().add(FXUtil.pre(new TextField(), node -> {
             node.setEditable(false);
             HBox.setHgrow(node, Priority.ALWAYS);
@@ -228,21 +225,21 @@ public class HomeRightTreeView extends HomeTreeView {
                 Configuration.getInstance().setLastPatchPackPath(newVal);
             });
         }));
-        patchPackPathBox.getChildren().add(FXUtil.pre(new Button("选择"), node -> {
+        patchPackPathBox.getChildren().add(FXUtil.pre(new Button(I18nUtil.t("app.view.right-tree.select")), node -> {
             node.setOnAction(e -> {
                 FileChooser fileChooser = new FileChooser();
-                fileChooser.setTitle("选择补丁包");
-                fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("补丁包", "*.zip"));
+                fileChooser.setTitle(I18nUtil.t("app.view.right-tree.select-patch"));
+                fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(I18nUtil.t("app.view.right-tree.patch-pack"), "*.zip"));
                 File file = fileChooser.showOpenDialog(stage);
                 if (file != null) {
                     refreshPatchTree(file);
                 }
             });
         }));
-        patchPackPathBox.getChildren().add(FXUtil.pre(new Button("目录"), node -> {
+        patchPackPathBox.getChildren().add(FXUtil.pre(new Button(I18nUtil.t("app.view.right-tree.patch-directory")), node -> {
             node.setOnAction(e -> {
                 DirectoryChooser directoryChooser = new DirectoryChooser();
-                directoryChooser.setTitle("选择补丁目录");
+                directoryChooser.setTitle(I18nUtil.t("app.view.right-tree.select-patch-directory"));
                 File file = directoryChooser.showDialog(stage);
                 if (file != null) {
                     refreshPatchTree(file);

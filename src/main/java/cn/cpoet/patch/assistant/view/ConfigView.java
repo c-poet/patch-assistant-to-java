@@ -6,6 +6,7 @@ import cn.cpoet.patch.assistant.control.IntegerField;
 import cn.cpoet.patch.assistant.core.*;
 import cn.cpoet.patch.assistant.util.EncryptUtil;
 import cn.cpoet.patch.assistant.util.FXUtil;
+import cn.cpoet.patch.assistant.util.I18nUtil;
 import cn.cpoet.patch.assistant.util.StringUtil;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -43,7 +44,7 @@ public class ConfigView {
         VBox box = new VBox();
         box.setSpacing(5);
         HBox commandConfig = new HBox(FXUtil.pre(new Label(), node -> {
-            node.setText("命 令: ");
+            node.setText(I18nUtil.t("app.view.config.command"));
         }), FXUtil.pre(new TextField(), node -> {
             HBox.setHgrow(node, Priority.ALWAYS);
             node.setText(docker.getLocalCommand());
@@ -54,7 +55,7 @@ public class ConfigView {
         commandConfig.setAlignment(Pos.CENTER_LEFT);
         box.getChildren().add(commandConfig);
         HBox workPathConfig = new HBox(FXUtil.pre(new Label(), node -> {
-            node.setText("目 录: ");
+            node.setText(I18nUtil.t("app.view.config.directory"));
         }), FXUtil.pre(new TextField(), node -> {
             HBox.setHgrow(node, Priority.ALWAYS);
             node.setText(docker.getLocalWorkPath());
@@ -71,7 +72,7 @@ public class ConfigView {
         VBox box = new VBox();
         box.setSpacing(5);
         HBox hostConfig = new HBox(FXUtil.pre(new Label(), node -> {
-            node.setText("地 址: ");
+            node.setText(I18nUtil.t("app.view.config.address"));
         }), FXUtil.pre(new TextField(), node -> {
             HBox.setHgrow(node, Priority.ALWAYS);
             node.setText(docker.getHost());
@@ -90,7 +91,7 @@ public class ConfigView {
         box.getChildren().add(hostConfig);
 
         HBox usernameConfig = new HBox(FXUtil.pre(new Label(), node -> {
-            node.setText("用 户: ");
+            node.setText(I18nUtil.t("app.view.config.username"));
         }), FXUtil.pre(new TextField(), node -> {
             HBox.setHgrow(node, Priority.ALWAYS);
             node.setText(docker.getUsername());
@@ -101,7 +102,7 @@ public class ConfigView {
         usernameConfig.setAlignment(Pos.CENTER_LEFT);
         box.getChildren().add(usernameConfig);
         HBox passwordConfig = new HBox(FXUtil.pre(new Label(), node -> {
-            node.setText("密 码: ");
+            node.setText(I18nUtil.t("app.view.config.password"));
         }), FXUtil.pre(new PasswordField(), node -> {
             HBox.setHgrow(node, Priority.ALWAYS);
             if (!StringUtil.isBlank(docker.getPassword())) {
@@ -120,7 +121,7 @@ public class ConfigView {
         passwordConfig.setAlignment(Pos.CENTER_LEFT);
         box.getChildren().add(passwordConfig);
         HBox commandConfig = new HBox(FXUtil.pre(new Label(), node -> {
-            node.setText("命 令: ");
+            node.setText(I18nUtil.t("app.view.config.command"));
         }), FXUtil.pre(new TextField(), node -> {
             HBox.setHgrow(node, Priority.ALWAYS);
             node.setText(docker.getCommand());
@@ -131,7 +132,7 @@ public class ConfigView {
         commandConfig.setAlignment(Pos.CENTER_LEFT);
         box.getChildren().add(commandConfig);
         HBox workPathConfig = new HBox(FXUtil.pre(new Label(), node -> {
-            node.setText("目 录: ");
+            node.setText(I18nUtil.t("app.view.config.directory"));
         }), FXUtil.pre(new TextField(), node -> {
             HBox.setHgrow(node, Priority.ALWAYS);
             node.setText(docker.getWorkPath());
@@ -147,15 +148,15 @@ public class ConfigView {
     private Node buildDockerConfig() {
         TitledPane dockerConfigPane = new TitledPane();
         dockerConfigPane.setCollapsible(false);
-        dockerConfigPane.setText("Docker配置");
+        dockerConfigPane.setText(I18nUtil.t("app.view.config.docker-config"));
         VBox dockerConfigBox = new VBox();
         dockerConfigBox.setSpacing(10);
 
         ToggleGroup toggleGroup = new ToggleGroup();
-        RadioButton localRadioBtn = new RadioButton("本机");
+        RadioButton localRadioBtn = new RadioButton(I18nUtil.t("app.view.config.docker-local"));
         localRadioBtn.setSelected(!DockerConf.TYPE_REMOTE.equals(docker.getType()));
         localRadioBtn.setToggleGroup(toggleGroup);
-        RadioButton remoteRadioBtn = new RadioButton("远程");
+        RadioButton remoteRadioBtn = new RadioButton(I18nUtil.t("app.view.config.docker-remote"));
         remoteRadioBtn.setSelected(!localRadioBtn.isSelected());
         remoteRadioBtn.setToggleGroup(toggleGroup);
         localRadioBtn.setOnAction(e -> {
@@ -186,16 +187,16 @@ public class ConfigView {
     private Node buildPatchConfig() {
         TitledPane patchConfigPane = new TitledPane();
         patchConfigPane.setCollapsible(false);
-        patchConfigPane.setText("补丁配置");
+        patchConfigPane.setText(I18nUtil.t("app.view.config.patch-config"));
         VBox patchConfigBox = new VBox();
         patchConfigBox.setSpacing(10);
 
         patchConfigBox.getChildren().add(FXUtil.pre(new HBox(
-                FXUtil.pre(new RadioButton("开启路径匹配"), node -> {
+                FXUtil.pre(new RadioButton(I18nUtil.t("app.view.config.patch-path-match")), node -> {
                     node.setSelected(Boolean.TRUE.equals(patch.getPathMatch()));
                     node.setOnAction(e -> patch.setPathMatch(!Boolean.TRUE.equals(patch.getPathMatch())));
                 }),
-                FXUtil.pre(new RadioButton("开启文件名匹配"), node -> {
+                FXUtil.pre(new RadioButton(I18nUtil.t("app.view.config.patch-name-match")), node -> {
                     node.setSelected(Boolean.TRUE.equals(patch.getFileNameMatch()));
                     node.setOnAction(e -> patch.setFileNameMatch(!Boolean.TRUE.equals(patch.getFileNameMatch())));
                 })
@@ -204,7 +205,7 @@ public class ConfigView {
             box.setSpacing(10);
         }));
 
-        patchConfigBox.getChildren().add(FXUtil.pre(new HBox(new Label("说明文件: "), FXUtil.pre(new TextField(), node -> {
+        patchConfigBox.getChildren().add(FXUtil.pre(new HBox(new Label(I18nUtil.t("app.view.config.readme-file")), FXUtil.pre(new TextField(), node -> {
             HBox.setHgrow(node, Priority.ALWAYS);
             node.setText(patch.getReadmeFile());
             node.textProperty().addListener((observableValue, oldVal, newVal) -> {
@@ -212,7 +213,7 @@ public class ConfigView {
             });
         })), box -> box.setAlignment(Pos.CENTER)));
 
-        patchConfigBox.getChildren().add(FXUtil.pre(new RadioButton("写入补丁签名"), node -> {
+        patchConfigBox.getChildren().add(FXUtil.pre(new RadioButton(I18nUtil.t("app.view.config.write-patch-sign")), node -> {
             node.setSelected(Boolean.TRUE.equals(patch.getWritePatchSign()));
             node.setOnAction(e -> patch.setWritePatchSign(!Boolean.TRUE.equals(patch.getWritePatchSign())));
         }));
@@ -224,9 +225,9 @@ public class ConfigView {
     private Node buildSearchConfig() {
         TitledPane searchConfigPane = new TitledPane();
         searchConfigPane.setCollapsible(false);
-        searchConfigPane.setText("搜索配置");
+        searchConfigPane.setText(I18nUtil.t("app.view.config.search-config"));
         VBox searchConfigBox = new VBox();
-        searchConfigBox.getChildren().add(FXUtil.pre(new HBox(new Label("保留历史条数: "), FXUtil.pre(new IntegerField(), node -> {
+        searchConfigBox.getChildren().add(FXUtil.pre(new HBox(new Label(I18nUtil.t("app.view.config.search-save-history-limit")), FXUtil.pre(new IntegerField(), node -> {
             HBox.setHgrow(node, Priority.ALWAYS);
             node.setNumber(search.getHistoryLimit());
             node.textProperty().addListener((observableValue, oldVal, newVal) -> {
@@ -240,11 +241,11 @@ public class ConfigView {
     private Node buildGeneraConfig() {
         TitledPane generaConfigPane = new TitledPane();
         generaConfigPane.setCollapsible(false);
-        generaConfigPane.setText("常规配置");
+        generaConfigPane.setText(I18nUtil.t("app.view.config.genera-config"));
         VBox generaConfigBox = new VBox();
         generaConfigBox.setSpacing(10);
 
-        HBox langConfig = new HBox(new Label("语言: "), FXUtil.pre(new ComboBox<I18NEnum>(), node -> {
+        HBox langConfig = new HBox(new Label(I18nUtil.t("app.view.config.genera-lang")), FXUtil.pre(new ComboBox<I18NEnum>(), node -> {
             HBox.setHgrow(node, Priority.ALWAYS);
             node.getItems().addAll(I18NEnum.values());
             node.setConverter(new StringConverter<>() {
@@ -263,7 +264,7 @@ public class ConfigView {
         }));
         langConfig.setAlignment(Pos.CENTER_LEFT);
 
-        HBox themeConfig = new HBox(new Label("主题: "), FXUtil.pre(new ComboBox<ThemeEnum>(), node -> {
+        HBox themeConfig = new HBox(new Label(I18nUtil.t("app.view.config.genera-theme")), FXUtil.pre(new ComboBox<ThemeEnum>(), node -> {
             HBox.setHgrow(node, Priority.ALWAYS);
             node.getItems().addAll(ThemeEnum.values());
             node.setConverter(new StringConverter<>() {
@@ -305,7 +306,7 @@ public class ConfigView {
         Dialog<Boolean> configViewDialog = new Dialog<>();
         configViewDialog.initOwner(stage);
         configViewDialog.initModality(Modality.WINDOW_MODAL);
-        configViewDialog.setTitle("配置");
+        configViewDialog.setTitle(I18nUtil.t("app.view.config.title"));
         configViewDialog.setResizable(true);
         DialogPane dialogPane = new DialogPane();
         dialogPane.setContent(build());
