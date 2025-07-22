@@ -284,7 +284,7 @@ public class AppPackWriteProcessor {
         patchUpSign.setDelTotal(totalInfo.getDelTotal());
         patchUpSign.setManualDelTotal(totalInfo.getManualDelTotal());
         patchUpSign.setOperTime(new Date());
-        patchUpSign.setOperUser(patchConf.getUsernameOrEnv());
+        patchUpSign.setOperUser(patchConf.getUsername());
         AppTreeInfo treeInfo = context.getAppTree().getTreeInfo();
         AppPackSign appPackSign = treeInfo.getAppPackSign();
         patchUpSign.setOriginAppMd5(appPackSign.getMd5());

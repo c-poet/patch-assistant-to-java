@@ -37,10 +37,6 @@ public class PatchConf implements Cloneable {
     private Boolean writePatchSign = Boolean.TRUE;
 
     public String getUsername() {
-        return username;
-    }
-
-    public String getUsernameOrEnv() {
         return StringUtil.isBlank(username) ? EnvUtil.getUserName() : username;
     }
 

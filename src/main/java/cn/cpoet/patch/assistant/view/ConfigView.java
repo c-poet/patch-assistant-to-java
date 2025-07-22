@@ -193,7 +193,7 @@ public class ConfigView {
 
         patchConfigBox.getChildren().add(FXUtil.pre(new HBox(new Label(I18nUtil.t("app.view.config.patch-username")), FXUtil.pre(new TextField(), node -> {
             HBox.setHgrow(node, Priority.ALWAYS);
-            node.setText(patch.getUsernameOrEnv());
+            node.setText(patch.getUsername());
             node.textProperty().addListener((e, oldVal, newVal) -> {
                 patch.setUsername(newVal);
             });
