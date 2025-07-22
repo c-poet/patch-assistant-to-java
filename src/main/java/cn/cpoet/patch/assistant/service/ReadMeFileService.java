@@ -3,6 +3,8 @@ package cn.cpoet.patch.assistant.service;
 import cn.cpoet.patch.assistant.core.AppContext;
 import cn.cpoet.patch.assistant.view.tree.PatchTreeInfo;
 
+import java.io.BufferedReader;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -34,14 +36,21 @@ public class ReadMeFileService {
             return Collections.emptyList();
         }
         List<ReadMePathInfo> pathInfos = new ArrayList<>();
-        Matcher matcher = pattern.matcher(readMeText);
-        while (matcher.find()) {
-            ReadMePathInfo pathInfo = new ReadMePathInfo();
-            pathInfo.setType(ReadMePathInfo.TypeEnum.ofCode(matcher.group(1)));
-            pathInfo.setFilePath(matcher.group(2));
-            pathInfo.setFirstPath(matcher.group(3));
-            pathInfo.setSecondPath(matcher.group(5));
-            pathInfos.add(pathInfo);
+        try (StringReader reader = new StringReader(readMeText);
+             BufferedReader bufferedReader = new BufferedReader(reader)) {
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                Matcher matcher = pattern.matcher(line);
+                if (matcher.find()) {
+                    ReadMePathInfo pathInfo = new ReadMePathInfo();
+                    pathInfo.setType(ReadMePathInfo.TypeEnum.ofCode(matcher.group(1)));
+                    pathInfo.setFilePath(matcher.group(2));
+                    pathInfo.setFirstPath(matcher.group(3));
+                    pathInfo.setSecondPath(matcher.group(5));
+                    pathInfos.add(pathInfo);
+                }
+            }
+        } catch (Exception ignored) {
         }
         return pathInfos;
     }
