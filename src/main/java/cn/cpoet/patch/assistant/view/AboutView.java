@@ -33,24 +33,13 @@ public class AboutView {
         hBox.getChildren().add(imageView);
         VBox vBox = new VBox();
         vBox.setSpacing(8);
-        Label titleLbl = new Label("补丁助手 Beta");
+        Label titleLbl = new Label(I18nUtil.t("app.name", AppConst.APP_NAME) + " Beta");
         titleLbl.setStyle("-fx-font-weight: bold;-fx-font-size:20");
         vBox.getChildren().add(titleLbl);
-        Label descLbl = new Label(
-                "本工具旨在降低Java应用替换补丁的繁琐性" +
-                        "\n补丁包和补丁说明文件（README.txt）需要按照约定的格式进行编辑和排版。" +
-                        "\n\n 作者：CPoet" +
-                        "\n 邮箱：llzero54@foxmail.com"
-        );
+        Label descLbl = new Label(I18nUtil.t("app.view.about.desc")
+                + "\n\n " + I18nUtil.t("app.view.about.author")
+                + "CPoet\n " + I18nUtil.t("app.view.about.email") + "llzero54@foxmail.com");
         vBox.getChildren().add(descLbl);
-
-        String changelog = FileUtil.readFileAsString(AppConst.CHANGELOG_FILE);
-        if (!StringUtil.isBlank(changelog)) {
-            TextArea changelogTextArea = new TextArea(changelog);
-            changelogTextArea.setEditable(false);
-            vBox.getChildren().add(changelogTextArea);
-        }
-
         hBox.getChildren().add(vBox);
         return hBox;
     }
