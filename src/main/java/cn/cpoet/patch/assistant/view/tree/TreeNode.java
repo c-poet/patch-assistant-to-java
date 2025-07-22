@@ -125,7 +125,12 @@ public abstract class TreeNode {
     }
 
     public List<TreeNode> getAndInitChildren() {
-        return children == null ? (children = new SortLinkedList<>((o1, o2) -> o1.text.compareToIgnoreCase(o2.text))) : children;
+        return children == null ? (children = new SortLinkedList<>((o1, o2) -> {
+            if (o1.isDir()) {
+                return o2.isDir() ? o1.text.compareToIgnoreCase(o2.text) : -1;
+            }
+            return o2.isDir() ? 1 : o1.text.compareToIgnoreCase(o2.text);
+        })) : children;
     }
 
     public void setChildren(List<TreeNode> children) {
