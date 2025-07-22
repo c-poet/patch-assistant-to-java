@@ -71,8 +71,8 @@ public class HomeRightTreeView extends HomeTreeView {
             PatchTreeInfo patchTreeInfo = patchTree.getTreeInfo();
             TreeNode selectedNode = selectedItem.getValue();
             cancelMappedMenuItem.setVisible(selectedNode.getMappedNode() != null);
-            if (selectedNode != patchTreeInfo.getRootNode() &&
-                    selectedNode.getChildren() != null && !selectedNode.getChildren().isEmpty()) {
+            if (selectedNode != patchTreeInfo.getRootNode() && CollectionUtil.isNotEmpty(selectedNode.getChildren()) &&
+                    (selectedNode.isDir() || selectedNode.getName().endsWith(FileExtConst.DOT_ZIP))) {
                 markRootMenuItem.setVisible(true);
                 if (Objects.equals(selectedNode, patchTreeInfo.getCustomRootNode())) {
                     markRootMenuItem.setText(I18nUtil.t("app.view.right-tree.cancel-root-mark"));
