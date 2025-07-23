@@ -3,6 +3,7 @@ package cn.cpoet.patch.assistant.util;
 import cn.cpoet.patch.assistant.view.tree.*;
 import javafx.scene.control.TreeItem;
 
+import java.util.List;
 import java.util.function.Predicate;
 
 /**
@@ -264,11 +265,13 @@ public abstract class TreeNodeUtil {
      *
      * @param rootItem 根节点
      */
-    public static void expendedMappedOrCurRoot(TotalInfo totalInfo, TreeItem<TreeNode> rootItem, TreeItem<TreeNode> curRoot) {
+    public static void expendedMappedOrCurRoot(TotalInfo totalInfo, TreeItem<TreeNode> rootItem, List<TreeItem<TreeNode>> treeItems) {
         if (totalInfo.isMappedAddOrModNode()) {
             expandedMappedNode(rootItem);
             return;
         }
-        curRoot.setExpanded(true);
+        for (TreeItem<TreeNode> treeItem : treeItems) {
+            treeItem.setExpanded(true);
+        }
     }
 }

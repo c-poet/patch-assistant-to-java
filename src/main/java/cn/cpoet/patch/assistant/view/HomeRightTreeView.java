@@ -24,6 +24,7 @@ import javafx.stage.Stage;
 import java.io.File;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author CPoet
@@ -36,12 +37,11 @@ public class HomeRightTreeView extends HomeTreeView {
 
     private void handleMarkRoot() {
         TreeItem<TreeNode> selectedItem = patchTree.getSelectionModel().getSelectedItem();
+        TreeNode selectedNode = selectedItem.getValue();
         PatchTreeInfo patchTreeInfo = patchTree.getTreeInfo();
-        TreeNode customRootNode = patchTreeInfo.getCustomRootNode();
-        if (Objects.equals(customRootNode, selectedItem.getValue())) {
-            patchTreeInfo.setCustomRootNode(null);
-        } else {
-            patchTreeInfo.setCustomRootNode(selectedItem.getValue());
+        List<TreeNode> markRootNodes = patchTreeInfo.getMarkRootNodes();
+        if (CollectionUtil.isEmpty(markRootNodes) || !markRootNodes.remove(selectedNode)) {
+            markRootNodes.add(selectedNode);
         }
         refreshPatchTree(PatchTreeView.REFRESH_FLAG_EMIT_EVENT);
         patchTree.refresh();
@@ -74,7 +74,7 @@ public class HomeRightTreeView extends HomeTreeView {
             if (selectedNode != patchTreeInfo.getRootNode() && CollectionUtil.isNotEmpty(selectedNode.getChildren()) &&
                     (selectedNode.isDir() || selectedNode.getName().endsWith(FileExtConst.DOT_ZIP))) {
                 markRootMenuItem.setVisible(true);
-                if (Objects.equals(selectedNode, patchTreeInfo.getCustomRootNode())) {
+                if (Objects.equals(selectedNode, patchTreeInfo.getMarkRootNodes())) {
                     markRootMenuItem.setText(I18nUtil.t("app.view.right-tree.cancel-root-mark"));
                 } else {
                     markRootMenuItem.setText(I18nUtil.t("app.view.right-tree.mark-root"));
@@ -106,7 +106,6 @@ public class HomeRightTreeView extends HomeTreeView {
             context.patchTree.fireEvent(new Event(PatchTreeView.PATCH_TREE_REFRESHING));
         }
         TreeItem<TreeNode> rootItem = context.patchTree.getRoot();
-
         if ((refreshFlag & PatchTreeView.REFRESH_FLAG_BUILD_TREE_ITEM) == PatchTreeView.REFRESH_FLAG_BUILD_TREE_ITEM) {
             if (rootItem == null) {
                 rootItem = new CheckBoxTreeItem<>();
@@ -119,8 +118,11 @@ public class HomeRightTreeView extends HomeTreeView {
             }
         }
         if (patchTree.getTreeInfo() != null) {
-            TreeItem<TreeNode> curRootItem = patchTree.getTreeInfo().getCurRootNode().getTreeItem();
-            TreeNodeUtil.expendedMappedOrCurRoot(context.totalInfo, rootItem, curRootItem);
+            List<TreeItem<TreeNode>> treeItems = patchTree.getTreeInfo().getCurRootNodes()
+                    .stream()
+                    .map(TreeNode::getTreeItem)
+                    .collect(Collectors.toList());
+            TreeNodeUtil.expendedMappedOrCurRoot(context.totalInfo, rootItem, treeItems);
         }
         if ((refreshFlag & PatchTreeView.REFRESH_FLAG_EMIT_EVENT) == PatchTreeView.REFRESH_FLAG_EMIT_EVENT) {
             context.patchTree.fireEvent(new Event(PatchTreeView.PATCH_TREE_REFRESH));
@@ -132,9 +134,9 @@ public class HomeRightTreeView extends HomeTreeView {
         AppTreeInfo appTreeInfo = appTree.getTreeInfo();
         PatchTreeInfo patchTreeInfo = patchTree.getTreeInfo();
         if (isRefreshReadme) {
-            patchPackService.refreshReadmeNode(patchTreeInfo);
+            patchPackService.refreshReadmeNode(patchTreeInfo, null);
         }
-        patchPackService.refreshMappedNode(context.totalInfo, appTreeInfo, patchTreeInfo);
+        patchPackService.refreshMappedNode(context.totalInfo, appTreeInfo, patchTreeInfo, null);
     }
 
     private void initPatchTreeDrag() {

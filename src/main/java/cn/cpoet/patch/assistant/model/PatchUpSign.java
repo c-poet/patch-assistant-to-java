@@ -3,6 +3,7 @@ package cn.cpoet.patch.assistant.model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * 打补丁签名信息
@@ -55,6 +56,11 @@ public class PatchUpSign extends PatchSign {
      * 打补丁的操作人员
      */
     private String operUser;
+
+    /**
+     * 内部补丁签名
+     */
+    private List<PatchSign> signs;
 
     public Integer getModTotal() {
         return modTotal;
@@ -126,6 +132,14 @@ public class PatchUpSign extends PatchSign {
 
     public void setOperUser(String operUser) {
         this.operUser = operUser;
+    }
+
+    public List<PatchSign> getSigns() {
+        return signs;
+    }
+
+    public void setSigns(List<PatchSign> signs) {
+        this.signs = signs;
     }
 
     public static PatchUpSign of(PatchSign patchSign) {

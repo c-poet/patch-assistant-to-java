@@ -124,7 +124,7 @@ public class FileTreeCell extends TreeCell<TreeNode> {
         dragInfo.addTempFile(file);
         if (node.getMappedNode() != null) {
             dragInfo.setHasMappedNode(true);
-        } else if (node.equals(patchTree.getTreeInfo().getReadMeNode())) {
+        } else if (TreeNodeStatus.README.equals(node.getStatus())) {
             dragInfo.setHasMappedNode(true);
         }
     }

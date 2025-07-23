@@ -1,7 +1,6 @@
 package cn.cpoet.patch.assistant.view;
 
 import cn.cpoet.patch.assistant.view.tree.*;
-import javafx.event.EventType;
 
 import java.util.Objects;
 
@@ -36,6 +35,6 @@ public class HomeContext {
      */
     public boolean isPatchCustomRoot(TreeNode node) {
         PatchTreeInfo treeInfo = patchTree.getTreeInfo();
-        return treeInfo != null && Objects.equals(node, treeInfo.getCustomRootNode());
+        return treeInfo != null && Objects.equals(node, treeInfo.getMarkRootNodes());
     }
 }

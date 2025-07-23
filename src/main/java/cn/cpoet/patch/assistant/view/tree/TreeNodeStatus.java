@@ -27,6 +27,11 @@ public enum TreeNodeStatus {
     MANUAL_DEL,
 
     /**
+     * Readme节点
+     */
+    README,
+
+    /**
      * 存在子节点变化
      */
     CHANGE,

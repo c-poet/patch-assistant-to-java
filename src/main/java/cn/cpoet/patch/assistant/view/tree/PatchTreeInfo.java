@@ -1,8 +1,11 @@
 package cn.cpoet.patch.assistant.view.tree;
 
 import cn.cpoet.patch.assistant.model.PatchSign;
+import cn.cpoet.patch.assistant.util.CollectionUtil;
 
-import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * 补丁包信息
@@ -19,12 +22,12 @@ public class PatchTreeInfo extends TreeInfo {
     /**
      * 自定义根节点
      */
-    private TreeNode customRootNode;
+    private List<TreeNode> markRootNodes;
 
     /**
-     * Readme节点信息
+     * 标记根节点的补丁签名信息
      */
-    private TreeNode readMeNode;
+    private List<PatchSign> markPatchSigns;
 
     public PatchSign getPatchSign() {
         return patchSign;
@@ -34,30 +37,38 @@ public class PatchTreeInfo extends TreeInfo {
         this.patchSign = patchSign;
     }
 
-    public TreeNode getCustomRootNode() {
-        return customRootNode;
+    public List<TreeNode> getMarkRootNodes() {
+        return markRootNodes;
     }
 
-    public void setCustomRootNode(TreeNode customRootNode) {
-        this.customRootNode = customRootNode;
+    public List<TreeNode> getCurRootNodes() {
+        return CollectionUtil.isEmpty(markRootNodes) ? Collections.singletonList(getRootNode()) : markRootNodes;
     }
 
-    public TreeNode getReadMeNode() {
-        return readMeNode;
+    public void setMarkRootNodes(List<TreeNode> markRootNodes) {
+        this.markRootNodes = markRootNodes;
     }
 
-    public void setReadMeNode(TreeNode readMeNode) {
-        this.readMeNode = readMeNode;
-        this.patchSign.setReadme(readMeNode == null ? null : new String(readMeNode.getBytes(), StandardCharsets.UTF_8));
+    public void addMarkRootNode(TreeNode node) {
+        if (markRootNodes == null) {
+            markRootNodes = new ArrayList<>();
+        }
+        markRootNodes.add(node);
     }
 
-    /**
-     * 获取当前的根节点
-     *
-     * @return 根节点
-     */
-    public TreeNode getCurRootNode() {
-        return customRootNode != null ? customRootNode : getRootNode();
+    public List<PatchSign> getMarkPatchSigns() {
+        return markPatchSigns;
+    }
+
+    public void setMarkPatchSigns(List<PatchSign> markPatchSigns) {
+        this.markPatchSigns = markPatchSigns;
+    }
+
+    public void addMarkPatchSign(PatchSign sign) {
+        if (markPatchSigns == null) {
+            markPatchSigns = new ArrayList<>();
+        }
+        markPatchSigns.add(sign);
     }
 
     /**

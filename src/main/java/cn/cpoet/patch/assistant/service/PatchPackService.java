@@ -7,6 +7,7 @@ import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.core.PatchConf;
 import cn.cpoet.patch.assistant.exception.AppException;
 import cn.cpoet.patch.assistant.model.PatchSign;
+import cn.cpoet.patch.assistant.model.PatchUpSign;
 import cn.cpoet.patch.assistant.util.*;
 import cn.cpoet.patch.assistant.view.tree.*;
 
@@ -36,26 +37,36 @@ public class PatchPackService extends BasePackService {
      *
      * @param patchTreeInfo 树形信息
      */
-    public void refreshReadmeNode(PatchTreeInfo patchTreeInfo) {
+    public void refreshReadmeNode(PatchTreeInfo patchTreeInfo, TreeNode treeNode) {
         if (patchTreeInfo == null) {
             return;
         }
-        TreeNode rootNode = patchTreeInfo.getCustomRootNode() != null ? patchTreeInfo.getCustomRootNode() : patchTreeInfo.getRootNode();
-        if (CollectionUtil.isEmpty(rootNode.getChildren())) {
+        if (CollectionUtil.isEmpty(treeNode.getChildren())) {
             return;
         }
+        PatchSign patchSign = new PatchUpSign();
+        patchSign.setName(treeNode.getName());
+        patchSign.setMd5(treeNode.getMd5());
+        patchSign.setSha1(HashUtil.sha1(treeNode.getBytes()));
         String readmeFileName = Configuration.getInstance().getPatch().getReadmeFile();
         if (StringUtil.isBlank(readmeFileName)) {
             readmeFileName = AppConst.README_FILE;
         }
         TreeNode readmeNode = null;
-        for (TreeNode child : rootNode.getChildren()) {
+        for (TreeNode child : treeNode.getChildren()) {
             if (readmeFileName.equalsIgnoreCase(child.getText())) {
                 readmeNode = child;
                 break;
             }
         }
-        patchTreeInfo.setReadMeNode(readmeNode);
+        if (readmeNode != null) {
+            readmeNode.setStatus(TreeNodeStatus.README);
+            byte[] bytes = readmeNode.getBytes();
+            if (bytes != null && bytes.length > 0) {
+                patchSign.setReadme(new String(bytes));
+            }
+        }
+        patchTreeInfo.addMarkPatchSign(patchSign);
     }
 
     /**
@@ -64,8 +75,9 @@ public class PatchPackService extends BasePackService {
      * @param totalInfo     统计信息
      * @param appTreeInfo   应用树形信息
      * @param patchTreeInfo 补丁树形信息
+     * @param rootNode      根节点
      */
-    public void refreshMappedNode(TotalInfo totalInfo, TreeInfo appTreeInfo, PatchTreeInfo patchTreeInfo) {
+    public void refreshMappedNode(TotalInfo totalInfo, TreeInfo appTreeInfo, PatchTreeInfo patchTreeInfo, TreeNode rootNode) {
         if (appTreeInfo != null) {
             TreeNodeUtil.cleanMappedNode(totalInfo, appTreeInfo.getRootNode());
         }
@@ -75,18 +87,17 @@ public class PatchPackService extends BasePackService {
         if (appTreeInfo == null || patchTreeInfo == null) {
             return;
         }
-        refreshMappedNodeWithReadme(totalInfo, appTreeInfo, patchTreeInfo);
+        refreshMappedNodeWithReadme(totalInfo, appTreeInfo, patchTreeInfo, rootNode);
         refreshMappedNodeWithPathOrName(totalInfo, appTreeInfo, patchTreeInfo);
     }
 
-    private void refreshMappedNodeWithReadme(TotalInfo totalInfo, TreeInfo appTreeInfo, PatchTreeInfo patchTreeInfo) {
+    private void refreshMappedNodeWithReadme(TotalInfo totalInfo, TreeInfo appTreeInfo, PatchTreeInfo patchTreeInfo, TreeNode rootNode) {
         List<ReadMePathInfo> pathInfos = ReadMeFileService.getInstance().getPathInfos(patchTreeInfo);
         if (CollectionUtil.isEmpty(pathInfos)) {
             return;
         }
         String pathPrefix = null;
-        TreeNode rootNode = patchTreeInfo.getCurRootNode();
-        if ((patchTreeInfo.getCustomRootNode() != null && rootNode.isDir()) || (rootNode instanceof FileNode && rootNode.isDir())) {
+        if ((patchTreeInfo.getMarkRootNodes() != null && rootNode.isDir()) || (rootNode instanceof FileNode && rootNode.isDir())) {
             pathPrefix = rootNode.getPath();
         }
         for (ReadMePathInfo pathInfo : pathInfos) {
@@ -179,8 +190,10 @@ public class PatchPackService extends BasePackService {
         if (isWithPath || isWithName) {
             PatchMatchProcessor processor = new PatchMatchProcessor(totalInfo, isWithPath, isWithName);
             processor.setAppRootNode(appTreeInfo.getRootNode());
-            processor.setPatchRootNode(patchTreeInfo.getCurRootNode());
-            processor.exec();
+            for (TreeNode curRootNode : patchTreeInfo.getCurRootNodes()) {
+                processor.setPatchRootNode(curRootNode);
+                processor.exec();
+            }
         }
     }
 
