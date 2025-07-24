@@ -13,32 +13,19 @@ public class PatchMarkRootEvent extends Event {
     private static final long serialVersionUID = 5702388012006442736L;
 
     /**
-     * 是否新增标记根节点
-     */
-    private boolean isAdd;
-
-    /**
      * 标记的根节点
      */
-    private PatchSignTreeNode treeNode;
+    private TreeNode treeNode;
 
     public PatchMarkRootEvent(EventType<? extends Event> eventType) {
         super(eventType);
     }
 
-    public boolean isAdd() {
-        return isAdd;
-    }
-
-    public void setAdd(boolean add) {
-        isAdd = add;
-    }
-
-    public PatchSignTreeNode getTreeNode() {
+    public TreeNode getTreeNode() {
         return treeNode;
     }
 
-    public void setTreeNode(PatchSignTreeNode treeNode) {
+    public void setTreeNode(TreeNode treeNode) {
         this.treeNode = treeNode;
     }
 }

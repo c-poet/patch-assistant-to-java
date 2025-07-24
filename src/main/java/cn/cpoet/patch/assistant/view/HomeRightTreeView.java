@@ -7,6 +7,7 @@ import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.service.PatchPackService;
 import cn.cpoet.patch.assistant.util.*;
 import cn.cpoet.patch.assistant.view.tree.*;
+import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -40,22 +41,16 @@ public class HomeRightTreeView extends HomeTreeView {
     private void handleMarkRoot() {
         TreeItem<TreeNode> selectedItem = patchTree.getSelectionModel().getSelectedItem();
         TreeNode selectedNode = selectedItem.getValue();
-        PatchTreeInfo patchTreeInfo = patchTree.getTreeInfo();
-        List<PatchSignTreeNode> markRootNodes = patchTreeInfo.getAndInitMarkRootNodes();
-        PatchPackService patchPackService = PatchPackService.getInstance();
         PatchMarkRootEvent event = new PatchMarkRootEvent(PatchTreeView.PATCH_MARK_ROOT_CHANGE);
-        if (selectedNode instanceof PatchSignTreeNode) {
-            markRootNodes.remove((PatchSignTreeNode) selectedNode);
-            patchPackService.unwrapPatchSign((PatchSignTreeNode) selectedNode);
-            event.setAdd(false);
-            event.setTreeNode((PatchSignTreeNode) selectedNode);
-        } else {
-            PatchSignTreeNode patchSignTreeNode = patchPackService.wrapPatchSign(selectedNode);
-            markRootNodes.add(patchSignTreeNode);
-            event.setAdd(true);
-            event.setTreeNode(patchSignTreeNode);
-        }
+        event.setTreeNode(selectedNode);
         patchTree.fireEvent(event);
+    }
+
+    protected void handleCancelMapped(ActionEvent event) {
+        TreeItem<TreeNode> selectedItem = patchTree.getSelectionModel().getSelectedItem();
+        TreeNodeUtil.deepCleanMappedNode(context.totalInfo, selectedItem.getValue());
+        appTree.refresh();
+        patchTree.refresh();
     }
 
     private void buildPatchTreeContextMenu() {
@@ -63,7 +58,7 @@ public class HomeRightTreeView extends HomeTreeView {
         MenuItem markRootMenuItem = new MenuItem();
         markRootMenuItem.setOnAction(e -> handleMarkRoot());
         MenuItem cancelMappedMenuItem = new MenuItem(I18nUtil.t("app.view.right-tree.cancel-binding"));
-        cancelMappedMenuItem.setOnAction(e -> cancelMapped(patchTree));
+        cancelMappedMenuItem.setOnAction(this::handleCancelMapped);
         MenuItem saveFileMenuItem = new MenuItem(I18nUtil.t("app.view.right-tree.save-file"));
         saveFileMenuItem.setOnAction(e -> saveFile(context.patchTree));
         MenuItem saveSourceFileMenuItem = new MenuItem(I18nUtil.t("app.view.right-tree.save-source-file"));
@@ -170,7 +165,7 @@ public class HomeRightTreeView extends HomeTreeView {
 
     private void cleanPatchMappedNode(PatchSignTreeNode rootNode) {
         PatchPackService patchPackService = PatchPackService.getInstance();
-        patchPackService.cleanMappedNode(context.totalInfo, rootNode, false);
+        patchPackService.cleanMappedNode(patchTree.getTreeInfo(), context.totalInfo, rootNode, false);
         appTree.refresh();
     }
 
@@ -197,12 +192,16 @@ public class HomeRightTreeView extends HomeTreeView {
     }
 
     private void listenMarkRootChange(PatchMarkRootEvent event) {
-        PatchSignTreeNode treeNode = event.getTreeNode();
-        if (event.isAdd()) {
-            refreshPatchMappedNode(true, treeNode);
+        TreeNode treeNode = event.getTreeNode();
+        if (treeNode instanceof PatchSignTreeNode) {
+            PatchSignTreeNode patchSignTreeNode = (PatchSignTreeNode) treeNode;
+            cleanPatchMappedNode(patchSignTreeNode);
             return;
         }
-        cleanPatchMappedNode(treeNode);
+        PatchPackService patchPackService = PatchPackService.getInstance();
+        PatchSignTreeNode patchSignTreeNode = patchPackService.wrapPatchSign(treeNode);
+        patchTree.getTreeInfo().getAndInitMarkRootNodes().add(patchSignTreeNode);
+        refreshPatchMappedNode(true, patchSignTreeNode);
     }
 
     private void onMouseClicked(MouseEvent event) {

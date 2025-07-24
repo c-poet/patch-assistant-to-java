@@ -1,6 +1,7 @@
 package cn.cpoet.patch.assistant.view.tree;
 
 import cn.cpoet.patch.assistant.util.CollectionUtil;
+import cn.cpoet.patch.assistant.util.StringUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,10 +45,15 @@ public class PatchTreeInfo extends TreeInfo<PatchSignTreeNode> {
                 if (sb.length() > 0) {
                     sb.append("\n\n");
                 }
-                sb.append(markRootNode.getName()).append("\n---\n").append(markRootNode.getPatchSign().getReadme());
+                sb.append(markRootNode.getName()).append("\n---");
+                String readme = markRootNode.getPatchSign().getReadme();
+                if (!StringUtil.isBlank(readme)) {
+                    sb.append('\n').append(readme);
+                }
             }
             return sb.toString();
         }
-        return getRootNode().getPatchSign().getReadme();
+        String readme = getRootNode().getPatchSign().getReadme();
+        return StringUtil.isBlank(readme) ? "" : readme;
     }
 }

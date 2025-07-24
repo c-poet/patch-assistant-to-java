@@ -4,6 +4,7 @@ import cn.cpoet.patch.assistant.view.tree.*;
 import javafx.scene.control.TreeItem;
 
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 /**
@@ -39,20 +40,38 @@ public abstract class TreeNodeUtil {
      * @param node      节点
      */
     public static void deepCleanMappedNode(TotalInfo totalInfo, TreeNode node) {
+        deepCleanMappedNode(totalInfo, node, null);
+    }
+
+    /**
+     * 清理绑定的节点
+     *
+     * @param totalInfo 统计信息
+     * @param node      节点
+     */
+    public static void deepCleanMappedNode(TotalInfo totalInfo, TreeNode node, Consumer<TreeNode> consumer) {
         if (node == null) {
             return;
         }
         if (CollectionUtil.isNotEmpty(node.getChildren())) {
-            node.getChildren().forEach(child -> deepCleanMappedNode(totalInfo, child));
+            node.getChildren().forEach(child -> deepCleanMappedNode(totalInfo, child, consumer));
         }
         totalInfo.decrTotal(node.getStatus());
-        cleanMappedNode(node.getMappedNode());
-        cleanMappedNode(node);
+        cleanMappedNode(node.getMappedNode(), consumer);
+        cleanMappedNode(node, consumer);
     }
 
-    public static void cleanMappedNode(TreeNode node) {
+    /**
+     * 清理绑定的节点
+     *
+     * @param node 节点
+     */
+    public static void cleanMappedNode(TreeNode node, Consumer<TreeNode> consumer) {
         if (node == null) {
             return;
+        }
+        if (consumer != null) {
+            consumer.accept(node);
         }
         node.setStatus(TreeNodeStatus.NONE);
         node.setMappedNode(null);

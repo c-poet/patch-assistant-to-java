@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.zip.ZipInputStream;
@@ -62,21 +63,39 @@ public class PatchPackService extends BasePackService {
     /**
      * 清空节节点绑定的信息
      *
+     * @param patchTreeInfo 补丁树信息
      * @param totalInfo     统计信息
      * @param rootNode      根节点
      * @param excludeReadme 是否排除Readme节点
      */
-    public void cleanMappedNode(TotalInfo totalInfo, PatchSignTreeNode rootNode, boolean excludeReadme) {
+    public void cleanMappedNode(PatchTreeInfo patchTreeInfo, TotalInfo totalInfo, PatchSignTreeNode rootNode, boolean excludeReadme) {
+        cleanMappedNode(totalInfo, rootNode, excludeReadme, node -> {
+            if (node != rootNode && node instanceof PatchSignTreeNode) {
+                PatchSignTreeNode patchSignTreeNode = (PatchSignTreeNode) node;
+                unwrapPatchSign(patchSignTreeNode);
+                patchTreeInfo.getMarkRootNodes().remove(patchSignTreeNode);
+            }
+        });
+    }
+
+    /**
+     * 清空节节点绑定的信息
+     *
+     * @param totalInfo     统计信息
+     * @param rootNode      根节点
+     * @param excludeReadme 是否排除Readme节点
+     */
+    public void cleanMappedNode(TotalInfo totalInfo, PatchSignTreeNode rootNode, boolean excludeReadme, Consumer<TreeNode> consumer) {
         TreeNode readmeNode = rootNode.getReadmeNode();
         if (excludeReadme) {
             for (TreeNode childNode : rootNode.getChildren()) {
                 if (childNode != readmeNode) {
-                    TreeNodeUtil.deepCleanMappedNode(totalInfo, childNode);
+                    TreeNodeUtil.deepCleanMappedNode(totalInfo, childNode, consumer);
                 }
             }
-            TreeNodeUtil.cleanMappedNode(rootNode);
+            TreeNodeUtil.cleanMappedNode(rootNode, consumer);
         } else {
-            TreeNodeUtil.deepCleanMappedNode(totalInfo, rootNode);
+            TreeNodeUtil.deepCleanMappedNode(totalInfo, rootNode, consumer);
         }
     }
 
@@ -89,7 +108,7 @@ public class PatchPackService extends BasePackService {
      * @param rootNode      根节点
      */
     public void refreshMappedNode(TotalInfo totalInfo, AppTreeInfo appTreeInfo, PatchTreeInfo patchTreeInfo, PatchSignTreeNode rootNode) {
-        cleanMappedNode(totalInfo, rootNode, true);
+        cleanMappedNode(patchTreeInfo, totalInfo, rootNode, true);
         if (appTreeInfo == null || patchTreeInfo == null) {
             return;
         }
