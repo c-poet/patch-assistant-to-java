@@ -44,5 +44,5 @@ public interface AppConst {
     /**
      * 补丁操作签名文件
      */
-    String PATCH_UP_SIGN = "path-up.sign";
+    String PATCH_UP_SIGN = "patch-up.sign";
 }
