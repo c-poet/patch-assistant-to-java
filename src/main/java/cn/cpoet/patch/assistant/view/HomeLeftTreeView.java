@@ -115,7 +115,7 @@ public class HomeLeftTreeView extends HomeTreeView {
         appTree.setCellFactory(treeView -> new FileTreeCell(context));
         buildAppTreeContextMenu();
         context.patchTree.addEventHandler(PatchTreeView.PATCH_TREE_REFRESH, e -> refreshAppTree(AppTreeView.REFRESH_FLAG_NONE));
-        appTree.addEventHandler(AppTreeView.ONLY_CHANGE_FILTER_CALL, e -> refreshAppTree(AppTreeView.REFRESH_FLAG_NONE));
+        appTree.addEventHandler(AppTreeView.APP_TREE_NONE_REFRESH_CALL, e -> refreshAppTree(AppTreeView.REFRESH_FLAG_NONE));
         appTree.getSelectionModel().selectedItemProperty()
                 .addListener((observableValue, oldVal, newVal) -> selectedLink(appTree, context.patchTree));
         appTree.setOnMouseClicked(e -> {

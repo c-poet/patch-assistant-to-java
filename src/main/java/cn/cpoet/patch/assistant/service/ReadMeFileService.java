@@ -1,7 +1,12 @@
 package cn.cpoet.patch.assistant.service;
 
 import cn.cpoet.patch.assistant.core.AppContext;
+import cn.cpoet.patch.assistant.model.PatchSign;
+import cn.cpoet.patch.assistant.util.CollectionUtil;
+import cn.cpoet.patch.assistant.util.StringUtil;
+import cn.cpoet.patch.assistant.view.tree.PatchSignTreeNode;
 import cn.cpoet.patch.assistant.view.tree.PatchTreeInfo;
+import cn.cpoet.patch.assistant.view.tree.TreeNode;
 
 import java.io.BufferedReader;
 import java.io.StringReader;
@@ -27,12 +32,23 @@ public class ReadMeFileService {
     /**
      * 获取补丁文件的路径信息
      *
-     * @param patchTreeInfo 补丁树
+     * @param patchTreeInfo 补丁树信息
+     * @param treeNode      根节点
      * @return 补丁文件路径信息列表
      */
-    public List<ReadMePathInfo> getPathInfos(PatchTreeInfo patchTreeInfo) {
-        String readMeText = patchTreeInfo.getReadMeText();
-        if (readMeText == null || readMeText.isBlank()) {
+    public List<ReadMePathInfo> getPathInfos(PatchTreeInfo patchTreeInfo, PatchSignTreeNode treeNode) {
+        return getPathInfos(treeNode.getPatchSign());
+    }
+
+    /**
+     * 获取补丁文件的路径信息
+     *
+     * @param patchSign 补丁签名信息
+     * @return 补丁文件路径信息列表
+     */
+    public List<ReadMePathInfo> getPathInfos(PatchSign patchSign) {
+        String readMeText = patchSign.getReadme();
+        if (StringUtil.isBlank(readMeText)) {
             return Collections.emptyList();
         }
         List<ReadMePathInfo> pathInfos = new ArrayList<>();

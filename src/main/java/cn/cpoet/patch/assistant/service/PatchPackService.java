@@ -7,9 +7,9 @@ import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.core.PatchConf;
 import cn.cpoet.patch.assistant.exception.AppException;
 import cn.cpoet.patch.assistant.model.PatchSign;
-import cn.cpoet.patch.assistant.model.PatchUpSign;
 import cn.cpoet.patch.assistant.util.*;
 import cn.cpoet.patch.assistant.view.tree.*;
+import javafx.scene.control.TreeItem;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -35,25 +35,15 @@ public class PatchPackService extends BasePackService {
     /**
      * 更新根节点信息
      *
-     * @param patchTreeInfo 树形信息
+     * @param rootNode 根节点信息
      */
-    public void refreshReadmeNode(PatchTreeInfo patchTreeInfo, TreeNode treeNode) {
-        if (patchTreeInfo == null) {
-            return;
-        }
-        if (CollectionUtil.isEmpty(treeNode.getChildren())) {
-            return;
-        }
-        PatchSign patchSign = new PatchUpSign();
-        patchSign.setName(treeNode.getName());
-        patchSign.setMd5(treeNode.getMd5());
-        patchSign.setSha1(HashUtil.sha1(treeNode.getBytes()));
+    public void refreshReadmeNode(PatchSignTreeNode rootNode) {
         String readmeFileName = Configuration.getInstance().getPatch().getReadmeFile();
         if (StringUtil.isBlank(readmeFileName)) {
             readmeFileName = AppConst.README_FILE;
         }
         TreeNode readmeNode = null;
-        for (TreeNode child : treeNode.getChildren()) {
+        for (TreeNode child : rootNode.getChildren()) {
             if (readmeFileName.equalsIgnoreCase(child.getText())) {
                 readmeNode = child;
                 break;
@@ -63,10 +53,23 @@ public class PatchPackService extends BasePackService {
             readmeNode.setStatus(TreeNodeStatus.README);
             byte[] bytes = readmeNode.getBytes();
             if (bytes != null && bytes.length > 0) {
-                patchSign.setReadme(new String(bytes));
+                rootNode.getPatchSign().setReadme(new String(bytes));
             }
         }
-        patchTreeInfo.addMarkPatchSign(patchSign);
+    }
+
+    /**
+     * 清空节节点绑定的信息
+     *
+     * @param totalInfo 统计信息
+     * @param treeNode  根节点
+     */
+    public void cleanMappedNode(TotalInfo totalInfo, PatchSignTreeNode treeNode) {
+        TreeNode readmeNode = treeNode.getReadmeNode();
+        if (readmeNode != null) {
+            readmeNode.setStatus(TreeNodeStatus.NONE);
+        }
+        TreeNodeUtil.cleanMappedNode(totalInfo, treeNode);
     }
 
     /**
@@ -75,34 +78,29 @@ public class PatchPackService extends BasePackService {
      * @param totalInfo     统计信息
      * @param appTreeInfo   应用树形信息
      * @param patchTreeInfo 补丁树形信息
-     * @param rootNode      根节点
+     * @param treeNode      根节点
      */
-    public void refreshMappedNode(TotalInfo totalInfo, TreeInfo appTreeInfo, PatchTreeInfo patchTreeInfo, TreeNode rootNode) {
-        if (appTreeInfo != null) {
-            TreeNodeUtil.cleanMappedNode(totalInfo, appTreeInfo.getRootNode());
-        }
-        if (patchTreeInfo != null) {
-            TreeNodeUtil.cleanMappedNode(patchTreeInfo.getRootNode());
-        }
+    public void refreshMappedNode(TotalInfo totalInfo, AppTreeInfo appTreeInfo, PatchTreeInfo patchTreeInfo, PatchSignTreeNode treeNode) {
+        cleanMappedNode(totalInfo, treeNode);
         if (appTreeInfo == null || patchTreeInfo == null) {
             return;
         }
-        refreshMappedNodeWithReadme(totalInfo, appTreeInfo, patchTreeInfo, rootNode);
+        refreshMappedNodeWithReadme(totalInfo, appTreeInfo, patchTreeInfo, treeNode);
         refreshMappedNodeWithPathOrName(totalInfo, appTreeInfo, patchTreeInfo);
     }
 
-    private void refreshMappedNodeWithReadme(TotalInfo totalInfo, TreeInfo appTreeInfo, PatchTreeInfo patchTreeInfo, TreeNode rootNode) {
-        List<ReadMePathInfo> pathInfos = ReadMeFileService.getInstance().getPathInfos(patchTreeInfo);
+    private void refreshMappedNodeWithReadme(TotalInfo totalInfo, AppTreeInfo appTreeInfo, PatchTreeInfo patchTreeInfo, PatchSignTreeNode treeNode) {
+        List<ReadMePathInfo> pathInfos = ReadMeFileService.getInstance().getPathInfos(patchTreeInfo, treeNode);
         if (CollectionUtil.isEmpty(pathInfos)) {
             return;
         }
         String pathPrefix = null;
-        if ((patchTreeInfo.getMarkRootNodes() != null && rootNode.isDir()) || (rootNode instanceof FileNode && rootNode.isDir())) {
-            pathPrefix = rootNode.getPath();
+        if ((patchTreeInfo.getMarkRootNodes() != null && treeNode.isDir()) || (treeNode.getOriginNode() instanceof FileNode && treeNode.isDir())) {
+            pathPrefix = treeNode.getPath();
         }
         for (ReadMePathInfo pathInfo : pathInfos) {
             String filePath = pathPrefix == null ? pathInfo.getFilePath() : FileNameUtil.joinPath(pathPrefix, pathInfo.getFilePath());
-            TreeNode patchNode = TreeNodeUtil.findNodeByPath(rootNode, filePath);
+            TreeNode patchNode = TreeNodeUtil.findNodeByPath(treeNode, filePath);
             if (patchNode == null && !ReadMePathInfo.TypeEnum.DEL.equals(pathInfo.getType())) {
                 continue;
             }
@@ -110,7 +108,7 @@ public class PatchPackService extends BasePackService {
         }
     }
 
-    private void matchMappedNodeWithReadme(TotalInfo totalInfo, ReadMePathInfo pathInfo, TreeInfo appTreeInfo, TreeNode patchNode) {
+    private void matchMappedNodeWithReadme(TotalInfo totalInfo, ReadMePathInfo pathInfo, AppTreeInfo appTreeInfo, TreeNode patchNode) {
         // 组装完成映射路径
         String appNodePath = pathInfo.getFirstPath();
         if (!StringUtil.isBlank(pathInfo.getSecondPath())) {
@@ -183,15 +181,21 @@ public class PatchPackService extends BasePackService {
         return false;
     }
 
-    private void refreshMappedNodeWithPathOrName(TotalInfo totalInfo, TreeInfo appTreeInfo, PatchTreeInfo patchTreeInfo) {
+    private void refreshMappedNodeWithPathOrName(TotalInfo totalInfo, AppTreeInfo appTreeInfo, PatchTreeInfo patchTreeInfo) {
         PatchConf patch = Configuration.getInstance().getPatch();
         boolean isWithPath = Boolean.TRUE.equals(patch.getPathMatch());
         boolean isWithName = Boolean.TRUE.equals(patch.getFileNameMatch());
         if (isWithPath || isWithName) {
             PatchMatchProcessor processor = new PatchMatchProcessor(totalInfo, isWithPath, isWithName);
             processor.setAppRootNode(appTreeInfo.getRootNode());
-            for (TreeNode curRootNode : patchTreeInfo.getCurRootNodes()) {
-                processor.setPatchRootNode(curRootNode);
+            List<PatchSignTreeNode> markRootNodes = patchTreeInfo.getMarkRootNodes();
+            if (!CollectionUtil.isEmpty(markRootNodes)) {
+                for (PatchSignTreeNode markRootNode : markRootNodes) {
+                    processor.setPatchRootNode(markRootNode);
+                    processor.exec();
+                }
+            } else {
+                processor.setPatchRootNode(patchTreeInfo.getRootNode());
                 processor.exec();
             }
         }
@@ -279,7 +283,6 @@ public class PatchPackService extends BasePackService {
         rootNode.setPath(file.getPath());
         rootNode.setFile(file);
         rootNode.setPatch(true);
-        treeInfo.setRootNode(rootNode);
         PatchSign patchSign = new PatchSign();
         patchSign.setName(rootNode.getName());
         if (file.isDirectory()) {
@@ -287,7 +290,8 @@ public class PatchPackService extends BasePackService {
         } else {
             doGetTreeNodeWithZip(patchSign, file, rootNode);
         }
-        treeInfo.setPatchSign(patchSign);
+        PatchSignTreeNode patchSignTreeNode = new PatchSignTreeNode(rootNode, patchSign);
+        treeInfo.setRootNode(patchSignTreeNode);
         return treeInfo;
     }
 
@@ -340,6 +344,32 @@ public class PatchPackService extends BasePackService {
             doReadZipEntry(rootNode, zin, true);
         } catch (IOException ex) {
             throw new AppException("读取补丁压缩包失败", ex);
+        }
+    }
+
+    public PatchSignTreeNode wrapPatchSign(TreeNode treeNode) {
+        if (treeNode instanceof PatchSignTreeNode) {
+            return (PatchSignTreeNode) treeNode;
+        }
+        PatchSign patchSign = new PatchSign();
+        patchSign.setName(treeNode.getName());
+        if (!treeNode.isDir()) {
+            patchSign.setMd5(treeNode.getMd5());
+            patchSign.setSha1(HashUtil.sha1(treeNode.getBytes()));
+        }
+        PatchSignTreeNode patchSignTreeNode = new PatchSignTreeNode(treeNode, patchSign);
+        TreeItem<TreeNode> treeItem = treeNode.getTreeItem();
+        if (treeItem != null) {
+            treeItem.setValue(patchSignTreeNode);
+        }
+        return patchSignTreeNode;
+    }
+
+    public void unwrapPatchSign(PatchSignTreeNode patchSignTreeNode) {
+        TreeNode originNode = patchSignTreeNode.getOriginNode();
+        TreeItem<TreeNode> treeItem = originNode.getTreeItem();
+        if (treeItem != null) {
+            treeItem.setValue(originNode);
         }
     }
 }

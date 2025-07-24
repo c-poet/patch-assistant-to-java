@@ -15,9 +15,9 @@ public class AppTreeView extends CustomTreeView<AppTreeInfo> {
      */
     public static final EventType<?> APP_TREE_REFRESHING = new EventType<>("APP_TREE_REFRESHING");
     /**
-     * 请求应用树仅显示详情刷新事件
+     * 请求应用树普通刷新
      */
-    public static final EventType<?> ONLY_CHANGE_FILTER_CALL = new EventType<>("ONLY_CHANGE_FILTER_CALL");
+    public static final EventType<?> APP_TREE_NONE_REFRESH_CALL = new EventType<>("APP_TREE_NONE_REFRESH_CALL");
 
     /**
      * 补丁树刷新事件

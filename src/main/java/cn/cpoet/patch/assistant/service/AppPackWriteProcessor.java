@@ -8,6 +8,7 @@ import cn.cpoet.patch.assistant.core.DockerConf;
 import cn.cpoet.patch.assistant.core.PatchConf;
 import cn.cpoet.patch.assistant.exception.AppException;
 import cn.cpoet.patch.assistant.model.AppPackSign;
+import cn.cpoet.patch.assistant.model.PatchSign;
 import cn.cpoet.patch.assistant.model.PatchUpSign;
 import cn.cpoet.patch.assistant.util.*;
 import cn.cpoet.patch.assistant.view.HomeContext;
@@ -23,6 +24,7 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -277,7 +279,8 @@ public class AppPackWriteProcessor {
 
     private byte[] updatePatchSignContent(byte[] bytes) {
         PatchConf patchConf = Configuration.getInstance().getPatch();
-        PatchUpSign patchUpSign = PatchUpSign.of(context.getPatchTree().getTreeInfo().getPatchSign());
+        PatchTreeInfo patchTreeInfo = context.getPatchTree().getTreeInfo();
+        PatchUpSign patchUpSign = PatchUpSign.of(patchTreeInfo.getRootNode().getPatchSign());
         TotalInfo totalInfo = context.getTotalInfo();
         patchUpSign.setAddTotal(totalInfo.getAddTotal());
         patchUpSign.setModTotal(totalInfo.getModTotal());
@@ -290,6 +293,11 @@ public class AppPackWriteProcessor {
         patchUpSign.setOriginAppMd5(appPackSign.getMd5());
         patchUpSign.setOriginAppSha1(appPackSign.getSha1());
         patchUpSign.setOriginAppSize(treeInfo.getRootNode().getSize());
+        List<PatchSignTreeNode> markRootNodes = patchTreeInfo.getMarkRootNodes();
+        if (CollectionUtil.isNotEmpty(markRootNodes)) {
+            List<PatchSign> patchSigns = markRootNodes.stream().map(PatchSignTreeNode::getPatchSign).collect(Collectors.toList());
+            patchUpSign.setSigns(patchSigns);
+        }
         if (bytes == null) {
             return JsonUtil.writeAsBytes(Collections.singletonList(patchUpSign));
         }

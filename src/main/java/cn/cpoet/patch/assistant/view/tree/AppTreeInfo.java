@@ -12,7 +12,7 @@ import java.util.List;
  *
  * @author CPoet
  */
-public class AppTreeInfo extends TreeInfo {
+public class AppTreeInfo extends TreeInfo<TreeNode> {
 
     /**
      * 应用包签名信息

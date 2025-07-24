@@ -16,6 +16,10 @@ public class PatchTreeView extends CustomTreeView<PatchTreeInfo> {
      * 补丁树刷新前事件
      */
     public static final EventType<?> PATCH_TREE_REFRESHING = new EventType<>("PATCH_TREE_REFRESHING");
+    /**
+     * 标记根节点变化事件
+     */
+    public static final EventType<PatchMarkRootEvent> PATCH_MARK_ROOT_CHANGE = new EventType<>("PATCH_ADD_MARK_ROOT");
 
     /**
      * 补丁树刷新事件

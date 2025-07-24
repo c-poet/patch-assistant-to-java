@@ -2,8 +2,6 @@ package cn.cpoet.patch.assistant.view;
 
 import cn.cpoet.patch.assistant.view.tree.*;
 
-import java.util.Objects;
-
 /**
  * 上下文
  *
@@ -35,6 +33,6 @@ public class HomeContext {
      */
     public boolean isPatchCustomRoot(TreeNode node) {
         PatchTreeInfo treeInfo = patchTree.getTreeInfo();
-        return treeInfo != null && Objects.equals(node, treeInfo.getMarkRootNodes());
+        return treeInfo != null && treeInfo.getRootNode() != node && node instanceof PatchSignTreeNode;
     }
 }

@@ -60,7 +60,7 @@ public class HomeView extends HomeContext {
         onlyChanges.setSelected(Boolean.TRUE.equals(configuration.getIsOnlyChanges()));
         onlyChanges.setOnAction(e -> {
             configuration.setIsOnlyChanges(!Boolean.TRUE.equals(configuration.getIsOnlyChanges()));
-            appTree.fireEvent(new Event(AppTreeView.ONLY_CHANGE_FILTER_CALL));
+            appTree.fireEvent(new Event(AppTreeView.APP_TREE_NONE_REFRESH_CALL));
         });
         headerBox.getChildren().add(onlyChanges);
 
@@ -95,13 +95,16 @@ public class HomeView extends HomeContext {
         return titledPane;
     }
 
+    private void updateReadmeText(TextArea readMeTextArea) {
+        PatchTreeInfo patchTreeInfo = patchTree.getTreeInfo();
+        readMeTextArea.setText(patchTreeInfo.getReadMeText());
+    }
+
     private Node buildBottomCentre() {
         TextArea readMeTextArea = new TextArea();
         readMeTextArea.setEditable(false);
-        patchTree.addEventHandler(PatchTreeView.PATCH_TREE_REFRESH, (EventHandler<Event>) event -> {
-            PatchTreeInfo patchTreeInfo = patchTree.getTreeInfo();
-            readMeTextArea.setText(patchTreeInfo.getReadMeText());
-        });
+        patchTree.addEventHandler(PatchTreeView.PATCH_TREE_REFRESH, e -> updateReadmeText(readMeTextArea));
+        patchTree.addEventHandler(PatchTreeView.PATCH_MARK_ROOT_CHANGE, e -> updateReadmeText(readMeTextArea));
         PatchTreeInfo patchTreeInfo = patchTree.getTreeInfo();
         if (patchTreeInfo != null) {
             readMeTextArea.setText(patchTreeInfo.getReadMeText());
@@ -148,7 +151,7 @@ public class HomeView extends HomeContext {
                             // 判断是否重复打补丁
                             List<PatchUpSign> patchUpSigns = appTree.getTreeInfo().listPatchUpSign();
                             if (CollectionUtil.isNotEmpty(patchUpSigns) && patchUpSigns.stream().anyMatch(patchUpSign -> {
-                                PatchSign patchSign = patchTree.getTreeInfo().getPatchSign();
+                                PatchSign patchSign = patchTree.getTreeInfo().getRootNode().getPatchSign();
                                 return Objects.equals(patchSign.getSha1(), patchUpSign.getSha1());
                             })) {
                                 ButtonType buttonType = AlterUtil.warn(stage, I18nUtil.t("app.view.home.patch-duplication-tip"), ButtonType.YES, ButtonType.NO);

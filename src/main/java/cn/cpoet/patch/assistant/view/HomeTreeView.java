@@ -46,10 +46,7 @@ public abstract class HomeTreeView {
 
     protected void cancelMapped(CustomTreeView<?> treeView) {
         TreeItem<TreeNode> selectedItem = treeView.getSelectionModel().getSelectedItem();
-        TreeNode selectedNode = selectedItem.getValue();
-        TreeNode mappedNode = selectedNode.getMappedNode();
-        TreeNodeUtil.cleanMappedNode(context.totalInfo, selectedNode);
-        TreeNodeUtil.cleanMappedNode(mappedNode);
+        TreeNodeUtil.cleanMappedNode(context.totalInfo, selectedItem.getValue());
         appTree.refresh();
         patchTree.refresh();
     }
@@ -67,11 +64,11 @@ public abstract class HomeTreeView {
             if (originItem == null) {
                 return;
             }
-            TreeNode appNode = originItem.getValue();
-            if (appNode.getMappedNode() == null) {
+            TreeNode originNode = originItem.getValue();
+            if (originNode.getMappedNode() == null) {
                 return;
             }
-            TreeItem<TreeNode> targetItem = appNode.getMappedNode().getTreeItem();
+            TreeItem<TreeNode> targetItem = originNode.getMappedNode().getTreeItem();
             MultipleSelectionModel<TreeItem<TreeNode>> selectionModel = targetTree.getSelectionModel();
             selectionModel.clearSelection();
             selectionModel.select(targetItem);

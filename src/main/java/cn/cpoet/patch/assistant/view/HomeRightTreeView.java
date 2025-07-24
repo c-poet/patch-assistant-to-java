@@ -22,8 +22,8 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -39,12 +39,21 @@ public class HomeRightTreeView extends HomeTreeView {
         TreeItem<TreeNode> selectedItem = patchTree.getSelectionModel().getSelectedItem();
         TreeNode selectedNode = selectedItem.getValue();
         PatchTreeInfo patchTreeInfo = patchTree.getTreeInfo();
-        List<TreeNode> markRootNodes = patchTreeInfo.getMarkRootNodes();
-        if (CollectionUtil.isEmpty(markRootNodes) || !markRootNodes.remove(selectedNode)) {
-            markRootNodes.add(selectedNode);
+        List<PatchSignTreeNode> markRootNodes = patchTreeInfo.getAndInitMarkRootNodes();
+        PatchPackService patchPackService = PatchPackService.getInstance();
+        PatchMarkRootEvent event = new PatchMarkRootEvent(PatchTreeView.PATCH_MARK_ROOT_CHANGE);
+        if (selectedNode instanceof PatchSignTreeNode) {
+            markRootNodes.remove((PatchSignTreeNode) selectedNode);
+            patchPackService.unwrapPatchSign((PatchSignTreeNode) selectedNode);
+            event.setAdd(false);
+            event.setTreeNode((PatchSignTreeNode) selectedNode);
+        } else {
+            PatchSignTreeNode patchSignTreeNode = patchPackService.wrapPatchSign(selectedNode);
+            markRootNodes.add(patchSignTreeNode);
+            event.setAdd(true);
+            event.setTreeNode(patchSignTreeNode);
         }
-        refreshPatchTree(PatchTreeView.REFRESH_FLAG_EMIT_EVENT);
-        patchTree.refresh();
+        patchTree.fireEvent(event);
     }
 
     private void buildPatchTreeContextMenu() {
@@ -60,7 +69,7 @@ public class HomeRightTreeView extends HomeTreeView {
         MenuItem viewPatchSign = new MenuItem(I18nUtil.t("app.view.right-tree.view-sign"));
         viewPatchSign.setOnAction(e -> {
             PatchTreeInfo patchTreeInfo = patchTree.getTreeInfo();
-            new PatchSignView(patchTreeInfo.getPatchSign()).showDialog(stage);
+            new PatchSignView(patchTreeInfo.getRootNode().getPatchSign()).showDialog(stage);
         });
         contextMenu.getItems().addAll(cancelMappedMenuItem, markRootMenuItem, saveFileMenuItem, saveSourceFileMenuItem, viewPatchSign);
         contextMenu.setOnShowing(e -> {
@@ -74,7 +83,7 @@ public class HomeRightTreeView extends HomeTreeView {
             if (selectedNode != patchTreeInfo.getRootNode() && CollectionUtil.isNotEmpty(selectedNode.getChildren()) &&
                     (selectedNode.isDir() || selectedNode.getName().endsWith(FileExtConst.DOT_ZIP))) {
                 markRootMenuItem.setVisible(true);
-                if (Objects.equals(selectedNode, patchTreeInfo.getMarkRootNodes())) {
+                if (selectedNode instanceof PatchSignTreeNode) {
                     markRootMenuItem.setText(I18nUtil.t("app.view.right-tree.cancel-root-mark"));
                 } else {
                     markRootMenuItem.setText(I18nUtil.t("app.view.right-tree.mark-root"));
@@ -118,10 +127,14 @@ public class HomeRightTreeView extends HomeTreeView {
             }
         }
         if (patchTree.getTreeInfo() != null) {
-            List<TreeItem<TreeNode>> treeItems = patchTree.getTreeInfo().getCurRootNodes()
-                    .stream()
-                    .map(TreeNode::getTreeItem)
-                    .collect(Collectors.toList());
+            PatchTreeInfo patchTreeInfo = patchTree.getTreeInfo();
+            List<TreeItem<TreeNode>> treeItems;
+            List<PatchSignTreeNode> markRootNodes = patchTreeInfo.getMarkRootNodes();
+            if (CollectionUtil.isNotEmpty(markRootNodes)) {
+                treeItems = markRootNodes.stream().map(TreeNode::getTreeItem).collect(Collectors.toList());
+            } else {
+                treeItems = Collections.singletonList(patchTreeInfo.getRootNode().getTreeItem());
+            }
             TreeNodeUtil.expendedMappedOrCurRoot(context.totalInfo, rootItem, treeItems);
         }
         if ((refreshFlag & PatchTreeView.REFRESH_FLAG_EMIT_EVENT) == PatchTreeView.REFRESH_FLAG_EMIT_EVENT) {
@@ -130,13 +143,35 @@ public class HomeRightTreeView extends HomeTreeView {
     }
 
     private void refreshPatchMappedNode(boolean isRefreshReadme) {
+        PatchTreeInfo treeInfo = patchTree.getTreeInfo();
+        if (treeInfo == null) {
+            return;
+        }
+        List<PatchSignTreeNode> markRootNodes = treeInfo.getMarkRootNodes();
+        if (CollectionUtil.isNotEmpty(markRootNodes)) {
+            for (PatchSignTreeNode markRootNode : markRootNodes) {
+                refreshPatchMappedNode(isRefreshReadme, markRootNode);
+            }
+        } else {
+            refreshPatchMappedNode(isRefreshReadme, treeInfo.getRootNode());
+        }
+    }
+
+    private void refreshPatchMappedNode(boolean isRefreshReadme, PatchSignTreeNode treeNode) {
         PatchPackService patchPackService = PatchPackService.getInstance();
         AppTreeInfo appTreeInfo = appTree.getTreeInfo();
         PatchTreeInfo patchTreeInfo = patchTree.getTreeInfo();
         if (isRefreshReadme) {
-            patchPackService.refreshReadmeNode(patchTreeInfo, null);
+            patchPackService.refreshReadmeNode(treeNode);
         }
-        patchPackService.refreshMappedNode(context.totalInfo, appTreeInfo, patchTreeInfo, null);
+        patchPackService.refreshMappedNode(context.totalInfo, appTreeInfo, patchTreeInfo, treeNode);
+        appTree.fireEvent(new Event(AppTreeView.APP_TREE_NONE_REFRESH_CALL));
+    }
+
+    private void cleanPatchMappedNode(PatchSignTreeNode treeNode) {
+        PatchPackService patchPackService = PatchPackService.getInstance();
+        patchPackService.cleanMappedNode(context.totalInfo, treeNode);
+        appTree.refresh();
     }
 
     private void initPatchTreeDrag() {
@@ -163,6 +198,14 @@ public class HomeRightTreeView extends HomeTreeView {
         context.appTree.addEventHandler(AppTreeView.APP_TREE_REFRESHING, e -> refreshPatchMappedNode(false));
         context.appTree.addEventHandler(AppTreeView.APP_TREE_REFRESH, e -> refreshPatchTree(PatchTreeView.REFRESH_FLAG_NONE));
         context.patchTree.addEventHandler(PatchTreeView.PATCH_TREE_REFRESHING, e -> refreshPatchMappedNode(true));
+        context.patchTree.addEventHandler(PatchTreeView.PATCH_MARK_ROOT_CHANGE, e -> {
+            PatchSignTreeNode treeNode = e.getTreeNode();
+            if (e.isAdd()) {
+                refreshPatchMappedNode(true, treeNode);
+            } else {
+                cleanPatchMappedNode(treeNode);
+            }
+        });
         context.patchTree.getSelectionModel().selectedItemProperty()
                 .addListener((observableValue, oldVal, newVal) -> selectedLink(context.patchTree, context.appTree));
         context.patchTree.setOnMouseClicked(e -> {

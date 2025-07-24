@@ -1,10 +1,8 @@
 package cn.cpoet.patch.assistant.view.tree;
 
-import cn.cpoet.patch.assistant.model.PatchSign;
 import cn.cpoet.patch.assistant.util.CollectionUtil;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -12,63 +10,26 @@ import java.util.List;
  *
  * @author CPoet
  */
-public class PatchTreeInfo extends TreeInfo {
+public class PatchTreeInfo extends TreeInfo<PatchSignTreeNode> {
 
     /**
-     * 补丁签名
+     * 标记根节点信息
      */
-    private PatchSign patchSign;
+    private List<PatchSignTreeNode> markRootNodes;
 
-    /**
-     * 自定义根节点
-     */
-    private List<TreeNode> markRootNodes;
-
-    /**
-     * 标记根节点的补丁签名信息
-     */
-    private List<PatchSign> markPatchSigns;
-
-    public PatchSign getPatchSign() {
-        return patchSign;
-    }
-
-    public void setPatchSign(PatchSign patchSign) {
-        this.patchSign = patchSign;
-    }
-
-    public List<TreeNode> getMarkRootNodes() {
+    public List<PatchSignTreeNode> getMarkRootNodes() {
         return markRootNodes;
     }
 
-    public List<TreeNode> getCurRootNodes() {
-        return CollectionUtil.isEmpty(markRootNodes) ? Collections.singletonList(getRootNode()) : markRootNodes;
-    }
-
-    public void setMarkRootNodes(List<TreeNode> markRootNodes) {
-        this.markRootNodes = markRootNodes;
-    }
-
-    public void addMarkRootNode(TreeNode node) {
+    public List<PatchSignTreeNode> getAndInitMarkRootNodes() {
         if (markRootNodes == null) {
             markRootNodes = new ArrayList<>();
         }
-        markRootNodes.add(node);
+        return markRootNodes;
     }
 
-    public List<PatchSign> getMarkPatchSigns() {
-        return markPatchSigns;
-    }
-
-    public void setMarkPatchSigns(List<PatchSign> markPatchSigns) {
-        this.markPatchSigns = markPatchSigns;
-    }
-
-    public void addMarkPatchSign(PatchSign sign) {
-        if (markPatchSigns == null) {
-            markPatchSigns = new ArrayList<>();
-        }
-        markPatchSigns.add(sign);
+    public void setMarkRootNodes(List<PatchSignTreeNode> markRootNodes) {
+        this.markRootNodes = markRootNodes;
     }
 
     /**
@@ -77,6 +38,16 @@ public class PatchTreeInfo extends TreeInfo {
      * @return Read文本内容
      */
     public String getReadMeText() {
-        return patchSign.getReadme();
+        if (CollectionUtil.isNotEmpty(markRootNodes)) {
+            StringBuilder sb = new StringBuilder();
+            for (PatchSignTreeNode markRootNode : markRootNodes) {
+                if (sb.length() > 0) {
+                    sb.append("\n\n");
+                }
+                sb.append(markRootNode.getName()).append("\n---\n").append(markRootNode.getPatchSign().getReadme());
+            }
+            return sb.toString();
+        }
+        return getRootNode().getPatchSign().getReadme();
     }
 }

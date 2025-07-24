@@ -5,17 +5,17 @@ package cn.cpoet.patch.assistant.view.tree;
  *
  * @author CPoet
  */
-public class TreeInfo {
+public abstract class TreeInfo<T extends TreeNode> {
     /**
      * 根节点信息
      */
-    private TreeNode rootNode;
+    private T rootNode;
 
-    public TreeNode getRootNode() {
+    public T getRootNode() {
         return rootNode;
     }
 
-    public void setRootNode(TreeNode rootNode) {
+    public void setRootNode(T rootNode) {
         this.rootNode = rootNode;
     }
 }
