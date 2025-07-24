@@ -170,7 +170,7 @@ public class HomeRightTreeView extends HomeTreeView {
 
     private void cleanPatchMappedNode(PatchSignTreeNode treeNode) {
         PatchPackService patchPackService = PatchPackService.getInstance();
-        patchPackService.cleanMappedNode(context.totalInfo, treeNode);
+        patchPackService.cleanMappedNode(context.totalInfo, treeNode, false);
         appTree.refresh();
     }
 

@@ -178,6 +178,9 @@ public class FileTreeCell extends TreeCell<TreeNode> {
         if (context.isPatchCustomRoot(node)) {
             return ImageUtil.loadImage(IConConst.FILE_MARK, imgFactory);
         }
+        if (TreeNodeStatus.README.equals(node.getStatus())) {
+            return ImageUtil.loadImage(IConConst.FILE_README, imgFactory);
+        }
         Image image = IConUtil.loadIconByFileExt(node.getName(), imgFactory);
         if (image != null) {
             return image;

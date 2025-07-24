@@ -46,7 +46,7 @@ public abstract class HomeTreeView {
 
     protected void cancelMapped(CustomTreeView<?> treeView) {
         TreeItem<TreeNode> selectedItem = treeView.getSelectionModel().getSelectedItem();
-        TreeNodeUtil.cleanMappedNode(context.totalInfo, selectedItem.getValue());
+        TreeNodeUtil.deepCleanMappedNode(context.totalInfo, selectedItem.getValue());
         appTree.refresh();
         patchTree.refresh();
     }

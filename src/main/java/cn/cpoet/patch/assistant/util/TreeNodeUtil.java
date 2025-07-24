@@ -38,19 +38,19 @@ public abstract class TreeNodeUtil {
      * @param totalInfo 统计信息
      * @param node      节点
      */
-    public static void cleanMappedNode(TotalInfo totalInfo, TreeNode node) {
+    public static void deepCleanMappedNode(TotalInfo totalInfo, TreeNode node) {
         if (node == null) {
             return;
         }
         if (CollectionUtil.isNotEmpty(node.getChildren())) {
-            node.getChildren().forEach(child -> cleanMappedNode(totalInfo, child));
+            node.getChildren().forEach(child -> deepCleanMappedNode(totalInfo, child));
         }
         totalInfo.decrTotal(node.getStatus());
-        doCleanMappedNode(node.getMappedNode());
-        doCleanMappedNode(node);
+        cleanMappedNode(node.getMappedNode());
+        cleanMappedNode(node);
     }
 
-    private static void doCleanMappedNode(TreeNode node) {
+    public static void cleanMappedNode(TreeNode node) {
         if (node == null) {
             return;
         }

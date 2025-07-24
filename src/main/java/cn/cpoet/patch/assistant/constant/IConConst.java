@@ -88,6 +88,11 @@ public interface IConConst {
     String FILE_MARK = "/icons/file-mark.png";
 
     /**
+     * Readme
+     */
+    String FILE_README = "/icons/readme.png";
+
+    /**
      * 搜索
      */
     String SEARCH = "/icons/search.png";

@@ -50,6 +50,7 @@ public class PatchPackService extends BasePackService {
             }
         }
         if (readmeNode != null) {
+            rootNode.setReadmeNode(readmeNode);
             readmeNode.setStatus(TreeNodeStatus.README);
             byte[] bytes = readmeNode.getBytes();
             if (bytes != null && bytes.length > 0) {
@@ -64,12 +65,18 @@ public class PatchPackService extends BasePackService {
      * @param totalInfo 统计信息
      * @param treeNode  根节点
      */
-    public void cleanMappedNode(TotalInfo totalInfo, PatchSignTreeNode treeNode) {
+    public void cleanMappedNode(TotalInfo totalInfo, PatchSignTreeNode treeNode, boolean excludeReadme) {
         TreeNode readmeNode = treeNode.getReadmeNode();
-        if (readmeNode != null) {
-            readmeNode.setStatus(TreeNodeStatus.NONE);
+        if (excludeReadme) {
+            for (TreeNode childNode : treeNode.getChildren()) {
+                if (childNode != readmeNode) {
+                    TreeNodeUtil.deepCleanMappedNode(totalInfo, childNode);
+                }
+            }
+            TreeNodeUtil.cleanMappedNode(treeNode);
+        } else {
+            TreeNodeUtil.deepCleanMappedNode(totalInfo, treeNode);
         }
-        TreeNodeUtil.cleanMappedNode(totalInfo, treeNode);
     }
 
     /**
@@ -81,7 +88,7 @@ public class PatchPackService extends BasePackService {
      * @param treeNode      根节点
      */
     public void refreshMappedNode(TotalInfo totalInfo, AppTreeInfo appTreeInfo, PatchTreeInfo patchTreeInfo, PatchSignTreeNode treeNode) {
-        cleanMappedNode(totalInfo, treeNode);
+        cleanMappedNode(totalInfo, treeNode, true);
         if (appTreeInfo == null || patchTreeInfo == null) {
             return;
         }
