@@ -2,18 +2,17 @@ package cn.cpoet.patch.assistant.view;
 
 import cn.cpoet.patch.assistant.constant.AppConst;
 import cn.cpoet.patch.assistant.constant.IConConst;
-import cn.cpoet.patch.assistant.util.FileUtil;
 import cn.cpoet.patch.assistant.util.I18nUtil;
 import cn.cpoet.patch.assistant.util.ImageUtil;
-import cn.cpoet.patch.assistant.util.StringUtil;
 import javafx.scene.Node;
-import javafx.scene.control.*;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.DialogPane;
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
@@ -38,7 +37,7 @@ public class AboutView {
         vBox.getChildren().add(titleLbl);
         Label descLbl = new Label(I18nUtil.t("app.view.about.desc")
                 + "\n\n " + I18nUtil.t("app.view.about.author")
-                + "CPoet\n " + I18nUtil.t("app.view.about.email") + "llzero54@foxmail.com");
+                + AppConst.APP_AUTHOR_NAME + "\n " + I18nUtil.t("app.view.about.email") + AppConst.APP_AUTHOR_EMAIL);
         vBox.getChildren().add(descLbl);
         hBox.getChildren().add(vBox);
         return hBox;

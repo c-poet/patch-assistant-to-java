@@ -17,6 +17,21 @@ public interface AppConst {
     String APP_PROJECT_NAME = "patch-assistant-to-java";
 
     /**
+     * 作者名称
+     */
+    String APP_AUTHOR_NAME = "CPoet";
+
+    /**
+     * 作者邮箱
+     */
+    String APP_AUTHOR_EMAIL = "llzero54@foxmail.com";
+
+    /**
+     * 作者主页地址
+     */
+    String APP_AUTHOR_URL = "http://www.cpoet.cn";
+
+    /**
      * 配置文件名
      */
     String CONFIG_FILE_NAME = "application.xml";

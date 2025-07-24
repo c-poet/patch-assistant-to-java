@@ -10,8 +10,8 @@ import cn.cpoet.patch.assistant.util.*;
 import cn.cpoet.patch.assistant.view.tree.AppTreeView;
 import cn.cpoet.patch.assistant.view.tree.PatchTreeInfo;
 import cn.cpoet.patch.assistant.view.tree.PatchTreeView;
+import javafx.event.ActionEvent;
 import javafx.event.Event;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
@@ -126,6 +126,52 @@ public class HomeView extends HomeContext {
         return centrePane;
     }
 
+    private void handleSaveAppPack(ActionEvent event) {
+        if (!totalInfo.isChangeNode()) {
+            ButtonType buttonType = AlterUtil.warn(stage, I18nUtil.t("app.view.home.app-not-changed-tip"), ButtonType.YES, ButtonType.NO);
+            if (ButtonType.NO.equals(buttonType)) {
+                return;
+            }
+        } else {
+            // 判断是否重复打补丁
+            List<PatchUpSign> patchUpSigns = appTree.getTreeInfo().listPatchUpSign();
+            if (CollectionUtil.isNotEmpty(patchUpSigns) && patchUpSigns.stream().anyMatch(patchUpSign -> {
+                PatchSign patchSign = patchTree.getTreeInfo().getRootNode().getPatchSign();
+                return Objects.equals(patchSign.getSha1(), patchUpSign.getSha1());
+            })) {
+                ButtonType buttonType = AlterUtil.warn(stage, I18nUtil.t("app.view.home.patch-duplication-tip"), ButtonType.YES, ButtonType.NO);
+                if (ButtonType.NO.equals(buttonType)) {
+                    return;
+                }
+            }
+        }
+        // 判断是否Docker模式
+        Configuration configuration = Configuration.getInstance();
+        boolean isDockerImage = Boolean.TRUE.equals(configuration.getIsDockerImage());
+        FileChooser fileChooser = new FileChooser();
+        String lastSavePackPath = configuration.getLastSavePackPath();
+        if (!StringUtil.isBlank(lastSavePackPath)) {
+            fileChooser.setInitialDirectory(FileUtil.getExistsDirOrFile(lastSavePackPath));
+        }
+        String fileName = appTree.getTreeInfo().getRootNode().getName();
+        if (isDockerImage) {
+            fileChooser.setTitle(I18nUtil.t("app.view.home.save-docker-image"));
+            fileChooser.setInitialFileName(FileNameUtil.getName(fileName) + ".tar");
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(I18nUtil.t("app.view.home.docker-image"), "*.tar"));
+        } else {
+            fileChooser.setTitle(I18nUtil.t("app.view.home.save-jar"));
+            fileChooser.setInitialFileName(fileName);
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(I18nUtil.t("app.view.home.java-package"), "*.jar"));
+        }
+        File file = fileChooser.showSaveDialog(stage);
+        if (file == null) {
+            return;
+        }
+        configuration.setLastSavePackPath(file.getParent());
+        new ProgressView(fileChooser.getTitle()).showDialog(stage, (progressContext)
+                -> AppPackService.getInstance().savePack(this, progressContext, file, isDockerImage));
+    }
+
     private Node buildFooter() {
         HBox footerBox = new HBox(
                 FXUtil.pre(new Label(I18nUtil.t("app.view.home.patch-add")), StyleConst.FONT_BOLD),
@@ -141,52 +187,7 @@ public class HomeView extends HomeContext {
                     btn.setDisable(appTree.getRoot() == null);
                     appTree.addEventHandler(AppTreeView.APP_TREE_REFRESH, e -> btn.setDisable(appTree.getRoot() == null));
                     btn.setText(I18nUtil.t("app.view.home.save"));
-                    btn.setOnAction(e -> {
-                        if (!totalInfo.isChangeNode()) {
-                            ButtonType buttonType = AlterUtil.warn(stage, I18nUtil.t("app.view.home.app-not-changed-tip"), ButtonType.YES, ButtonType.NO);
-                            if (ButtonType.NO.equals(buttonType)) {
-                                return;
-                            }
-                        } else {
-                            // 判断是否重复打补丁
-                            List<PatchUpSign> patchUpSigns = appTree.getTreeInfo().listPatchUpSign();
-                            if (CollectionUtil.isNotEmpty(patchUpSigns) && patchUpSigns.stream().anyMatch(patchUpSign -> {
-                                PatchSign patchSign = patchTree.getTreeInfo().getRootNode().getPatchSign();
-                                return Objects.equals(patchSign.getSha1(), patchUpSign.getSha1());
-                            })) {
-                                ButtonType buttonType = AlterUtil.warn(stage, I18nUtil.t("app.view.home.patch-duplication-tip"), ButtonType.YES, ButtonType.NO);
-                                if (ButtonType.NO.equals(buttonType)) {
-                                    return;
-                                }
-                            }
-                        }
-                        // 判断是否Docker模式
-                        Configuration configuration = Configuration.getInstance();
-                        boolean isDockerImage = Boolean.TRUE.equals(configuration.getIsDockerImage());
-                        FileChooser fileChooser = new FileChooser();
-                        String lastSavePackPath = configuration.getLastSavePackPath();
-                        if (!StringUtil.isBlank(lastSavePackPath)) {
-                            fileChooser.setInitialDirectory(FileUtil.getExistsDirOrFile(lastSavePackPath));
-                        }
-                        String fileName = appTree.getTreeInfo().getRootNode().getName();
-                        if (isDockerImage) {
-                            fileChooser.setTitle(I18nUtil.t("app.view.home.save-docker-image"));
-                            fileChooser.setInitialFileName(FileNameUtil.getName(fileName) + ".tar");
-                            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(I18nUtil.t("app.view.home.docker-image"), "*.tar"));
-                        } else {
-                            fileChooser.setTitle(I18nUtil.t("app.view.home.save-jar"));
-                            fileChooser.setInitialFileName(fileName);
-                            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(I18nUtil.t("app.view.home.java-package"), "*.jar"));
-                        }
-                        File file = fileChooser.showSaveDialog(stage);
-                        if (file == null) {
-                            return;
-                        }
-                        configuration.setLastSavePackPath(file.getParent());
-                        new ProgressView(fileChooser.getTitle()).showDialog(stage, (progressContext) -> {
-                            AppPackService.getInstance().savePack(this, progressContext, file, isDockerImage);
-                        });
-                    });
+                    btn.setOnAction(this::handleSaveAppPack);
                 })
         );
         footerBox.setAlignment(Pos.CENTER);

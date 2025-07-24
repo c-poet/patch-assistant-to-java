@@ -116,7 +116,7 @@ public abstract class HomeTreeView {
         doSaveFile(node, content.getBytes(), FileExtConst.JAVA);
     }
 
-    protected boolean isDragFromTree(DragEvent event) {
+    protected boolean isDragFromTreeCell(DragEvent event) {
         return event.getGestureSource() instanceof TreeCell;
     }
 }

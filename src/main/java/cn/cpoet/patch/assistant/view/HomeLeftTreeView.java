@@ -4,18 +4,18 @@ import cn.cpoet.patch.assistant.component.OnlyChangeFilter;
 import cn.cpoet.patch.assistant.constant.FileExtConst;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.service.AppPackService;
-import cn.cpoet.patch.assistant.util.FXUtil;
-import cn.cpoet.patch.assistant.util.FileUtil;
-import cn.cpoet.patch.assistant.util.I18nUtil;
-import cn.cpoet.patch.assistant.util.TreeNodeUtil;
+import cn.cpoet.patch.assistant.util.*;
 import cn.cpoet.patch.assistant.view.tree.*;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.input.DragEvent;
 import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -36,18 +36,20 @@ public class HomeLeftTreeView extends HomeTreeView {
         super(stage, context);
     }
 
+    private void handleManualDel(ActionEvent event) {
+        List<TreeNode> treeNodes = appTree.getSelectionModel().getSelectedItems().stream()
+                .map(TreeItem::getValue)
+                .collect(Collectors.toList());
+        treeNodes.forEach(node -> {
+            TreeNodeUtil.removeNodeChild(node);
+            TreeNodeUtil.countNodeStatus(context.totalInfo, node, TreeNodeStatus.MANUAL_DEL);
+        });
+    }
+
     private void buildAppTreeContextMenu() {
         ContextMenu contextMenu = new ContextMenu();
         MenuItem manualDelMenuItem = new MenuItem(I18nUtil.t("app.view.left-tree.delete"));
-        manualDelMenuItem.setOnAction(e -> {
-            List<TreeNode> treeNodes = appTree.getSelectionModel().getSelectedItems().stream()
-                    .map(TreeItem::getValue)
-                    .collect(Collectors.toList());
-            treeNodes.forEach(node -> {
-                TreeNodeUtil.removeNodeChild(node);
-                TreeNodeUtil.countNodeStatus(context.totalInfo, node, TreeNodeStatus.MANUAL_DEL);
-            });
-        });
+        manualDelMenuItem.setOnAction(this::handleManualDel);
         MenuItem saveFileMenuItem = new MenuItem(I18nUtil.t("app.view.left-tree.save-file"));
         saveFileMenuItem.setOnAction(e -> saveFile(appTree));
         MenuItem saveSourceFileMenuItem = new MenuItem(I18nUtil.t("app.view.left-tree.save-source-file"));
@@ -94,21 +96,41 @@ public class HomeLeftTreeView extends HomeTreeView {
         }
     }
 
+    private void onDragOver(DragEvent event) {
+        if (isDragFromTreeCell(event)) {
+            return;
+        }
+        List<File> files = event.getDragboard().getFiles();
+        if (files.size() == 1 && files.get(0).getName().endsWith(FileExtConst.DOT_JAR)) {
+            event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+        }
+        event.consume();
+    }
+
+    private void onDragDropped(DragEvent event) {
+        List<File> files = event.getDragboard().getFiles();
+        refreshAppTree(files.get(0));
+    }
+
     private void initAppTreeDrag() {
-        appTree.setOnDragOver(e -> {
-            if (isDragFromTree(e)) {
-                return;
+        appTree.setOnDragOver(this::onDragOver);
+        appTree.setOnDragDropped(this::onDragDropped);
+    }
+
+    private void onMouseClicked(MouseEvent event) {
+        if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2) {
+            TreeItem<TreeNode> selectedItem = appTree.getSelectionModel().getSelectedItem();
+            if (selectedItem != null) {
+                TreeNode selectedTreeNode = selectedItem.getValue();
+                if (selectedTreeNode.getText().endsWith(FileExtConst.DOT_JAR)) {
+                    if (AppPackService.getInstance().buildNodeChildrenWithZip(selectedTreeNode, false)) {
+                        TreeNodeUtil.buildNodeChildren(selectedItem, selectedTreeNode, OnlyChangeFilter.INSTANCE);
+                    }
+                } else {
+                    new ContentView(selectedTreeNode).showDialog(stage);
+                }
             }
-            List<File> files = e.getDragboard().getFiles();
-            if (files.size() == 1 && files.get(0).getName().endsWith(FileExtConst.DOT_JAR)) {
-                e.acceptTransferModes(TransferMode.COPY_OR_MOVE);
-            }
-            e.consume();
-        });
-        appTree.setOnDragDropped(e -> {
-            List<File> files = e.getDragboard().getFiles();
-            refreshAppTree(files.get(0));
-        });
+        }
     }
 
     private void buildAppTree() {
@@ -116,26 +138,12 @@ public class HomeLeftTreeView extends HomeTreeView {
         buildAppTreeContextMenu();
         context.patchTree.addEventHandler(PatchTreeView.PATCH_TREE_REFRESH, e -> refreshAppTree(AppTreeView.REFRESH_FLAG_NONE));
         appTree.addEventHandler(AppTreeView.APP_TREE_NONE_REFRESH_CALL, e -> refreshAppTree(AppTreeView.REFRESH_FLAG_NONE));
-        appTree.getSelectionModel().selectedItemProperty()
-                .addListener((observableValue, oldVal, newVal) -> selectedLink(appTree, context.patchTree));
-        appTree.setOnMouseClicked(e -> {
-            if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 2) {
-                TreeItem<TreeNode> selectedItem = appTree.getSelectionModel().getSelectedItem();
-                if (selectedItem != null) {
-                    TreeNode selectedTreeNode = selectedItem.getValue();
-                    if (selectedTreeNode.getText().endsWith(FileExtConst.DOT_JAR)) {
-                        if (AppPackService.getInstance().buildNodeChildrenWithZip(selectedTreeNode, false)) {
-                            TreeNodeUtil.buildNodeChildren(selectedItem, selectedTreeNode, OnlyChangeFilter.INSTANCE);
-                        }
-                        return;
-                    }
-                    new ContentView(selectedTreeNode).showDialog(stage);
-                }
-            }
-        });
+        appTree.getSelectionModel().selectedItemProperty().addListener((observableValue, oldVal, newVal)
+                -> selectedLink(appTree, context.patchTree));
+        appTree.setOnMouseClicked(this::onMouseClicked);
         initAppTreeDrag();
         String lastAppPackPath = Configuration.getInstance().getLastAppPackPath();
-        if (lastAppPackPath == null || lastAppPackPath.isBlank()) {
+        if (StringUtil.isBlank(lastAppPackPath)) {
             return;
         }
         File file = FileUtil.getExistsFile(lastAppPackPath);
@@ -164,22 +172,20 @@ public class HomeLeftTreeView extends HomeTreeView {
                     node.setText(treeInfo.getRootNode().getPath());
                 }
             });
-            node.textProperty().addListener((observableValue, oldVal, newVal) -> {
-                Configuration.getInstance().setLastAppPackPath(newVal);
-            });
+            node.textProperty().addListener((observableValue, oldVal, newVal) -> Configuration.getInstance().setLastAppPackPath(newVal));
         }));
-        appPackPathBox.getChildren().add(FXUtil.pre(new Button(I18nUtil.t("app.view.left-tree.select")), node -> {
-            node.setOnAction(e -> {
-                FileChooser fileChooser = new FileChooser();
-                fileChooser.setTitle(I18nUtil.t("app.view.left-tree.select-jar"));
-                fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(I18nUtil.t("app.view.left-tree.java-package"), "*.jar"));
-                File file = fileChooser.showOpenDialog(stage);
-                if (file == null) {
-                    return;
-                }
-                refreshAppTree(file);
-            });
-        }));
+        appPackPathBox.getChildren().add(FXUtil.pre(new Button(I18nUtil.t("app.view.left-tree.select")), node ->
+                node.setOnAction(e -> {
+                    FileChooser fileChooser = new FileChooser();
+                    fileChooser.setTitle(I18nUtil.t("app.view.left-tree.select-jar"));
+                    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(I18nUtil.t("app.view.left-tree.java-package"), "*.jar"));
+                    File file = fileChooser.showOpenDialog(stage);
+                    if (file == null) {
+                        return;
+                    }
+                    refreshAppTree(file);
+                })
+        ));
         buildAppTree();
         VBox.setVgrow(appTree, Priority.ALWAYS);
         return new VBox(appPackPathBox, appTree);

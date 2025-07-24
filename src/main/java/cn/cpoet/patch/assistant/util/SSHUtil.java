@@ -171,13 +171,6 @@ public abstract class SSHUtil {
         }
     }
 
-    /**
-     * 递归创建目录（类似 mkdir -p）
-     *
-     * @param channel SFTP通道
-     * @param path    要创建的路径
-     * @throws SftpException 如果创建失败
-     */
     private static void mkdirs(ChannelSftp channel, String path) throws SftpException {
         String[] folders = path.split("/");
         StringBuilder currentPath = new StringBuilder();

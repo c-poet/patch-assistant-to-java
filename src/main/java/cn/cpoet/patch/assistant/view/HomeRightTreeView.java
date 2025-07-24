@@ -12,7 +12,9 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.input.DragEvent;
 import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -149,47 +151,74 @@ public class HomeRightTreeView extends HomeTreeView {
         }
         List<PatchSignTreeNode> markRootNodes = treeInfo.getMarkRootNodes();
         if (CollectionUtil.isNotEmpty(markRootNodes)) {
-            for (PatchSignTreeNode markRootNode : markRootNodes) {
-                refreshPatchMappedNode(isRefreshReadme, markRootNode);
-            }
+            markRootNodes.forEach(markRootNode -> refreshPatchMappedNode(isRefreshReadme, markRootNode));
         } else {
             refreshPatchMappedNode(isRefreshReadme, treeInfo.getRootNode());
         }
     }
 
-    private void refreshPatchMappedNode(boolean isRefreshReadme, PatchSignTreeNode treeNode) {
+    private void refreshPatchMappedNode(boolean isRefreshReadme, PatchSignTreeNode rootNode) {
         PatchPackService patchPackService = PatchPackService.getInstance();
         AppTreeInfo appTreeInfo = appTree.getTreeInfo();
         PatchTreeInfo patchTreeInfo = patchTree.getTreeInfo();
         if (isRefreshReadme) {
-            patchPackService.refreshReadmeNode(treeNode);
+            patchPackService.refreshReadmeNode(rootNode);
         }
-        patchPackService.refreshMappedNode(context.totalInfo, appTreeInfo, patchTreeInfo, treeNode);
+        patchPackService.refreshMappedNode(context.totalInfo, appTreeInfo, patchTreeInfo, rootNode);
         appTree.fireEvent(new Event(AppTreeView.APP_TREE_NONE_REFRESH_CALL));
     }
 
-    private void cleanPatchMappedNode(PatchSignTreeNode treeNode) {
+    private void cleanPatchMappedNode(PatchSignTreeNode rootNode) {
         PatchPackService patchPackService = PatchPackService.getInstance();
-        patchPackService.cleanMappedNode(context.totalInfo, treeNode, false);
+        patchPackService.cleanMappedNode(context.totalInfo, rootNode, false);
         appTree.refresh();
     }
 
+    private void onDragOver(DragEvent event) {
+        if (isDragFromTreeCell(event)) {
+            return;
+        }
+        List<File> files = event.getDragboard().getFiles();
+        if (files.size() == 1 && (files.get(0).isDirectory() ||
+                files.get(0).getName().endsWith(FileExtConst.DOT_ZIP))) {
+            event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+        }
+        event.consume();
+    }
+
+    private void onDragDropped(DragEvent event) {
+        List<File> files = event.getDragboard().getFiles();
+        refreshPatchTree(files.get(0));
+    }
+
     private void initPatchTreeDrag() {
-        context.patchTree.setOnDragOver(e -> {
-            if (isDragFromTree(e)) {
-                return;
+        context.patchTree.setOnDragOver(this::onDragOver);
+        context.patchTree.setOnDragDropped(this::onDragDropped);
+    }
+
+    private void listenMarkRootChange(PatchMarkRootEvent event) {
+        PatchSignTreeNode treeNode = event.getTreeNode();
+        if (event.isAdd()) {
+            refreshPatchMappedNode(true, treeNode);
+            return;
+        }
+        cleanPatchMappedNode(treeNode);
+    }
+
+    private void onMouseClicked(MouseEvent event) {
+        if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2) {
+            TreeItem<TreeNode> selectedItem = context.patchTree.getSelectionModel().getSelectedItem();
+            if (selectedItem != null) {
+                TreeNode selectedTreeNode = selectedItem.getValue();
+                if (selectedTreeNode.getText().endsWith(FileExtConst.DOT_ZIP)) {
+                    if (PatchPackService.getInstance().buildNodeChildrenWithZip(selectedTreeNode, true)) {
+                        TreeNodeUtil.buildNodeChildren(selectedItem, selectedTreeNode);
+                    }
+                } else {
+                    new ContentView(selectedTreeNode).showDialog(stage);
+                }
             }
-            List<File> files = e.getDragboard().getFiles();
-            if (files.size() == 1 && (files.get(0).isDirectory() ||
-                    files.get(0).getName().endsWith(FileExtConst.DOT_ZIP))) {
-                e.acceptTransferModes(TransferMode.COPY_OR_MOVE);
-            }
-            e.consume();
-        });
-        context.patchTree.setOnDragDropped(e -> {
-            List<File> files = e.getDragboard().getFiles();
-            refreshPatchTree(files.get(0));
-        });
+        }
     }
 
     private void buildPatchTree() {
@@ -198,31 +227,10 @@ public class HomeRightTreeView extends HomeTreeView {
         context.appTree.addEventHandler(AppTreeView.APP_TREE_REFRESHING, e -> refreshPatchMappedNode(false));
         context.appTree.addEventHandler(AppTreeView.APP_TREE_REFRESH, e -> refreshPatchTree(PatchTreeView.REFRESH_FLAG_NONE));
         context.patchTree.addEventHandler(PatchTreeView.PATCH_TREE_REFRESHING, e -> refreshPatchMappedNode(true));
-        context.patchTree.addEventHandler(PatchTreeView.PATCH_MARK_ROOT_CHANGE, e -> {
-            PatchSignTreeNode treeNode = e.getTreeNode();
-            if (e.isAdd()) {
-                refreshPatchMappedNode(true, treeNode);
-            } else {
-                cleanPatchMappedNode(treeNode);
-            }
-        });
-        context.patchTree.getSelectionModel().selectedItemProperty()
-                .addListener((observableValue, oldVal, newVal) -> selectedLink(context.patchTree, context.appTree));
-        context.patchTree.setOnMouseClicked(e -> {
-            if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 2) {
-                TreeItem<TreeNode> selectedItem = context.patchTree.getSelectionModel().getSelectedItem();
-                if (selectedItem != null) {
-                    TreeNode selectedTreeNode = selectedItem.getValue();
-                    if (selectedTreeNode.getText().endsWith(FileExtConst.DOT_ZIP)) {
-                        if (PatchPackService.getInstance().buildNodeChildrenWithZip(selectedTreeNode, true)) {
-                            TreeNodeUtil.buildNodeChildren(selectedItem, selectedTreeNode);
-                        }
-                        return;
-                    }
-                    new ContentView(selectedTreeNode).showDialog(stage);
-                }
-            }
-        });
+        context.patchTree.addEventHandler(PatchTreeView.PATCH_MARK_ROOT_CHANGE, this::listenMarkRootChange);
+        context.patchTree.getSelectionModel().selectedItemProperty().addListener((observableValue, oldVal, newVal)
+                -> selectedLink(context.patchTree, context.appTree));
+        context.patchTree.setOnMouseClicked(this::onMouseClicked);
         initPatchTreeDrag();
         File file = getInitPatchFile();
         if (file != null) {
@@ -266,31 +274,29 @@ public class HomeRightTreeView extends HomeTreeView {
                     node.setText(treeInfo.getRootNode().getPath());
                 }
             });
-            node.textProperty().addListener((observableValue, oldVal, newVal) -> {
-                Configuration.getInstance().setLastPatchPackPath(newVal);
-            });
+            node.textProperty().addListener((observableValue, oldVal, newVal) -> Configuration.getInstance().setLastPatchPackPath(newVal));
         }));
-        patchPackPathBox.getChildren().add(FXUtil.pre(new Button(I18nUtil.t("app.view.right-tree.select")), node -> {
-            node.setOnAction(e -> {
-                FileChooser fileChooser = new FileChooser();
-                fileChooser.setTitle(I18nUtil.t("app.view.right-tree.select-patch"));
-                fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(I18nUtil.t("app.view.right-tree.patch-pack"), "*.zip"));
-                File file = fileChooser.showOpenDialog(stage);
-                if (file != null) {
-                    refreshPatchTree(file);
-                }
-            });
-        }));
-        patchPackPathBox.getChildren().add(FXUtil.pre(new Button(I18nUtil.t("app.view.right-tree.patch-directory")), node -> {
-            node.setOnAction(e -> {
-                DirectoryChooser directoryChooser = new DirectoryChooser();
-                directoryChooser.setTitle(I18nUtil.t("app.view.right-tree.select-patch-directory"));
-                File file = directoryChooser.showDialog(stage);
-                if (file != null) {
-                    refreshPatchTree(file);
-                }
-            });
-        }));
+        patchPackPathBox.getChildren().add(FXUtil.pre(new Button(I18nUtil.t("app.view.right-tree.select")), node ->
+                node.setOnAction(e -> {
+                    FileChooser fileChooser = new FileChooser();
+                    fileChooser.setTitle(I18nUtil.t("app.view.right-tree.select-patch"));
+                    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(I18nUtil.t("app.view.right-tree.patch-pack"), "*.zip"));
+                    File file = fileChooser.showOpenDialog(stage);
+                    if (file != null) {
+                        refreshPatchTree(file);
+                    }
+                })
+        ));
+        patchPackPathBox.getChildren().add(FXUtil.pre(new Button(I18nUtil.t("app.view.right-tree.patch-directory")), node ->
+                node.setOnAction(e -> {
+                    DirectoryChooser directoryChooser = new DirectoryChooser();
+                    directoryChooser.setTitle(I18nUtil.t("app.view.right-tree.select-patch-directory"));
+                    File file = directoryChooser.showDialog(stage);
+                    if (file != null) {
+                        refreshPatchTree(file);
+                    }
+                })
+        ));
         buildPatchTree();
         VBox.setVgrow(context.patchTree, Priority.ALWAYS);
         return new VBox(patchPackPathBox, context.patchTree);

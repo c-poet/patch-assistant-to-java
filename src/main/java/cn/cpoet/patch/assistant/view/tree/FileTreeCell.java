@@ -2,6 +2,7 @@ package cn.cpoet.patch.assistant.view.tree;
 
 import cn.cpoet.patch.assistant.constant.AppConst;
 import cn.cpoet.patch.assistant.constant.IConConst;
+import cn.cpoet.patch.assistant.constant.StyleConst;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.util.*;
 import cn.cpoet.patch.assistant.view.HomeContext;
@@ -10,9 +11,7 @@ import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.ClipboardContent;
-import javafx.scene.input.Dragboard;
-import javafx.scene.input.TransferMode;
+import javafx.scene.input.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 
@@ -40,84 +39,89 @@ public class FileTreeCell extends TreeCell<TreeNode> {
         this.appTree = context.getAppTree();
         this.patchTree = context.getPatchTree();
         this.context = context;
-        startCellDrag();
+        initCellDrag();
     }
 
-    private void startCellDrag() {
-        setOnDragDetected(e -> {
-            if (isEmpty() || getItem() == null) {
-                return;
-            }
-            TreeNode node = getItem();
-            Dragboard db = this.startDragAndDrop(TransferMode.COPY);
-            Image image = getIconImage(node, in -> new Image(in, 68, 68, true, true));
-            db.setDragView(image);
-            ClipboardContent content = new ClipboardContent();
-            content.putString(node.getName());
-            FileTreeCellDragInfo dragInfo = new FileTreeCellDragInfo();
-            dragInfo.setOriginTree((CustomTreeView<?>) getTreeView());
-            List<TreeNode> patchNodes = getTreeView().getSelectionModel().getSelectedItems()
-                    .stream()
-                    .map(TreeItem::getValue)
-                    .collect(Collectors.toList());
-            dragInfo.setTreeNodes(patchNodes);
-            List<File> files = patchNodes.stream().map(patchNode -> {
-                if (patchNode.isDir()) {
-                    File file = FileTempUtil.createTempDir(COPY_FILE_DIR, patchNode.getName());
-                    updateCellDragInfo(dragInfo, patchNode, file);
-                    deepWriteFile2Path(file, patchNode, dragInfo);
-                    return file;
-                }
-                File file = FileTempUtil.writeFile2TempDir(COPY_FILE_DIR, patchNode.getName(), patchNode.getBytes());
+    private void onDragDetected(MouseEvent event) {
+        if (isEmpty() || getItem() == null) {
+            return;
+        }
+        TreeNode node = getItem();
+        Dragboard db = this.startDragAndDrop(TransferMode.COPY);
+        Image image = getIconImage(node, in -> new Image(in, 68, 68, true, true));
+        db.setDragView(image);
+        ClipboardContent content = new ClipboardContent();
+        content.putString(node.getName());
+        FileTreeCellDragInfo dragInfo = new FileTreeCellDragInfo();
+        dragInfo.setOriginTree((CustomTreeView<?>) getTreeView());
+        List<TreeNode> patchNodes = getTreeView().getSelectionModel().getSelectedItems()
+                .stream()
+                .map(TreeItem::getValue)
+                .collect(Collectors.toList());
+        dragInfo.setTreeNodes(patchNodes);
+        List<File> files = patchNodes.stream().map(patchNode -> {
+            if (patchNode.isDir()) {
+                File file = FileTempUtil.createTempDir(COPY_FILE_DIR, patchNode.getName());
                 updateCellDragInfo(dragInfo, patchNode, file);
+                deepWriteFile2Path(file, patchNode, dragInfo);
                 return file;
-            }).collect(Collectors.toList());
-            content.putFiles(files);
-            db.setContent(content);
-            DRAG_INFO_TL.set(dragInfo);
-            e.consume();
-        });
+            }
+            File file = FileTempUtil.writeFile2TempDir(COPY_FILE_DIR, patchNode.getName(), patchNode.getBytes());
+            updateCellDragInfo(dragInfo, patchNode, file);
+            return file;
+        }).collect(Collectors.toList());
+        content.putFiles(files);
+        db.setContent(content);
+        DRAG_INFO_TL.set(dragInfo);
+        event.consume();
+    }
 
-        setOnDragOver(e -> {
-            Object source = e.getGestureSource();
-            if (!(source instanceof FileTreeCell) || isEmpty()) {
-                return;
-            }
-            FileTreeCellDragInfo dragInfo = DRAG_INFO_TL.get();
-            if (dragInfo == null
-                    || dragInfo.isHasMappedNode()
-                    || dragInfo.isHasReadmeNode()
-                    || dragInfo.getOriginTree() == getTreeView()
-                    || getTreeView() != appTree) {
-                return;
-            }
-            e.acceptTransferModes(TransferMode.COPY);
-            e.consume();
-        });
+    private void onDragOver(DragEvent event) {
+        Object source = event.getGestureSource();
+        if (!(source instanceof FileTreeCell) || isEmpty()) {
+            return;
+        }
+        FileTreeCellDragInfo dragInfo = DRAG_INFO_TL.get();
+        if (dragInfo == null
+                || dragInfo.isHasMappedNode()
+                || dragInfo.isHasReadmeNode()
+                || dragInfo.getOriginTree() == getTreeView()
+                || getTreeView() != appTree) {
+            return;
+        }
+        event.acceptTransferModes(TransferMode.COPY);
+        event.consume();
+    }
 
-        setOnDragDropped(e -> {
-            FileTreeCellDragInfo dragInfo = DRAG_INFO_TL.get();
-            if (dragInfo == null || appTree != getTreeView()) {
-                return;
-            }
-            new TreeNodeMatchProcessor(context.getTotalInfo(), getTreeItem().getValue(), dragInfo.getTreeNodes()).exec();
-            appTree.refresh();
-            patchTree.refresh();
-            e.consume();
-        });
+    private void onDragDropped(DragEvent event) {
+        FileTreeCellDragInfo dragInfo = DRAG_INFO_TL.get();
+        if (dragInfo == null || appTree != getTreeView()) {
+            return;
+        }
+        new TreeNodeMatchProcessor(context.getTotalInfo(), getTreeItem().getValue(), dragInfo.getTreeNodes()).exec();
+        appTree.refresh();
+        patchTree.refresh();
+        event.consume();
+    }
 
-        setOnDragDone(e -> {
-            FileTreeCellDragInfo dragInfo = DRAG_INFO_TL.get();
-            if (dragInfo == null) {
-                return;
-            }
-            DRAG_INFO_TL.remove();
-            Stack<File> tempFileStack = dragInfo.getTempFileStack();
-            while (!tempFileStack.empty()) {
-                FileTempUtil.deleteTempFile(tempFileStack.pop());
-            }
-            e.consume();
-        });
+    private void onDragDone(DragEvent event) {
+        FileTreeCellDragInfo dragInfo = DRAG_INFO_TL.get();
+        if (dragInfo == null) {
+            return;
+        }
+        DRAG_INFO_TL.remove();
+        Stack<File> tempFileStack = dragInfo.getTempFileStack();
+        while (!tempFileStack.empty()) {
+            FileTempUtil.deleteTempFile(tempFileStack.pop());
+        }
+        event.consume();
+    }
+
+    private void initCellDrag() {
+        setOnDragDetected(this::onDragDetected);
+        setOnDragOver(this::onDragOver);
+        setOnDragDropped(this::onDragDropped);
+        setOnDragDone(this::onDragDone);
     }
 
     private void updateCellDragInfo(FileTreeCellDragInfo dragInfo, TreeNode node, File file) {
@@ -199,7 +203,7 @@ public class FileTreeCell extends TreeCell<TreeNode> {
             String sizeReadability = FileUtil.getSizeReadability(node.getSize());
             String dateTime = DateUtil.formatDateTime(node.getModifyTime());
             Label fileDetailLbl = new Label("\t" + dateTime + "  " + sizeReadability + "  " + node.getMd5());
-            fileDetailLbl.setTextFill(Color.web("#6c707e"));
+            fileDetailLbl.setTextFill(Color.web(StyleConst.COLOR_GRAY_1));
             box.getChildren().add(fileDetailLbl);
         }
     }
@@ -208,18 +212,14 @@ public class FileTreeCell extends TreeCell<TreeNode> {
         TreeNodeStatus status = node.getStatus();
         switch (status) {
             case ADD:
-                textLbl.setTextFill(Color.web("#4fc75c"));
+                textLbl.setTextFill(Color.web(StyleConst.COLOR_GREEN));
                 break;
             case MOD:
-                textLbl.setTextFill(Color.web("#4c89fb"));
+                textLbl.setTextFill(Color.web(StyleConst.COLOR_BLUE));
                 break;
             case DEL:
-                textLbl.setTextFill(Color.web("#979797"));
+                textLbl.setTextFill(Color.web(StyleConst.COLOR_GRAY));
                 break;
-            case MANUAL_DEL:
-                textLbl.setTextFill(Color.web("#e65256"));
-                break;
-            case NONE:
             default:
         }
     }

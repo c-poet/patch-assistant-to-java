@@ -62,20 +62,21 @@ public class PatchPackService extends BasePackService {
     /**
      * 清空节节点绑定的信息
      *
-     * @param totalInfo 统计信息
-     * @param treeNode  根节点
+     * @param totalInfo     统计信息
+     * @param rootNode      根节点
+     * @param excludeReadme 是否排除Readme节点
      */
-    public void cleanMappedNode(TotalInfo totalInfo, PatchSignTreeNode treeNode, boolean excludeReadme) {
-        TreeNode readmeNode = treeNode.getReadmeNode();
+    public void cleanMappedNode(TotalInfo totalInfo, PatchSignTreeNode rootNode, boolean excludeReadme) {
+        TreeNode readmeNode = rootNode.getReadmeNode();
         if (excludeReadme) {
-            for (TreeNode childNode : treeNode.getChildren()) {
+            for (TreeNode childNode : rootNode.getChildren()) {
                 if (childNode != readmeNode) {
                     TreeNodeUtil.deepCleanMappedNode(totalInfo, childNode);
                 }
             }
-            TreeNodeUtil.cleanMappedNode(treeNode);
+            TreeNodeUtil.cleanMappedNode(rootNode);
         } else {
-            TreeNodeUtil.deepCleanMappedNode(totalInfo, treeNode);
+            TreeNodeUtil.deepCleanMappedNode(totalInfo, rootNode);
         }
     }
 
@@ -85,14 +86,14 @@ public class PatchPackService extends BasePackService {
      * @param totalInfo     统计信息
      * @param appTreeInfo   应用树形信息
      * @param patchTreeInfo 补丁树形信息
-     * @param treeNode      根节点
+     * @param rootNode      根节点
      */
-    public void refreshMappedNode(TotalInfo totalInfo, AppTreeInfo appTreeInfo, PatchTreeInfo patchTreeInfo, PatchSignTreeNode treeNode) {
-        cleanMappedNode(totalInfo, treeNode, true);
+    public void refreshMappedNode(TotalInfo totalInfo, AppTreeInfo appTreeInfo, PatchTreeInfo patchTreeInfo, PatchSignTreeNode rootNode) {
+        cleanMappedNode(totalInfo, rootNode, true);
         if (appTreeInfo == null || patchTreeInfo == null) {
             return;
         }
-        refreshMappedNodeWithReadme(totalInfo, appTreeInfo, patchTreeInfo, treeNode);
+        refreshMappedNodeWithReadme(totalInfo, appTreeInfo, patchTreeInfo, rootNode);
         refreshMappedNodeWithPathOrName(totalInfo, appTreeInfo, patchTreeInfo);
     }
 
@@ -354,6 +355,12 @@ public class PatchPackService extends BasePackService {
         }
     }
 
+    /**
+     * 将节点{@link TreeNode}包装成{@link PatchSignTreeNode}
+     *
+     * @param treeNode 节点
+     * @return 包装后的{@link PatchSignTreeNode}节点
+     */
     public PatchSignTreeNode wrapPatchSign(TreeNode treeNode) {
         if (treeNode instanceof PatchSignTreeNode) {
             return (PatchSignTreeNode) treeNode;
@@ -372,6 +379,11 @@ public class PatchPackService extends BasePackService {
         return patchSignTreeNode;
     }
 
+    /**
+     * 移除{@link  PatchSignTreeNode}包装
+     *
+     * @param patchSignTreeNode 包装节点
+     */
     public void unwrapPatchSign(PatchSignTreeNode patchSignTreeNode) {
         TreeNode originNode = patchSignTreeNode.getOriginNode();
         TreeItem<TreeNode> treeItem = originNode.getTreeItem();
