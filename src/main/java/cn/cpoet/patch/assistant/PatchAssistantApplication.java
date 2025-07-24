@@ -21,7 +21,7 @@ public class PatchAssistantApplication extends Application {
         appContext.initTheme(scene);
         scene.widthProperty().addListener((observableValue, oldVal, newVal) -> configuration.setHomeWidth(newVal.doubleValue()));
         scene.heightProperty().addListener((observableValue, oldVal, newVal) -> configuration.setHomeHeight(newVal.doubleValue()));
-        stage.setTitle(I18nUtil.t("app.name", AppConst.APP_NAME) + " By CPoet");
+        stage.setTitle(I18nUtil.t("app.name", AppConst.APP_NAME) + " By " + AppConst.APP_AUTHOR_NAME);
         stage.getIcons().add(ImageUtil.loadImage(IConConst.APP_ICON));
         stage.setScene(scene);
         stage.show();
