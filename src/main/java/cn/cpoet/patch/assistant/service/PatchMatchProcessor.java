@@ -5,7 +5,7 @@ import cn.cpoet.patch.assistant.util.CollectionUtil;
 import cn.cpoet.patch.assistant.util.TreeNodeUtil;
 import cn.cpoet.patch.assistant.view.tree.TotalInfo;
 import cn.cpoet.patch.assistant.view.tree.TreeNode;
-import cn.cpoet.patch.assistant.view.tree.TreeNodeStatus;
+import cn.cpoet.patch.assistant.view.tree.TreeNodeType;
 
 import java.util.Collections;
 import java.util.List;
@@ -122,7 +122,7 @@ public class PatchMatchProcessor {
             // 没匹配成功的情况下还原旧的值
             appNode.setChildren(oldChildren);
         }
-        TreeNodeUtil.mappedNode(totalInfo, appNode, patchNode, TreeNodeStatus.MOD);
+        TreeNodeUtil.mappedNode(totalInfo, appNode, patchNode, TreeNodeType.MOD);
         patchPackService.mappedInnerClassNode(totalInfo, appNode, patchNode);
         return true;
     }
@@ -133,7 +133,7 @@ public class PatchMatchProcessor {
         }
         TreeNode patchNode = nameMapping.remove(appNode.getName());
         if (patchNode != null) {
-            TreeNodeUtil.mappedNode(totalInfo, appNode, patchNode, TreeNodeStatus.MOD);
+            TreeNodeUtil.mappedNode(totalInfo, appNode, patchNode, TreeNodeType.MOD);
             patchPackService.mappedInnerClassNode(totalInfo, appNode, patchNode);
             return true;
         }

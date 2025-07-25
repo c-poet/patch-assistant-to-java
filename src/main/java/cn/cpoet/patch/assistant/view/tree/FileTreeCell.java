@@ -128,7 +128,7 @@ public class FileTreeCell extends TreeCell<TreeNode> {
         dragInfo.addTempFile(file);
         if (node.getMappedNode() != null) {
             dragInfo.setHasMappedNode(true);
-        } else if (TreeNodeStatus.README.equals(node.getStatus())) {
+        } else if (TreeNodeType.README.equals(node.getType())) {
             dragInfo.setHasMappedNode(true);
         }
     }
@@ -179,10 +179,10 @@ public class FileTreeCell extends TreeCell<TreeNode> {
     }
 
     private Image getIconImage(TreeNode node, Function<InputStream, Image> imgFactory) {
-        if (context.isPatchCustomRoot(node)) {
+        if (TreeNodeType.CUSTOM_ROOT.equals(node.getType())) {
             return ImageUtil.loadImage(IConConst.FILE_MARK, imgFactory);
         }
-        if (TreeNodeStatus.README.equals(node.getStatus())) {
+        if (TreeNodeType.README.equals(node.getType())) {
             return ImageUtil.loadImage(IConConst.FILE_README, imgFactory);
         }
         Image image = IConUtil.loadIconByFileExt(node.getName(), imgFactory);
@@ -209,7 +209,7 @@ public class FileTreeCell extends TreeCell<TreeNode> {
     }
 
     private void fillTextColor(TreeNode node, Label textLbl) {
-        TreeNodeStatus status = node.getStatus();
+        TreeNodeType status = node.getType();
         switch (status) {
             case ADD:
                 textLbl.setTextFill(Color.web(StyleConst.COLOR_GREEN));

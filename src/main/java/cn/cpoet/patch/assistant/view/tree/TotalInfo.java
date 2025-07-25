@@ -97,7 +97,7 @@ public class TotalInfo {
         return getAddTotal() > 0 || getModTotal() > 0 || getDelTotal() > 0 || getManualDelTotal() > 0;
     }
 
-    public void incrTotal(TreeNodeStatus status) {
+    public void incrTotal(TreeNodeType status) {
         switch (status) {
             case ADD:
                 setAddTotal(getAddTotal() + 1);
@@ -116,7 +116,7 @@ public class TotalInfo {
         }
     }
 
-    public void decrTotal(TreeNodeStatus status) {
+    public void decrTotal(TreeNodeType status) {
         switch (status) {
             case ADD:
                 setAddTotal(getAddTotal() - 1);

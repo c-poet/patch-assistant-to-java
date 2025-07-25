@@ -42,7 +42,7 @@ public class HomeLeftTreeView extends HomeTreeView {
                 .collect(Collectors.toList());
         treeNodes.forEach(node -> {
             TreeNodeUtil.removeNodeChild(node);
-            TreeNodeUtil.countNodeStatus(context.totalInfo, node, TreeNodeStatus.MANUAL_DEL);
+            TreeNodeUtil.countNodeStatus(context.totalInfo, node, TreeNodeType.MANUAL_DEL);
         });
     }
 
@@ -57,7 +57,7 @@ public class HomeLeftTreeView extends HomeTreeView {
         contextMenu.getItems().addAll(manualDelMenuItem, saveFileMenuItem, saveSourceFileMenuItem);
         contextMenu.setOnShowing(e -> {
             ObservableList<TreeItem<TreeNode>> selectedItems = appTree.getSelectionModel().getSelectedItems();
-            boolean isNoneNode = selectedItems.stream().anyMatch(item -> item.equals(appTree.getRoot()) || item.getValue().getStatus() != TreeNodeStatus.NONE);
+            boolean isNoneNode = selectedItems.stream().anyMatch(item -> item.equals(appTree.getRoot()) || item.getValue().getType() != TreeNodeType.NONE);
             manualDelMenuItem.setVisible(!isNoneNode);
             if (selectedItems.size() != 1 || selectedItems.get(0).getValue().isDir()) {
                 saveFileMenuItem.setVisible(false);

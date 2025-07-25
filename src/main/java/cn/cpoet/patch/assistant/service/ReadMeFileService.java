@@ -2,9 +2,8 @@ package cn.cpoet.patch.assistant.service;
 
 import cn.cpoet.patch.assistant.core.AppContext;
 import cn.cpoet.patch.assistant.model.PatchSign;
-import cn.cpoet.patch.assistant.util.CollectionUtil;
 import cn.cpoet.patch.assistant.util.StringUtil;
-import cn.cpoet.patch.assistant.view.tree.PatchSignTreeNode;
+import cn.cpoet.patch.assistant.view.tree.PatchRootInfo;
 import cn.cpoet.patch.assistant.view.tree.PatchTreeInfo;
 import cn.cpoet.patch.assistant.view.tree.TreeNode;
 
@@ -36,8 +35,12 @@ public class ReadMeFileService {
      * @param treeNode      根节点
      * @return 补丁文件路径信息列表
      */
-    public List<ReadMePathInfo> getPathInfos(PatchTreeInfo patchTreeInfo, PatchSignTreeNode treeNode) {
-        return getPathInfos(treeNode.getPatchSign());
+    public List<ReadMePathInfo> getPathInfos(PatchTreeInfo patchTreeInfo, TreeNode treeNode) {
+        PatchRootInfo patchRootInfo = patchTreeInfo.getRootInfoByNode(treeNode);
+        if (patchRootInfo == null) {
+            return Collections.emptyList();
+        }
+        return getPathInfos(patchRootInfo.getPatchSign());
     }
 
     /**

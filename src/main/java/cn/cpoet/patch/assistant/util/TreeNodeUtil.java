@@ -4,7 +4,6 @@ import cn.cpoet.patch.assistant.view.tree.*;
 import javafx.scene.control.TreeItem;
 
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 /**
@@ -48,17 +47,18 @@ public abstract class TreeNodeUtil {
      *
      * @param totalInfo 统计信息
      * @param node      节点
+     * @param filter    自定义过滤器
      */
-    public static void deepCleanMappedNode(TotalInfo totalInfo, TreeNode node, Consumer<TreeNode> consumer) {
+    public static void deepCleanMappedNode(TotalInfo totalInfo, TreeNode node, Predicate<TreeNode> filter) {
         if (node == null) {
             return;
         }
         if (CollectionUtil.isNotEmpty(node.getChildren())) {
-            node.getChildren().forEach(child -> deepCleanMappedNode(totalInfo, child, consumer));
+            node.getChildren().forEach(child -> deepCleanMappedNode(totalInfo, child, filter));
         }
-        totalInfo.decrTotal(node.getStatus());
-        cleanMappedNode(node.getMappedNode(), consumer);
-        cleanMappedNode(node, consumer);
+        totalInfo.decrTotal(node.getType());
+        cleanMappedNode(node.getMappedNode(), filter);
+        cleanMappedNode(node, filter);
     }
 
     /**
@@ -66,14 +66,11 @@ public abstract class TreeNodeUtil {
      *
      * @param node 节点
      */
-    public static void cleanMappedNode(TreeNode node, Consumer<TreeNode> consumer) {
-        if (node == null) {
+    public static void cleanMappedNode(TreeNode node, Predicate<TreeNode> filter) {
+        if (node == null || filter != null && filter.test(node)) {
             return;
         }
-        if (consumer != null) {
-            consumer.accept(node);
-        }
-        node.setStatus(TreeNodeStatus.NONE);
+        node.setType(TreeNodeType.NONE);
         node.setMappedNode(null);
         if (!node.isPatch() && (node instanceof VirtualTreeNode || node instanceof VirtualMappedNode)) {
             removeNodeChild(node);
@@ -88,7 +85,7 @@ public abstract class TreeNodeUtil {
      * @param node2     绑定的节点2
      * @param status    状态
      */
-    public static void mappedNode(TotalInfo totalInfo, TreeNode node1, TreeNode node2, TreeNodeStatus status) {
+    public static void mappedNode(TotalInfo totalInfo, TreeNode node1, TreeNode node2, TreeNodeType status) {
         mappedNode(node1, node2, status);
         totalInfo.incrTotal(status);
     }
@@ -100,11 +97,11 @@ public abstract class TreeNodeUtil {
      * @param node2  绑定的节点2
      * @param status 状态
      */
-    public static void mappedNode(TreeNode node1, TreeNode node2, TreeNodeStatus status) {
+    public static void mappedNode(TreeNode node1, TreeNode node2, TreeNodeType status) {
         node1.setMappedNode(node2);
         node2.setMappedNode(node1);
-        node1.setStatus(status);
-        node2.setStatus(status);
+        node1.setType(status);
+        node2.setType(status);
     }
 
     /**
@@ -114,7 +111,7 @@ public abstract class TreeNodeUtil {
      * @param node      节点
      * @param status    状态
      */
-    public static void countNodeStatus(TotalInfo totalInfo, TreeNode node, TreeNodeStatus status) {
+    public static void countNodeStatus(TotalInfo totalInfo, TreeNode node, TreeNodeType status) {
         if (!node.isDir()) {
             totalInfo.incrTotal(status);
             return;
@@ -279,7 +276,9 @@ public abstract class TreeNodeUtil {
     /**
      * 存在绑定的节点时仅展开绑定的节点否则展开根节点
      *
-     * @param rootItem 根节点
+     * @param totalInfo 统计信息
+     * @param rootItem  根节点
+     * @param treeItems 所有自定义根列表
      */
     public static void expendedMappedOrCurRoot(TotalInfo totalInfo, TreeItem<TreeNode> rootItem, List<TreeItem<TreeNode>> treeItems) {
         if (totalInfo.isMappedAddOrModNode()) {
@@ -289,5 +288,22 @@ public abstract class TreeNodeUtil {
         for (TreeItem<TreeNode> treeItem : treeItems) {
             treeItem.setExpanded(true);
         }
+    }
+
+    /**
+     * 判断指定节点是否处于自定义根节点下面
+     *
+     * @param treeNode 指定
+     * @return 是否处理自定义根节点下面
+     */
+    public static boolean isNotUnderCustomRoot(TreeNode treeNode) {
+        TreeNode parent = treeNode.getParent();
+        while (parent != null) {
+            if (TreeNodeType.CUSTOM_ROOT.equals(parent.getType())) {
+                return false;
+            }
+            parent = parent.getParent();
+        }
+        return true;
     }
 }

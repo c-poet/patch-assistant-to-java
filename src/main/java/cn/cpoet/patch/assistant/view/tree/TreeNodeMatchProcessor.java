@@ -66,7 +66,7 @@ public class TreeNodeMatchProcessor {
             createAppItem(patchNode, appNode);
             return;
         }
-        TreeNodeUtil.mappedNode(totalInfo, appNode, patchNode, TreeNodeStatus.MOD);
+        TreeNodeUtil.mappedNode(totalInfo, appNode, patchNode, TreeNodeType.MOD);
         matchWithDir(patchNode, appNode);
     }
 
@@ -104,7 +104,7 @@ public class TreeNodeMatchProcessor {
         childItem.setValue(childNode);
         appNode.getTreeItem().getChildren().add(childItem);
         if (!patchNode.isDir()) {
-            TreeNodeUtil.mappedNode(totalInfo, childNode, patchNode, TreeNodeStatus.ADD);
+            TreeNodeUtil.mappedNode(totalInfo, childNode, patchNode, TreeNodeType.ADD);
         }
         if (CollectionUtil.isNotEmpty(patchNode.getChildren())) {
             patchNode.getChildren().forEach(node -> match(node, childNode));

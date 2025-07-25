@@ -76,9 +76,9 @@ public abstract class TreeNode {
     protected boolean expanded;
 
     /**
-     * 节点状态
+     * 节点类型
      */
-    protected TreeNodeStatus status = TreeNodeStatus.NONE;
+    protected TreeNodeType type = TreeNodeType.NONE;
 
     public String getText() {
         return text;
@@ -207,14 +207,11 @@ public abstract class TreeNode {
         this.expanded = expanded;
     }
 
-    public TreeNodeStatus getStatus() {
-        return status;
+    public TreeNodeType getType() {
+        return type;
     }
 
-    public void setStatus(TreeNodeStatus status) {
-        if (!TreeNodeStatus.NONE.equals(status) && parent != null && TreeNodeStatus.NONE.equals(parent.getStatus())) {
-            parent.setStatus(TreeNodeStatus.CHANGE);
-        }
-        this.status = status;
+    public void setType(TreeNodeType type) {
+        this.type = type;
     }
 }

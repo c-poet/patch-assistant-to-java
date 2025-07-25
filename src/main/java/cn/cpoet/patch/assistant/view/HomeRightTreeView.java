@@ -27,6 +27,7 @@ import javafx.stage.Stage;
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -66,7 +67,7 @@ public class HomeRightTreeView extends HomeTreeView {
         MenuItem viewPatchSign = new MenuItem(I18nUtil.t("app.view.right-tree.view-sign"));
         viewPatchSign.setOnAction(e -> {
             PatchTreeInfo patchTreeInfo = patchTree.getTreeInfo();
-            new PatchSignView(patchTreeInfo.getRootNode().getPatchSign()).showDialog(stage);
+            new PatchSignView(patchTreeInfo.getRootInfo().getPatchSign()).showDialog(stage);
         });
         contextMenu.getItems().addAll(cancelMappedMenuItem, markRootMenuItem, saveFileMenuItem, saveSourceFileMenuItem, viewPatchSign);
         contextMenu.setOnShowing(e -> {
@@ -74,13 +75,14 @@ public class HomeRightTreeView extends HomeTreeView {
             if (selectedItem == null) {
                 return;
             }
-            PatchTreeInfo patchTreeInfo = patchTree.getTreeInfo();
             TreeNode selectedNode = selectedItem.getValue();
             cancelMappedMenuItem.setVisible(selectedNode.getMappedNode() != null);
-            if (selectedNode != patchTreeInfo.getRootNode() && CollectionUtil.isNotEmpty(selectedNode.getChildren()) &&
-                    (selectedNode.isDir() || selectedNode.getName().endsWith(FileExtConst.DOT_ZIP))) {
+            if (!TreeNodeType.ROOT.equals(selectedNode.getType())
+                    && CollectionUtil.isNotEmpty(selectedNode.getChildren())
+                    && (selectedNode.isDir() || selectedNode.getName().endsWith(FileExtConst.DOT_ZIP))
+                    && TreeNodeUtil.isNotUnderCustomRoot(selectedNode)) {
                 markRootMenuItem.setVisible(true);
-                if (selectedNode instanceof PatchSignTreeNode) {
+                if (TreeNodeType.CUSTOM_ROOT.equals(selectedNode.getType())) {
                     markRootMenuItem.setText(I18nUtil.t("app.view.right-tree.cancel-root-mark"));
                 } else {
                     markRootMenuItem.setText(I18nUtil.t("app.view.right-tree.mark-root"));
@@ -126,9 +128,9 @@ public class HomeRightTreeView extends HomeTreeView {
         if (patchTree.getTreeInfo() != null) {
             PatchTreeInfo patchTreeInfo = patchTree.getTreeInfo();
             List<TreeItem<TreeNode>> treeItems;
-            List<PatchSignTreeNode> markRootNodes = patchTreeInfo.getMarkRootNodes();
-            if (CollectionUtil.isNotEmpty(markRootNodes)) {
-                treeItems = markRootNodes.stream().map(TreeNode::getTreeItem).collect(Collectors.toList());
+            Map<TreeNode, PatchRootInfo> customRootInfoMap = patchTreeInfo.getCustomRootInfoMap();
+            if (CollectionUtil.isNotEmpty(customRootInfoMap)) {
+                treeItems = customRootInfoMap.keySet().stream().map(TreeNode::getTreeItem).collect(Collectors.toList());
             } else {
                 treeItems = Collections.singletonList(patchTreeInfo.getRootNode().getTreeItem());
             }
@@ -144,28 +146,30 @@ public class HomeRightTreeView extends HomeTreeView {
         if (treeInfo == null) {
             return;
         }
-        List<PatchSignTreeNode> markRootNodes = treeInfo.getMarkRootNodes();
-        if (CollectionUtil.isNotEmpty(markRootNodes)) {
-            markRootNodes.forEach(markRootNode -> refreshPatchMappedNode(isRefreshReadme, markRootNode));
+        Map<TreeNode, PatchRootInfo> customRootInfoMap = treeInfo.getCustomRootInfoMap();
+        if (CollectionUtil.isNotEmpty(customRootInfoMap)) {
+            customRootInfoMap.forEach((node, info) -> refreshPatchMappedNode(isRefreshReadme, node));
         } else {
             refreshPatchMappedNode(isRefreshReadme, treeInfo.getRootNode());
         }
     }
 
-    private void refreshPatchMappedNode(boolean isRefreshReadme, PatchSignTreeNode rootNode) {
+    private void refreshPatchMappedNode(boolean isRefreshReadme, TreeNode rootNode) {
         PatchPackService patchPackService = PatchPackService.getInstance();
         AppTreeInfo appTreeInfo = appTree.getTreeInfo();
         PatchTreeInfo patchTreeInfo = patchTree.getTreeInfo();
         if (isRefreshReadme) {
-            patchPackService.refreshReadmeNode(rootNode);
+            patchPackService.refreshReadmeNode(patchTreeInfo, rootNode);
         }
         patchPackService.refreshMappedNode(context.totalInfo, appTreeInfo, patchTreeInfo, rootNode);
+        patchTree.refresh();
         appTree.fireEvent(new Event(AppTreeView.APP_TREE_NONE_REFRESH_CALL));
     }
 
-    private void cleanPatchMappedNode(PatchSignTreeNode rootNode) {
+    private void cleanPatchMappedNode(TreeNode rootNode) {
         PatchPackService patchPackService = PatchPackService.getInstance();
-        patchPackService.cleanMappedNode(patchTree.getTreeInfo(), context.totalInfo, rootNode, false);
+        patchPackService.cleanMappedNode(context.totalInfo, rootNode, false);
+        patchTree.refresh();
         appTree.refresh();
     }
 
@@ -193,15 +197,16 @@ public class HomeRightTreeView extends HomeTreeView {
 
     private void listenMarkRootChange(PatchMarkRootEvent event) {
         TreeNode treeNode = event.getTreeNode();
-        if (treeNode instanceof PatchSignTreeNode) {
-            PatchSignTreeNode patchSignTreeNode = (PatchSignTreeNode) treeNode;
-            cleanPatchMappedNode(patchSignTreeNode);
+        if (TreeNodeType.CUSTOM_ROOT.equals(treeNode.getType())) {
+            patchTree.getTreeInfo().removeCustomRootInfo(treeNode);
+            cleanPatchMappedNode(treeNode);
             return;
         }
+        treeNode.setType(TreeNodeType.CUSTOM_ROOT);
         PatchPackService patchPackService = PatchPackService.getInstance();
-        PatchSignTreeNode patchSignTreeNode = patchPackService.wrapPatchSign(treeNode);
-        patchTree.getTreeInfo().getAndInitMarkRootNodes().add(patchSignTreeNode);
-        refreshPatchMappedNode(true, patchSignTreeNode);
+        PatchRootInfo patchRootInfo = patchPackService.createPatchRootInfo(treeNode);
+        patchTree.getTreeInfo().addCustomRootInfo(treeNode, patchRootInfo);
+        refreshPatchMappedNode(true, treeNode);
     }
 
     private void onMouseClicked(MouseEvent event) {

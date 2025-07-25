@@ -6,13 +6,13 @@ import cn.cpoet.patch.assistant.core.AppContext;
 import cn.cpoet.patch.assistant.exception.AppException;
 import cn.cpoet.patch.assistant.model.AppPackSign;
 import cn.cpoet.patch.assistant.util.CollectionUtil;
-import cn.cpoet.patch.assistant.util.FileNameUtil;
 import cn.cpoet.patch.assistant.util.HashUtil;
 import cn.cpoet.patch.assistant.view.HomeContext;
 import cn.cpoet.patch.assistant.view.ProgressContext;
 import cn.cpoet.patch.assistant.view.tree.AppTreeInfo;
 import cn.cpoet.patch.assistant.view.tree.FileNode;
 import cn.cpoet.patch.assistant.view.tree.TreeNode;
+import cn.cpoet.patch.assistant.view.tree.TreeNodeType;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -43,6 +43,7 @@ public class AppPackService extends BasePackService {
         rootNode.setText(file.getName());
         rootNode.setPath(file.getPath());
         rootNode.setFile(file);
+        rootNode.setType(TreeNodeType.ROOT);
         treeInfo.setRootNode(rootNode);
         byte[] bytes;
         try (InputStream in = new FileInputStream(file);) {

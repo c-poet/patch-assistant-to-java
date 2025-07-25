@@ -24,6 +24,7 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
@@ -280,7 +281,7 @@ public class AppPackWriteProcessor {
     private byte[] updatePatchSignContent(byte[] bytes) {
         PatchConf patchConf = Configuration.getInstance().getPatch();
         PatchTreeInfo patchTreeInfo = context.getPatchTree().getTreeInfo();
-        PatchUpSign patchUpSign = PatchUpSign.of(patchTreeInfo.getRootNode().getPatchSign());
+        PatchUpSign patchUpSign = PatchUpSign.of(patchTreeInfo.getRootInfo().getPatchSign());
         TotalInfo totalInfo = context.getTotalInfo();
         patchUpSign.setAddTotal(totalInfo.getAddTotal());
         patchUpSign.setModTotal(totalInfo.getModTotal());
@@ -293,9 +294,9 @@ public class AppPackWriteProcessor {
         patchUpSign.setOriginAppMd5(appPackSign.getMd5());
         patchUpSign.setOriginAppSha1(appPackSign.getSha1());
         patchUpSign.setOriginAppSize(treeInfo.getRootNode().getSize());
-        List<PatchSignTreeNode> markRootNodes = patchTreeInfo.getMarkRootNodes();
-        if (CollectionUtil.isNotEmpty(markRootNodes)) {
-            List<PatchSign> patchSigns = markRootNodes.stream().map(PatchSignTreeNode::getPatchSign).collect(Collectors.toList());
+        Map<TreeNode, PatchRootInfo> customRootInfoMap = patchTreeInfo.getCustomRootInfoMap();
+        if (CollectionUtil.isNotEmpty(customRootInfoMap)) {
+            List<PatchSign> patchSigns = customRootInfoMap.values().stream().map(PatchRootInfo::getPatchSign).collect(Collectors.toList());
             patchUpSign.setSigns(patchSigns);
         }
         if (bytes == null) {
@@ -309,8 +310,8 @@ public class AppPackWriteProcessor {
 
     private void writeTreeNode2Pack(ZipOutputStream zipOut, TreeNode node) throws IOException {
         // 标记为删除状态的节点不在写入新的包中
-        TreeNodeStatus status = node.getStatus();
-        if (TreeNodeStatus.DEL.equals(status)) {
+        TreeNodeType status = node.getType();
+        if (TreeNodeType.DEL.equals(status)) {
             progressContext.step("Delete:" + node.getName());
             return;
         }

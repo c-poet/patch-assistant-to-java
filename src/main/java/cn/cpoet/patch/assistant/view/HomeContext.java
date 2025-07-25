@@ -1,6 +1,8 @@
 package cn.cpoet.patch.assistant.view;
 
-import cn.cpoet.patch.assistant.view.tree.*;
+import cn.cpoet.patch.assistant.view.tree.AppTreeView;
+import cn.cpoet.patch.assistant.view.tree.PatchTreeView;
+import cn.cpoet.patch.assistant.view.tree.TotalInfo;
 
 /**
  * 上下文
@@ -23,16 +25,5 @@ public class HomeContext {
 
     public PatchTreeView getPatchTree() {
         return patchTree;
-    }
-
-    /**
-     * 判断是否是补丁包手动标记的根节点
-     *
-     * @param node 节点
-     * @return 是否是手动标记的根节点
-     */
-    public boolean isPatchCustomRoot(TreeNode node) {
-        PatchTreeInfo treeInfo = patchTree.getTreeInfo();
-        return treeInfo != null && treeInfo.getRootNode() != node && node instanceof PatchSignTreeNode;
     }
 }

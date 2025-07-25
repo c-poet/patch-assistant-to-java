@@ -9,7 +9,6 @@ import cn.cpoet.patch.assistant.exception.AppException;
 import cn.cpoet.patch.assistant.model.PatchSign;
 import cn.cpoet.patch.assistant.util.*;
 import cn.cpoet.patch.assistant.view.tree.*;
-import javafx.scene.control.TreeItem;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -17,8 +16,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
+import java.util.Objects;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.zip.ZipInputStream;
 
@@ -38,7 +38,11 @@ public class PatchPackService extends BasePackService {
      *
      * @param rootNode 根节点信息
      */
-    public void refreshReadmeNode(PatchSignTreeNode rootNode) {
+    public void refreshReadmeNode(PatchTreeInfo patchTreeInfo, TreeNode rootNode) {
+        PatchRootInfo rootInfo = patchTreeInfo.getRootInfoByNode(rootNode);
+        if (rootInfo == null) {
+            return;
+        }
         String readmeFileName = Configuration.getInstance().getPatch().getReadmeFile();
         if (StringUtil.isBlank(readmeFileName)) {
             readmeFileName = AppConst.README_FILE;
@@ -51,11 +55,10 @@ public class PatchPackService extends BasePackService {
             }
         }
         if (readmeNode != null) {
-            rootNode.setReadmeNode(readmeNode);
-            readmeNode.setStatus(TreeNodeStatus.README);
+            readmeNode.setType(TreeNodeType.README);
             byte[] bytes = readmeNode.getBytes();
             if (bytes != null && bytes.length > 0) {
-                rootNode.getPatchSign().setReadme(new String(bytes));
+                rootInfo.getPatchSign().setReadme(new String(bytes));
             }
         }
     }
@@ -63,19 +66,12 @@ public class PatchPackService extends BasePackService {
     /**
      * 清空节节点绑定的信息
      *
-     * @param patchTreeInfo 补丁树信息
      * @param totalInfo     统计信息
      * @param rootNode      根节点
      * @param excludeReadme 是否排除Readme节点
      */
-    public void cleanMappedNode(PatchTreeInfo patchTreeInfo, TotalInfo totalInfo, PatchSignTreeNode rootNode, boolean excludeReadme) {
-        cleanMappedNode(totalInfo, rootNode, excludeReadme, node -> {
-            if (node != rootNode && node instanceof PatchSignTreeNode) {
-                PatchSignTreeNode patchSignTreeNode = (PatchSignTreeNode) node;
-                unwrapPatchSign(patchSignTreeNode);
-                patchTreeInfo.getMarkRootNodes().remove(patchSignTreeNode);
-            }
-        });
+    public void cleanMappedNode(TotalInfo totalInfo, TreeNode rootNode, boolean excludeReadme) {
+        cleanMappedNode(totalInfo, rootNode, excludeReadme, null);
     }
 
     /**
@@ -85,17 +81,16 @@ public class PatchPackService extends BasePackService {
      * @param rootNode      根节点
      * @param excludeReadme 是否排除Readme节点
      */
-    public void cleanMappedNode(TotalInfo totalInfo, PatchSignTreeNode rootNode, boolean excludeReadme, Consumer<TreeNode> consumer) {
-        TreeNode readmeNode = rootNode.getReadmeNode();
+    public void cleanMappedNode(TotalInfo totalInfo, TreeNode rootNode, boolean excludeReadme, Predicate<TreeNode> filter) {
         if (excludeReadme) {
-            for (TreeNode childNode : rootNode.getChildren()) {
-                if (childNode != readmeNode) {
-                    TreeNodeUtil.deepCleanMappedNode(totalInfo, childNode, consumer);
+            TreeNodeUtil.deepCleanMappedNode(totalInfo, rootNode, node -> {
+                if (Objects.equals(rootNode, node.getParent()) && TreeNodeType.README.equals(node.getType())) {
+                    return true;
                 }
-            }
-            TreeNodeUtil.cleanMappedNode(rootNode, consumer);
+                return filter != null && filter.test(node);
+            });
         } else {
-            TreeNodeUtil.deepCleanMappedNode(totalInfo, rootNode, consumer);
+            TreeNodeUtil.deepCleanMappedNode(totalInfo, rootNode, filter);
         }
     }
 
@@ -107,8 +102,16 @@ public class PatchPackService extends BasePackService {
      * @param patchTreeInfo 补丁树形信息
      * @param rootNode      根节点
      */
-    public void refreshMappedNode(TotalInfo totalInfo, AppTreeInfo appTreeInfo, PatchTreeInfo patchTreeInfo, PatchSignTreeNode rootNode) {
-        cleanMappedNode(patchTreeInfo, totalInfo, rootNode, true);
+    public void refreshMappedNode(TotalInfo totalInfo, AppTreeInfo appTreeInfo, PatchTreeInfo patchTreeInfo, TreeNode rootNode) {
+        cleanMappedNode(totalInfo, rootNode, true, node -> {
+            if (node == rootNode) {
+                return true;
+            }
+            if (TreeNodeType.CUSTOM_ROOT.equals(node.getType())) {
+                patchTreeInfo.removeCustomRootInfo(node);
+            }
+            return false;
+        });
         if (appTreeInfo == null || patchTreeInfo == null) {
             return;
         }
@@ -116,13 +119,13 @@ public class PatchPackService extends BasePackService {
         refreshMappedNodeWithPathOrName(totalInfo, appTreeInfo, patchTreeInfo);
     }
 
-    private void refreshMappedNodeWithReadme(TotalInfo totalInfo, AppTreeInfo appTreeInfo, PatchTreeInfo patchTreeInfo, PatchSignTreeNode treeNode) {
+    private void refreshMappedNodeWithReadme(TotalInfo totalInfo, AppTreeInfo appTreeInfo, PatchTreeInfo patchTreeInfo, TreeNode treeNode) {
         List<ReadMePathInfo> pathInfos = ReadMeFileService.getInstance().getPathInfos(patchTreeInfo, treeNode);
         if (CollectionUtil.isEmpty(pathInfos)) {
             return;
         }
         String pathPrefix = null;
-        if ((patchTreeInfo.getMarkRootNodes() != null && treeNode.isDir()) || (treeNode.getOriginNode() instanceof FileNode && treeNode.isDir())) {
+        if ((TreeNodeType.CUSTOM_ROOT.equals(treeNode.getType()) && treeNode.isDir()) || (treeNode instanceof FileNode && treeNode.isDir())) {
             pathPrefix = treeNode.getPath();
         }
         for (ReadMePathInfo pathInfo : pathInfos) {
@@ -181,7 +184,7 @@ public class PatchPackService extends BasePackService {
             parent = newAppNode;
             ++index;
         }
-        TreeNodeUtil.mappedNode(totalInfo, newAppNode, patchNode, TreeNodeStatus.ADD);
+        TreeNodeUtil.mappedNode(totalInfo, newAppNode, patchNode, TreeNodeType.ADD);
         return true;
     }
 
@@ -191,10 +194,10 @@ public class PatchPackService extends BasePackService {
         }
         if (index == paths.length - 1) {
             if (ReadMePathInfo.TypeEnum.DEL.equals(pathInfo.getType())) {
-                appNode.setStatus(TreeNodeStatus.DEL);
-                totalInfo.incrTotal(TreeNodeStatus.DEL);
+                appNode.setType(TreeNodeType.DEL);
+                totalInfo.incrTotal(TreeNodeType.DEL);
             } else {
-                TreeNodeUtil.mappedNode(totalInfo, appNode, patchNode, TreeNodeStatus.MOD);
+                TreeNodeUtil.mappedNode(totalInfo, appNode, patchNode, TreeNodeType.MOD);
                 mappedInnerClassNode(totalInfo, appNode, patchNode);
             }
             return true;
@@ -215,10 +218,10 @@ public class PatchPackService extends BasePackService {
         if (isWithPath || isWithName) {
             PatchMatchProcessor processor = new PatchMatchProcessor(totalInfo, isWithPath, isWithName);
             processor.setAppRootNode(appTreeInfo.getRootNode());
-            List<PatchSignTreeNode> markRootNodes = patchTreeInfo.getMarkRootNodes();
-            if (!CollectionUtil.isEmpty(markRootNodes)) {
-                for (PatchSignTreeNode markRootNode : markRootNodes) {
-                    processor.setPatchRootNode(markRootNode);
+            Map<TreeNode, PatchRootInfo> customRootInfoMap = patchTreeInfo.getCustomRootInfoMap();
+            if (CollectionUtil.isNotEmpty(customRootInfoMap)) {
+                for (Map.Entry<TreeNode, PatchRootInfo> entry : customRootInfoMap.entrySet()) {
+                    processor.setPatchRootNode(entry.getKey());
                     processor.exec();
                 }
             } else {
@@ -253,17 +256,17 @@ public class PatchPackService extends BasePackService {
                 appInnerNode.setParent(appNode);
                 appInnerNode.setPath(FileNameUtil.joinPath(FileNameUtil.getDirPath(appNode.getPath()), patchInnerNode.getName()));
                 appNode.getAndInitChildren().add(appInnerNode);
-                TreeNodeUtil.mappedNode(totalInfo, appInnerNode, patchInnerNode, TreeNodeStatus.ADD);
+                TreeNodeUtil.mappedNode(totalInfo, appInnerNode, patchInnerNode, TreeNodeType.ADD);
                 continue;
             }
-            TreeNodeUtil.mappedNode(totalInfo, appInnerNode, patchInnerNode, TreeNodeStatus.MOD);
+            TreeNodeUtil.mappedNode(totalInfo, appInnerNode, patchInnerNode, TreeNodeType.MOD);
             mappedInnerClassNode(totalInfo, appInnerNode, patchInnerNode);
             innerNodeMap.remove(patchInnerNode.getName());
         }
         if (CollectionUtil.isNotEmpty(innerNodeMap)) {
             innerNodeMap.forEach((k, v) -> {
-                v.setStatus(TreeNodeStatus.DEL);
-                totalInfo.incrTotal(TreeNodeStatus.DEL);
+                v.setType(TreeNodeType.DEL);
+                totalInfo.incrTotal(TreeNodeType.DEL);
             });
         }
     }
@@ -310,6 +313,7 @@ public class PatchPackService extends BasePackService {
         rootNode.setPath(file.getPath());
         rootNode.setFile(file);
         rootNode.setPatch(true);
+        rootNode.setType(TreeNodeType.ROOT);
         PatchSign patchSign = new PatchSign();
         patchSign.setName(rootNode.getName());
         if (file.isDirectory()) {
@@ -317,8 +321,9 @@ public class PatchPackService extends BasePackService {
         } else {
             doGetTreeNodeWithZip(patchSign, file, rootNode);
         }
-        PatchSignTreeNode patchSignTreeNode = new PatchSignTreeNode(rootNode, patchSign);
-        treeInfo.setRootNode(patchSignTreeNode);
+        treeInfo.setRootNode(rootNode);
+        PatchRootInfo patchRootInfo = createPatchRootInfo(rootNode);
+        treeInfo.setRootInfo(patchRootInfo);
         return treeInfo;
     }
 
@@ -375,39 +380,20 @@ public class PatchPackService extends BasePackService {
     }
 
     /**
-     * 将节点{@link TreeNode}包装成{@link PatchSignTreeNode}
+     * 新增补丁信息
      *
      * @param treeNode 节点
      * @return 包装后的{@link PatchSignTreeNode}节点
      */
-    public PatchSignTreeNode wrapPatchSign(TreeNode treeNode) {
-        if (treeNode instanceof PatchSignTreeNode) {
-            return (PatchSignTreeNode) treeNode;
-        }
+    public PatchRootInfo createPatchRootInfo(TreeNode treeNode) {
         PatchSign patchSign = new PatchSign();
         patchSign.setName(treeNode.getName());
         if (!treeNode.isDir()) {
             patchSign.setMd5(treeNode.getMd5());
             patchSign.setSha1(HashUtil.sha1(treeNode.getBytes()));
         }
-        PatchSignTreeNode patchSignTreeNode = new PatchSignTreeNode(treeNode, patchSign);
-        TreeItem<TreeNode> treeItem = treeNode.getTreeItem();
-        if (treeItem != null) {
-            treeItem.setValue(patchSignTreeNode);
-        }
-        return patchSignTreeNode;
-    }
-
-    /**
-     * 移除{@link  PatchSignTreeNode}包装
-     *
-     * @param patchSignTreeNode 包装节点
-     */
-    public void unwrapPatchSign(PatchSignTreeNode patchSignTreeNode) {
-        TreeNode originNode = patchSignTreeNode.getOriginNode();
-        TreeItem<TreeNode> treeItem = originNode.getTreeItem();
-        if (treeItem != null) {
-            treeItem.setValue(originNode);
-        }
+        PatchRootInfo patchRootInfo = new PatchRootInfo();
+        patchRootInfo.setPatchSign(patchSign);
+        return patchRootInfo;
     }
 }

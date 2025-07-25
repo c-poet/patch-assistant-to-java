@@ -1,28 +1,28 @@
 package cn.cpoet.patch.assistant.view.tree;
 
 /**
- * 节点状态枚举
+ * 节点类型枚举
  *
  * @author CPoet
  */
-public enum TreeNodeStatus {
+public enum TreeNodeType {
     /**
-     * 新增
+     * 新增节点
      */
     ADD,
 
     /**
-     * 删除
+     * 删除节点
      */
     DEL,
 
     /**
-     * 修改
+     * 修改节点
      */
     MOD,
 
     /**
-     * 删除
+     * 手动删除节点
      */
     MANUAL_DEL,
 
@@ -32,12 +32,17 @@ public enum TreeNodeStatus {
     README,
 
     /**
-     * 存在子节点变化
+     * 根节点
      */
-    CHANGE,
+    ROOT,
 
     /**
-     * 正常
+     * 自定义根节点
+     */
+    CUSTOM_ROOT,
+
+    /**
+     * 普通节点
      */
     NONE
 }
