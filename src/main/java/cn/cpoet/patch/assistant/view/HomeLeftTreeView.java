@@ -87,7 +87,7 @@ public class HomeLeftTreeView extends HomeTreeView {
         } else {
             rootItem.getChildren().clear();
         }
-        AppTreeInfo treeInfo = context.getAppTree().getTreeInfo();
+        AppTreeInfo treeInfo = appTree.getTreeInfo();
         if (treeInfo != null) {
             TreeNodeUtil.buildNode(rootItem, treeInfo.getRootNode(), OnlyChangeFilter.INSTANCE);
         }
@@ -136,10 +136,10 @@ public class HomeLeftTreeView extends HomeTreeView {
     private void buildAppTree() {
         appTree.setCellFactory(treeView -> new FileTreeCell(context));
         buildAppTreeContextMenu();
-        context.patchTree.addEventHandler(PatchTreeView.PATCH_TREE_REFRESH, e -> refreshAppTree(AppTreeView.REFRESH_FLAG_NONE));
+        patchTree.addEventHandler(PatchTreeView.PATCH_TREE_REFRESH, e -> refreshAppTree(AppTreeView.REFRESH_FLAG_NONE));
         appTree.addEventHandler(AppTreeView.APP_TREE_NONE_REFRESH_CALL, e -> refreshAppTree(AppTreeView.REFRESH_FLAG_NONE));
         appTree.getSelectionModel().selectedItemProperty().addListener((observableValue, oldVal, newVal)
-                -> selectedLink(appTree, context.patchTree));
+                -> selectedLink(appTree, patchTree));
         appTree.setOnMouseClicked(this::onMouseClicked);
         initAppTreeDrag();
         String lastAppPackPath = Configuration.getInstance().getLastAppPackPath();
