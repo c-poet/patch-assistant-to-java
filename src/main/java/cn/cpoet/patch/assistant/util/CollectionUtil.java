@@ -56,4 +56,28 @@ public abstract class CollectionUtil {
     public static <K, V> boolean isNotEmpty(Map<K, V> map) {
         return !isEmpty(map);
     }
+
+    /**
+     * 获取map中的第一个元素
+     *
+     * @param map Map
+     * @param <K> Key类型
+     * @param <V> Value类型
+     * @return 第一个元素
+     */
+    public static <K, V> Map.Entry<K, V> getFirstEntry(Map<K, V> map) {
+        return map.entrySet().stream().findFirst().orElseThrow();
+    }
+
+    /**
+     * 获取map中的第一个元素的Key
+     *
+     * @param map Map
+     * @param <K> Key类型
+     * @param <V> Value类型
+     * @return 第一个元素的Key
+     */
+    public static <K, V> K getFirstKey(Map<K, V> map) {
+        return getFirstEntry(map).getKey();
+    }
 }

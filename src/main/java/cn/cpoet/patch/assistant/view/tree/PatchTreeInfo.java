@@ -3,7 +3,7 @@ package cn.cpoet.patch.assistant.view.tree;
 import cn.cpoet.patch.assistant.util.CollectionUtil;
 import cn.cpoet.patch.assistant.util.StringUtil;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -71,7 +71,7 @@ public class PatchTreeInfo extends TreeInfo {
      */
     public void addCustomRootInfo(TreeNode treeNode, PatchRootInfo patchRootInfo) {
         if (customRootInfoMap == null) {
-            customRootInfoMap = new HashMap<>();
+            customRootInfoMap = new LinkedHashMap<>();
         }
         customRootInfoMap.put(treeNode, patchRootInfo);
     }

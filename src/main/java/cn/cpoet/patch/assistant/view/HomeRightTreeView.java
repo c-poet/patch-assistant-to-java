@@ -13,10 +13,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
-import javafx.scene.input.DragEvent;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.input.TransferMode;
+import javafx.scene.input.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -34,6 +31,11 @@ import java.util.stream.Collectors;
  * @author CPoet
  */
 public class HomeRightTreeView extends HomeTreeView {
+
+    /**
+     * 记录下一个根节点index，用于循环根节点
+     */
+    private int nextRootIndex;
 
     public HomeRightTreeView(Stage stage, HomeContext context) {
         super(stage, context);
@@ -229,6 +231,46 @@ public class HomeRightTreeView extends HomeTreeView {
         }
     }
 
+    private void onKeyPressed(KeyEvent event) {
+        // tab键用于切换根节点
+        if (event.getCode() == KeyCode.TAB) {
+            PatchTreeInfo patchTreeInfo = patchTree.getTreeInfo();
+            Map<TreeNode, PatchRootInfo> customRootInfoMap = patchTreeInfo.getCustomRootInfoMap();
+            if (CollectionUtil.isEmpty(customRootInfoMap)) {
+                TreeItem<TreeNode> treeItem = patchTreeInfo.getRootNode().getTreeItem();
+                patchTree.getSelectionModel().clearSelection();
+                patchTree.getSelectionModel().select(treeItem);
+                int row = patchTree.getRow(treeItem);
+                patchTree.scrollTo(row);
+            } else if (customRootInfoMap.size() == 1) {
+                TreeItem<TreeNode> treeItem = CollectionUtil.getFirstKey(customRootInfoMap).getTreeItem();
+                patchTree.getSelectionModel().clearSelection();
+                patchTree.getSelectionModel().select(treeItem);
+                int row = patchTree.getRow(treeItem);
+                patchTree.scrollTo(row);
+            } else {
+                if (nextRootIndex >= customRootInfoMap.size()) {
+                    nextRootIndex = 0;
+                }
+                int i = 0;
+                TreeItem<TreeNode> treeItem = null;
+                for (Map.Entry<TreeNode, PatchRootInfo> entry : customRootInfoMap.entrySet()) {
+                    if (i == nextRootIndex) {
+                        treeItem = entry.getKey().getTreeItem();
+                        break;
+                    }
+                    ++i;
+                }
+                patchTree.getSelectionModel().clearSelection();
+                patchTree.getSelectionModel().select(treeItem);
+                int row = patchTree.getRow(treeItem);
+                patchTree.scrollTo(row);
+                ++nextRootIndex;
+            }
+            event.consume();
+        }
+    }
+
     private void buildPatchTree() {
         patchTree.setCellFactory(v -> new FileTreeCell(context));
         buildPatchTreeContextMenu();
@@ -239,6 +281,7 @@ public class HomeRightTreeView extends HomeTreeView {
         patchTree.getSelectionModel().selectedItemProperty().addListener((observableValue, oldVal, newVal)
                 -> selectedLink(patchTree, appTree));
         patchTree.setOnMouseClicked(this::onMouseClicked);
+        patchTree.setOnKeyPressed(this::onKeyPressed);
         initPatchTreeDrag();
         File file = getInitPatchFile();
         if (file != null) {
