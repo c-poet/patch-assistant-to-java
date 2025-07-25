@@ -129,7 +129,7 @@ public class FileTreeCell extends TreeCell<TreeNode> {
         if (node.getMappedNode() != null) {
             dragInfo.setHasMappedNode(true);
         } else if (TreeNodeType.README.equals(node.getType())) {
-            dragInfo.setHasMappedNode(true);
+            dragInfo.setHasReadmeNode(true);
         }
     }
 
