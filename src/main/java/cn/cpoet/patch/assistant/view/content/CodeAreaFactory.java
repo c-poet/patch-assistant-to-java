@@ -89,9 +89,7 @@ public abstract class CodeAreaFactory {
                     }
                 });
         ContextMenu contextMenu = getContextMenu(codeArea);
-        if (contextMenu != null) {
-            codeArea.setContextMenu(contextMenu);
-        }
+        codeArea.setContextMenu(contextMenu);
         return codeArea;
     }
 

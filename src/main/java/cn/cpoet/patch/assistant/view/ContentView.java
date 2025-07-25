@@ -87,7 +87,9 @@ public class ContentView {
             tarNode = diffPane;
         } else {
             VirtualizedScrollPane<CodeArea> leftPane = crateCodeAreaPane(codeAreaFactory, leftContent);
+            leftPane.scrollYToPixel(0);
             VirtualizedScrollPane<CodeArea> rightPane = crateCodeAreaPane(codeAreaFactory, rightContent);
+            rightPane.scrollYToPixel(0);
             SplitPane splitPane = new SplitPane(leftPane, rightPane);
             VBox.setVgrow(splitPane, Priority.ALWAYS);
             tarNode = splitPane;
@@ -100,7 +102,9 @@ public class ContentView {
     }
 
     private VirtualizedScrollPane<CodeArea> crateCodeAreaPane(CodeAreaFactory codeAreaFactory, String text) {
-        return crateCodeAreaPane(codeAreaFactory, codeArea -> codeArea.replaceText(text));
+        return crateCodeAreaPane(codeAreaFactory, codeArea -> {
+            codeArea.replaceText(text);
+        });
     }
 
     private VirtualizedScrollPane<CodeArea> crateCodeAreaPane(CodeAreaFactory codeAreaFactory, Consumer<CodeArea> consumer) {
