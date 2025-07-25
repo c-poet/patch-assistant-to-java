@@ -56,7 +56,9 @@ public class ContentView {
     public Node build() {
         CodeAreaFactory codeAreaFactory = ContentSupports.getCodeAreaFactory(leftNode);
         if (rightContent == null) {
-            return crateCodeAreaPane(codeAreaFactory, leftContent);
+            VirtualizedScrollPane<CodeArea> scrollPane = crateCodeAreaPane(codeAreaFactory, leftContent);
+            scrollPane.scrollYToPixel(0);
+            return scrollPane;
         }
         VBox box = new VBox();
         box.setPadding(Insets.EMPTY);
