@@ -63,6 +63,11 @@ public class HomeRightTreeView extends HomeTreeView {
         new PatchSignView(patchRootInfo.getPatchSign()).showDialog(stage);
     }
 
+    private void handleViewNodeMapped(ActionEvent event) {
+        TreeNode rootNode = patchTree.getSelectionModel().getSelectedItem().getValue();
+        new NodeMappedView(appTree.getTreeInfo().getRootNode(), rootNode).showDialog(stage);
+    }
+
     private void buildPatchTreeContextMenu() {
         ContextMenu contextMenu = new ContextMenu();
         MenuItem markRootMenuItem = new MenuItem();
@@ -75,7 +80,10 @@ public class HomeRightTreeView extends HomeTreeView {
         saveSourceFileMenuItem.setOnAction(e -> saveSourceFile(patchTree));
         MenuItem viewPatchSign = new MenuItem(I18nUtil.t("app.view.right-tree.view-sign"));
         viewPatchSign.setOnAction(this::handleViewPatchSign);
-        contextMenu.getItems().addAll(cancelMappedMenuItem, markRootMenuItem, saveFileMenuItem, saveSourceFileMenuItem, viewPatchSign);
+        MenuItem viewNodeMappedItem = new MenuItem(I18nUtil.t("app.view.right-tree.view-node-mapped"));
+        viewNodeMappedItem.setOnAction(this::handleViewNodeMapped);
+        contextMenu.getItems().addAll(cancelMappedMenuItem, markRootMenuItem, saveFileMenuItem, saveSourceFileMenuItem,
+                viewPatchSign, viewNodeMappedItem);
         contextMenu.setOnShowing(e -> {
             TreeItem<TreeNode> selectedItem = patchTree.getSelectionModel().getSelectedItem();
             if (selectedItem == null) {
@@ -103,7 +111,16 @@ public class HomeRightTreeView extends HomeTreeView {
                 saveFileMenuItem.setVisible(true);
                 saveSourceFileMenuItem.setVisible(selectedNode.getText().endsWith(FileExtConst.DOT_CLASS));
             }
-            viewPatchSign.setVisible(TreeNodeType.ROOT.equals(selectedNode.getType()) || TreeNodeType.CUSTOM_ROOT.equals(selectedNode.getType()));
+            if (TreeNodeType.CUSTOM_ROOT.equals(selectedNode.getType())) {
+                viewPatchSign.setVisible(true);
+                viewNodeMappedItem.setVisible(true);
+            } else if (TreeNodeType.ROOT.equals(selectedNode.getType())) {
+                viewPatchSign.setVisible(true);
+                viewNodeMappedItem.setVisible(CollectionUtil.isEmpty(patchTree.getTreeInfo().getCustomRootInfoMap()));
+            } else {
+                viewPatchSign.setVisible(false);
+                viewNodeMappedItem.setVisible(false);
+            }
         });
         patchTree.setContextMenu(contextMenu);
     }

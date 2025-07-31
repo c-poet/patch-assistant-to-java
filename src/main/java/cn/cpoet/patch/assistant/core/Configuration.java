@@ -60,6 +60,18 @@ public class Configuration {
     private Double contentHeight;
 
     /**
+     * 绑定信息窗口宽度
+     */
+    @JacksonXmlProperty
+    private Double nodeMappedWidth = 720D;
+
+    /**
+     * 绑定信息窗口高度
+     */
+    @JacksonXmlProperty
+    private Double nodeMappedHeight = 560D;
+
+    /**
      * 进度窗口宽度
      */
     @JacksonXmlProperty
@@ -219,6 +231,22 @@ public class Configuration {
 
     public void setContentHeight(Double contentHeight) {
         this.contentHeight = contentHeight;
+    }
+
+    public Double getNodeMappedWidth() {
+        return nodeMappedWidth;
+    }
+
+    public void setNodeMappedWidth(Double nodeMappedWidth) {
+        this.nodeMappedWidth = nodeMappedWidth;
+    }
+
+    public Double getNodeMappedHeight() {
+        return nodeMappedHeight;
+    }
+
+    public void setNodeMappedHeight(Double nodeMappedHeight) {
+        this.nodeMappedHeight = nodeMappedHeight;
     }
 
     public Double getProgressWidth() {
