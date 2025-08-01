@@ -1,6 +1,7 @@
 package cn.cpoet.patch.assistant.view;
 
 import cn.cpoet.patch.assistant.constant.AppConst;
+import cn.cpoet.patch.assistant.constant.FileExtConst;
 import cn.cpoet.patch.assistant.constant.SpringConst;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.util.*;
@@ -120,6 +121,10 @@ public class NodeMappedView {
                     boolean isClassesFlag = SpringConst.LIB_PATH.equals(node.getPath());
                     node.getChildren().forEach(child -> buildDelInfo(sb, child, pathStack, isLibFlag, isClassesFlag));
                 }
+                pathStack.pop();
+            } else if (node.getName().endsWith(FileExtConst.DOT_JAR)) {
+                pathStack.push(node.getName());
+                node.getChildren().forEach(child -> buildDelInfo(sb, child, pathStack, isLib, isClasses));
                 pathStack.pop();
             } else {
                 node.getChildren().forEach(child -> buildDelInfo(sb, child, pathStack, isLib, isClasses));

@@ -194,8 +194,7 @@ public class PatchPackService extends BasePackService {
         }
         if (index == paths.length - 1) {
             if (ReadMePathInfo.TypeEnum.DEL.equals(pathInfo.getType())) {
-                appNode.setType(TreeNodeType.DEL);
-                totalInfo.incrTotal(TreeNodeType.DEL);
+                TreeNodeUtil.countAndSetNodeType(totalInfo, appNode, TreeNodeType.DEL);
             } else {
                 TreeNodeUtil.mappedNode(totalInfo, appNode, patchNode, TreeNodeType.MOD);
                 mappedInnerClassNode(totalInfo, appNode, patchNode);
@@ -264,10 +263,7 @@ public class PatchPackService extends BasePackService {
             innerNodeMap.remove(patchInnerNode.getName());
         }
         if (CollectionUtil.isNotEmpty(innerNodeMap)) {
-            innerNodeMap.forEach((k, v) -> {
-                v.setType(TreeNodeType.DEL);
-                totalInfo.incrTotal(TreeNodeType.DEL);
-            });
+            innerNodeMap.forEach((k, v) -> TreeNodeUtil.countAndSetNodeType(totalInfo, v, TreeNodeType.DEL));
         }
     }
 

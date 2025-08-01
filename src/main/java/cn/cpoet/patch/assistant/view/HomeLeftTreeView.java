@@ -41,30 +41,53 @@ public class HomeLeftTreeView extends HomeTreeView {
                 .map(TreeItem::getValue)
                 .collect(Collectors.toList());
         treeNodes.forEach(node -> {
+            TreeNodeUtil.deepCleanMappedNode(context.totalInfo, node);
             TreeNodeUtil.removeNodeChild(node);
-            TreeNodeUtil.countNodeStatus(context.totalInfo, node, TreeNodeType.MANUAL_DEL);
+            TreeNodeUtil.countNodeType(context.totalInfo, node, TreeNodeType.MANUAL_DEL);
         });
+        patchTree.refresh();
+    }
+
+    private void handleMarkDel(ActionEvent event) {
+        TreeNode node = appTree.getSelectionModel().getSelectedItem().getValue();
+        if (TreeNodeType.DEL.equals(node.getType())) {
+            TreeNodeUtil.deepCleanMappedNode(context.totalInfo, node);
+            appTree.refresh();
+        } else {
+            TreeNodeUtil.deepCleanMappedNode(context.totalInfo, node);
+            TreeNodeUtil.countAndSetNodeType(context.totalInfo, node, TreeNodeType.DEL);
+            appTree.refresh();
+            patchTree.refresh();
+        }
     }
 
     private void buildAppTreeContextMenu() {
         ContextMenu contextMenu = new ContextMenu();
         MenuItem manualDelMenuItem = new MenuItem(I18nUtil.t("app.view.left-tree.delete"));
         manualDelMenuItem.setOnAction(this::handleManualDel);
+        MenuItem markDelMenuItem = new MenuItem();
+        markDelMenuItem.setOnAction(this::handleMarkDel);
         MenuItem saveFileMenuItem = new MenuItem(I18nUtil.t("app.view.left-tree.save-file"));
         saveFileMenuItem.setOnAction(e -> saveFile(appTree));
         MenuItem saveSourceFileMenuItem = new MenuItem(I18nUtil.t("app.view.left-tree.save-source-file"));
         saveSourceFileMenuItem.setOnAction(e -> saveSourceFile(appTree));
-        contextMenu.getItems().addAll(manualDelMenuItem, saveFileMenuItem, saveSourceFileMenuItem);
+        contextMenu.getItems().addAll(manualDelMenuItem, markDelMenuItem, saveFileMenuItem, saveSourceFileMenuItem);
         contextMenu.setOnShowing(e -> {
             ObservableList<TreeItem<TreeNode>> selectedItems = appTree.getSelectionModel().getSelectedItems();
-            boolean isNoneNode = selectedItems.stream().anyMatch(item -> item.equals(appTree.getRoot()) || item.getValue().getType() != TreeNodeType.NONE);
+            boolean isNoneNode = selectedItems.stream().anyMatch(item -> item.equals(appTree.getRoot()) || !item.getValue().getType().equals(TreeNodeType.NONE));
             manualDelMenuItem.setVisible(!isNoneNode);
-            if (selectedItems.size() != 1 || selectedItems.get(0).getValue().isDir()) {
-                saveFileMenuItem.setVisible(false);
-                saveSourceFileMenuItem.setVisible(false);
-            } else {
-                saveFileMenuItem.setVisible(true);
-                saveSourceFileMenuItem.setVisible(selectedItems.get(0).getValue().getText().endsWith(FileExtConst.DOT_CLASS));
+            saveFileMenuItem.setVisible(false);
+            saveSourceFileMenuItem.setVisible(false);
+            markDelMenuItem.setVisible(false);
+            if (selectedItems.size() == 1) {
+                TreeNode node = selectedItems.get(0).getValue();
+                if (!node.isDir()) {
+                    saveFileMenuItem.setVisible(true);
+                    saveSourceFileMenuItem.setVisible(node.getText().endsWith(FileExtConst.DOT_CLASS));
+                }
+                markDelMenuItem.setVisible(true);
+                markDelMenuItem.setText(TreeNodeType.DEL.equals(node.getType()) ? I18nUtil.t("app.view.left-tree.unmark-delete") :
+                        I18nUtil.t("app.view.left-tree.mark-delete"));
             }
         });
         appTree.setContextMenu(contextMenu);

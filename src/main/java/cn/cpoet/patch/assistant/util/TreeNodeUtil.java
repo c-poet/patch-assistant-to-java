@@ -56,7 +56,9 @@ public abstract class TreeNodeUtil {
         if (CollectionUtil.isNotEmpty(node.getChildren())) {
             node.getChildren().forEach(child -> deepCleanMappedNode(totalInfo, child, filter));
         }
-        totalInfo.decrTotal(node.getType());
+        if (!node.isDir()) {
+            totalInfo.decrTotal(node.getType());
+        }
         cleanMappedNode(node.getMappedNode(), filter);
         cleanMappedNode(node, filter);
     }
@@ -87,7 +89,9 @@ public abstract class TreeNodeUtil {
      */
     public static void mappedNode(TotalInfo totalInfo, TreeNode node1, TreeNode node2, TreeNodeType status) {
         mappedNode(node1, node2, status);
-        totalInfo.incrTotal(status);
+        if (!node1.isDir()) {
+            totalInfo.incrTotal(status);
+        }
     }
 
     /**
@@ -109,15 +113,31 @@ public abstract class TreeNodeUtil {
      *
      * @param totalInfo 统计信息
      * @param node      节点
-     * @param status    状态
+     * @param type      状态
      */
-    public static void countNodeStatus(TotalInfo totalInfo, TreeNode node, TreeNodeType status) {
+    public static void countNodeType(TotalInfo totalInfo, TreeNode node, TreeNodeType type) {
         if (!node.isDir()) {
-            totalInfo.incrTotal(status);
-            return;
+            totalInfo.incrTotal(type);
         }
         if (CollectionUtil.isNotEmpty(node.getChildren())) {
-            node.getChildren().forEach(child -> countNodeStatus(totalInfo, child, status));
+            node.getChildren().forEach(child -> countNodeType(totalInfo, child, type));
+        }
+    }
+
+    /**
+     * 统计并设置文件信息
+     *
+     * @param totalInfo 统计信息
+     * @param node      节点
+     * @param type      状态
+     */
+    public static void countAndSetNodeType(TotalInfo totalInfo, TreeNode node, TreeNodeType type) {
+        node.setType(type);
+        if (!node.isDir()) {
+            totalInfo.incrTotal(type);
+        }
+        if (CollectionUtil.isNotEmpty(node.getChildren())) {
+            node.getChildren().forEach(child -> countAndSetNodeType(totalInfo, child, type));
         }
     }
 
