@@ -13,6 +13,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.TextFieldTreeCell;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
@@ -61,20 +62,36 @@ public class HomeLeftTreeView extends HomeTreeView {
         }
     }
 
+    private void handleRename(ActionEvent event) {
+        TreeItem<TreeNode> selectedItem = appTree.getSelectionModel().getSelectedItem();
+        appTree.edit(selectedItem);
+    }
+
     private void buildAppTreeContextMenu() {
         ContextMenu contextMenu = new ContextMenu();
+        MenuItem mkdirMenuItem = new MenuItem(I18nUtil.t("app.view.left-tree.mkdir"));
+        contextMenu.getItems().add(mkdirMenuItem);
+        MenuItem renameMenuItem = new MenuItem(I18nUtil.t("app.view.left-tree.rename"));
+        renameMenuItem.setOnAction(this::handleRename);
+        contextMenu.getItems().add(renameMenuItem);
         MenuItem manualDelMenuItem = new MenuItem(I18nUtil.t("app.view.left-tree.delete"));
         manualDelMenuItem.setOnAction(this::handleManualDel);
+        contextMenu.getItems().add(manualDelMenuItem);
         MenuItem markDelMenuItem = new MenuItem();
         markDelMenuItem.setOnAction(this::handleMarkDel);
+        contextMenu.getItems().add(markDelMenuItem);
         MenuItem saveFileMenuItem = new MenuItem(I18nUtil.t("app.view.left-tree.save-file"));
         saveFileMenuItem.setOnAction(e -> saveFile(appTree));
+        contextMenu.getItems().add(saveFileMenuItem);
         MenuItem saveSourceFileMenuItem = new MenuItem(I18nUtil.t("app.view.left-tree.save-source-file"));
         saveSourceFileMenuItem.setOnAction(e -> saveSourceFile(appTree));
-        contextMenu.getItems().addAll(manualDelMenuItem, markDelMenuItem, saveFileMenuItem, saveSourceFileMenuItem);
+        contextMenu.getItems().add(saveSourceFileMenuItem);
+
         contextMenu.setOnShowing(e -> {
             ObservableList<TreeItem<TreeNode>> selectedItems = appTree.getSelectionModel().getSelectedItems();
             boolean isNoneNode = selectedItems.stream().anyMatch(item -> item.equals(appTree.getRoot()) || !item.getValue().getType().equals(TreeNodeType.NONE));
+            mkdirMenuItem.setVisible(false);
+            renameMenuItem.setVisible(false);
             manualDelMenuItem.setVisible(!isNoneNode);
             saveFileMenuItem.setVisible(false);
             saveSourceFileMenuItem.setVisible(false);
@@ -84,7 +101,10 @@ public class HomeLeftTreeView extends HomeTreeView {
                 if (!node.isDir()) {
                     saveFileMenuItem.setVisible(true);
                     saveSourceFileMenuItem.setVisible(node.getText().endsWith(FileExtConst.DOT_CLASS));
+                } else {
+                    mkdirMenuItem.setVisible(true);
                 }
+                renameMenuItem.setVisible(true);
                 markDelMenuItem.setVisible(true);
                 markDelMenuItem.setText(TreeNodeType.DEL.equals(node.getType()) ? I18nUtil.t("app.view.left-tree.unmark-delete") :
                         I18nUtil.t("app.view.left-tree.mark-delete"));
@@ -157,7 +177,7 @@ public class HomeLeftTreeView extends HomeTreeView {
     }
 
     private void buildAppTree() {
-        appTree.setCellFactory(treeView -> new FileTreeCell(context));
+        appTree.setCellFactory(treeView -> new EditFileTreeCell(context));
         buildAppTreeContextMenu();
         patchTree.addEventHandler(PatchTreeView.PATCH_TREE_REFRESH, e -> refreshAppTree(AppTreeView.REFRESH_FLAG_NONE));
         appTree.addEventHandler(AppTreeView.APP_TREE_NONE_REFRESH_CALL, e -> refreshAppTree(AppTreeView.REFRESH_FLAG_NONE));

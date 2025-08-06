@@ -31,6 +31,7 @@ public class FileTreeCell extends TreeCell<TreeNode> {
     public final static ThreadLocal<FileTreeCellDragInfo> DRAG_INFO_TL = new ThreadLocal<>();
 
     protected HBox box;
+    protected Label textLbl;
     protected AppTreeView appTree;
     protected PatchTreeView patchTree;
     protected final HomeContext context;
@@ -162,7 +163,7 @@ public class FileTreeCell extends TreeCell<TreeNode> {
         } else {
             box = new HBox();
             addIcon(node);
-            Label textLbl = new Label(node.getText());
+            textLbl = new Label(node.getText());
             fillTextColor(node, textLbl);
             box.getChildren().add(textLbl);
             addFileDetail(node);

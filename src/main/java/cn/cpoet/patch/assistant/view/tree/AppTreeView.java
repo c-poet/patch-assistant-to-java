@@ -28,4 +28,9 @@ public class AppTreeView extends CustomTreeView<AppTreeInfo> {
      * 补丁树刷新是否需要发布事件
      */
     public static final int REFRESH_FLAG_EMIT_EVENT = 1;
+
+    public AppTreeView() {
+        super();
+        setEditable(true);
+    }
 }
