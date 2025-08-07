@@ -19,6 +19,8 @@ import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpProgressMonitor;
 
 import java.io.*;
+import java.nio.file.CopyOption;
+import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -47,28 +49,57 @@ public class AppPackWriteProcessor {
         this.isDockerImage = isDockerImage;
     }
 
+    private void aaa() {
+
+    }
+
     public void exec(File file) {
+        File transitFile = FileTempUtil.createTempFile(file.getName());
         if (isDockerImage) {
             String dockerfile = FileUtil.readFileAsString(AppConst.DOCKERFILE_FILE_NAME);
             if (StringUtil.isBlank(dockerfile)) {
                 throw new AppException("Dockerfile template file cannot be empty");
             }
-            createDockerTask(file, dockerfile).start();
+            createDockerTask(file, transitFile, dockerfile).start();
             return;
         }
-        createTask(file).start();
+        createTask(file, transitFile).start();
     }
 
-    private Thread createDockerTask(File file, String dockerfile) {
+    private void transitCompleted(File file, File transitFile, boolean isOk) {
+        if (isOk) {
+            progressContext.step("Write to:" + file.getPath());
+            try (InputStream in = new FileInputStream(transitFile);
+                 OutputStream out = new FileOutputStream(file)) {
+                int len;
+                byte[] buf = new byte[1024];
+                while ((len = in.read(buf)) != -1) {
+                    out.write(buf, 0, len);
+                }
+            } catch (Exception e) {
+                throw new AppException("Write file failed", e);
+            } finally {
+                progressContext.step("Clean transit file");
+                FileTempUtil.deleteTempFile(transitFile);
+            }
+        } else {
+            progressContext.step("Clean transit file");
+            FileTempUtil.deleteTempFile(transitFile);
+        }
+    }
+
+    private Thread createDockerTask(File file, File transitFile, String dockerfile) {
         Thread thread = new Thread(() -> {
             progressContext.setRunLater(true);
             progressContext.step("Start write to Docker image pack");
             try {
-                writeDocker(file, dockerfile);
+                writeDocker(transitFile, dockerfile);
                 progressContext.step("Write to Docker image pack finish");
+                transitCompleted(file, transitFile, true);
                 progressContext.end(true);
             } catch (Exception e) {
                 progressContext.step(ExceptionUtil.asString(e));
+                transitCompleted(file, transitFile, false);
                 progressContext.end(false);
             }
         });
@@ -76,16 +107,18 @@ public class AppPackWriteProcessor {
         return thread;
     }
 
-    private Thread createTask(File file) {
+    private Thread createTask(File file, File transitFile) {
         Thread thread = new Thread(() -> {
             progressContext.setRunLater(true);
             progressContext.step("Start write to JAR pack");
             try {
-                write(file);
+                write(transitFile);
                 progressContext.step("Write to JAR pack finish");
+                transitCompleted(file, transitFile, true);
                 progressContext.end(true);
             } catch (Exception e) {
                 progressContext.step(ExceptionUtil.asString(e));
+                transitCompleted(file, transitFile, false);
                 progressContext.end(false);
             }
         });
