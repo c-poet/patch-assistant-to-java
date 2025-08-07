@@ -375,7 +375,7 @@ public class AppPackWriteProcessor {
         if (node instanceof ZipEntryNode) {
             return getNewEntryWithZipEntry(((ZipEntryNode) node).getEntry());
         }
-        ZipEntry entry = new ZipEntry(node.getPath());
+        ZipEntry entry = new ZipEntry(node.isDir() ? FileNameUtil.perfectDirPath(node.getPath()) : node.getPath());
         if (node.getName().endsWith(FileExtConst.DOT_JAR)) {
             entry.setMethod(ZipEntry.STORED);
         }
@@ -384,7 +384,7 @@ public class AppPackWriteProcessor {
 
     private ZipEntry getNewEntryWithZipEntry(ZipEntry zipEntry) {
         String name = zipEntry.getName();
-        ZipEntry newEntry = new ZipEntry(name);
+        ZipEntry newEntry = new ZipEntry(zipEntry.isDirectory() ? FileNameUtil.perfectDirPath(name) : name);
         newEntry.setComment(zipEntry.getComment());
         if (zipEntry.getCreationTime() != null) {
             newEntry.setCreationTime(zipEntry.getCreationTime());

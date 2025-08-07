@@ -87,4 +87,17 @@ public abstract class FileNameUtil {
         }
         return path1 + (path2.startsWith(SEPARATOR) ? path2 : SEPARATOR + path2);
     }
+
+    /**
+     * 路径后面拼接{@link  #SEPARATOR}
+     *
+     * @param path 路径
+     * @return 以 {@link  #SEPARATOR}结束的路径
+     */
+    public static String perfectDirPath(String path) {
+        if (path.endsWith(FileNameUtil.SEPARATOR)) {
+            return path;
+        }
+        return path + FileNameUtil.SEPARATOR;
+    }
 }

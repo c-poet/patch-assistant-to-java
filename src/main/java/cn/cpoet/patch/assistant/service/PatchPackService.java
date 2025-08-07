@@ -13,10 +13,7 @@ import cn.cpoet.patch.assistant.view.tree.*;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -185,7 +182,38 @@ public class PatchPackService extends BasePackService {
             ++index;
         }
         TreeNodeUtil.mappedNode(totalInfo, newAppNode, patchNode, TreeNodeType.ADD);
+        addMappedNodeChildren(totalInfo, newAppNode, patchNode);
         return true;
+    }
+
+    private void addMappedNodeChildren(TotalInfo totalInfo, TreeNode appNode, TreeNode patchNode) {
+        if (CollectionUtil.isEmpty(patchNode.getChildren())) {
+            return;
+        }
+        Map<String, TreeNode> childAppNodeMap = Collections.emptyMap();
+        if (CollectionUtil.isNotEmpty(appNode.getChildren())) {
+            childAppNodeMap = appNode.getChildren().stream().collect(Collectors.toMap(TreeNode::getName, Function.identity()));
+        }
+        for (TreeNode childPatchNode : patchNode.getChildren()) {
+            TreeNode childAppNode = childAppNodeMap.get(childPatchNode.getName());
+            if (childAppNode == null) {
+                if (!childPatchNode.isDir()) {
+                    childAppNode = new VirtualMappedNode(childPatchNode);
+                } else {
+                    VirtualTreeNode virtualTreeNode = new VirtualTreeNode();
+                    virtualTreeNode.setName(childPatchNode.getName());
+                    virtualTreeNode.setText(childPatchNode.getText());
+                    virtualTreeNode.setDir(true);
+                    virtualTreeNode.setModifyTime(childPatchNode.getModifyTime());
+                    childAppNode = virtualTreeNode;
+                }
+                childAppNode.setParent(appNode);
+                childAppNode.setPath(FileNameUtil.joinPath(appNode.getPath(), childAppNode.getName()));
+                appNode.getAndInitChildren().add(childAppNode);
+            }
+            TreeNodeUtil.mappedNode(totalInfo, childAppNode, childPatchNode, TreeNodeType.ADD);
+            addMappedNodeChildren(totalInfo, childAppNode, childPatchNode);
+        }
     }
 
     private boolean doMatchMappedNodeWithReadme(TotalInfo totalInfo, ReadMePathInfo pathInfo, String[] paths, int index, TreeNode appNode, TreeNode patchNode) {
@@ -195,6 +223,11 @@ public class PatchPackService extends BasePackService {
         if (index == paths.length - 1) {
             if (ReadMePathInfo.TypeEnum.DEL.equals(pathInfo.getType())) {
                 TreeNodeUtil.countAndSetNodeType(totalInfo, appNode, TreeNodeType.DEL);
+            } else if (TreeNodeType.DEL.equals(appNode.getType())) {
+                TreeNodeUtil.mappedNode(totalInfo, appNode, patchNode, TreeNodeType.ADD);
+                if (ReadMePathInfo.TypeEnum.ADD.equals(pathInfo.getType())) {
+                    addMappedNodeChildren(totalInfo, appNode, patchNode);
+                }
             } else {
                 TreeNodeUtil.mappedNode(totalInfo, appNode, patchNode, TreeNodeType.MOD);
                 mappedInnerClassNode(totalInfo, appNode, patchNode);
