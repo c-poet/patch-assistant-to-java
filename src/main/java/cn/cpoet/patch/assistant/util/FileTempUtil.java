@@ -14,6 +14,8 @@ import java.nio.file.attribute.FileAttribute;
  */
 public abstract class FileTempUtil {
 
+    public static final String TEMP_FILE_EXT = FileNameUtil.EXT_SEPARATOR + "temp";
+
     private FileTempUtil() {
     }
 

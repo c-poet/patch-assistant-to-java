@@ -19,8 +19,6 @@ import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpProgressMonitor;
 
 import java.io.*;
-import java.nio.file.CopyOption;
-import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -49,12 +47,16 @@ public class AppPackWriteProcessor {
         this.isDockerImage = isDockerImage;
     }
 
-    private void aaa() {
-
+    private File createTransitFile(File file) {
+        try {
+            return new File(file.getParentFile(), file.getName() + FileTempUtil.TEMP_FILE_EXT);
+        } catch (Exception ignored) {
+        }
+        return FileTempUtil.createTempFile(file.getName());
     }
 
     public void exec(File file) {
-        File transitFile = FileTempUtil.createTempFile(file.getName());
+        File transitFile = createTransitFile(file);
         if (isDockerImage) {
             String dockerfile = FileUtil.readFileAsString(AppConst.DOCKERFILE_FILE_NAME);
             if (StringUtil.isBlank(dockerfile)) {
