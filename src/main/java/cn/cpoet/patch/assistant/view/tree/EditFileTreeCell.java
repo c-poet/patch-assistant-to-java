@@ -16,7 +16,7 @@ public class EditFileTreeCell extends FileTreeCell {
         super(context);
     }
 
-    protected void initTextField() {
+    private void initTextField() {
         textField = new TextField(textLbl.getText());
         textField.setStyle("-fx-background-insets: 0; -fx-background-color: transparent, white, transparent, white;");
     }

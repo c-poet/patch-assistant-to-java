@@ -173,6 +173,7 @@ public class HomeLeftTreeView extends HomeTreeView {
                     new ContentView(selectedTreeNode).showDialog(stage);
                 }
             }
+            event.consume();
         }
     }
 
