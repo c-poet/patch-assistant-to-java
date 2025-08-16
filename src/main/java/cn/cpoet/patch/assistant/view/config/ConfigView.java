@@ -2,8 +2,7 @@ package cn.cpoet.patch.assistant.view.config;
 
 import cn.cpoet.patch.assistant.constant.I18NEnum;
 import cn.cpoet.patch.assistant.constant.ThemeEnum;
-import cn.cpoet.patch.assistant.control.IntegerField;
-import cn.cpoet.patch.assistant.control.StringMappingConverter;
+import cn.cpoet.patch.assistant.control.form.IntegerField;
 import cn.cpoet.patch.assistant.core.*;
 import cn.cpoet.patch.assistant.util.EncryptUtil;
 import cn.cpoet.patch.assistant.util.FXUtil;

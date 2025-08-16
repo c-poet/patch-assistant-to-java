@@ -1,6 +1,5 @@
 package cn.cpoet.patch.assistant.view.home;
 
-import cn.cpoet.patch.assistant.component.OnlyChangeFilter;
 import cn.cpoet.patch.assistant.constant.FileExtConst;
 import cn.cpoet.patch.assistant.control.tree.*;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;

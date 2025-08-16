@@ -1,4 +1,4 @@
-package cn.cpoet.patch.assistant.control;
+package cn.cpoet.patch.assistant.view.config;
 
 import javafx.util.StringConverter;
 

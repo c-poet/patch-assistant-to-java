@@ -1,4 +1,4 @@
-package cn.cpoet.patch.assistant.control;
+package cn.cpoet.patch.assistant.control.form;
 
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;

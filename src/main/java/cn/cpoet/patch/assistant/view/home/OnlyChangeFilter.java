@@ -1,4 +1,4 @@
-package cn.cpoet.patch.assistant.component;
+package cn.cpoet.patch.assistant.view.home;
 
 import cn.cpoet.patch.assistant.control.tree.node.VirtualNode;
 import cn.cpoet.patch.assistant.core.Configuration;

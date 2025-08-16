@@ -1,4 +1,4 @@
-package cn.cpoet.patch.assistant.control;
+package cn.cpoet.patch.assistant.control.form;
 
 import cn.cpoet.patch.assistant.util.StringUtil;
 
