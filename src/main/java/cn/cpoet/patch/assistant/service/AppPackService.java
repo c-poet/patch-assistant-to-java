@@ -1,21 +1,20 @@
 package cn.cpoet.patch.assistant.service;
 
 import cn.cpoet.patch.assistant.constant.AppConst;
+import cn.cpoet.patch.assistant.constant.CharsetConst;
 import cn.cpoet.patch.assistant.constant.JarInfoConst;
-import cn.cpoet.patch.assistant.core.AppContext;
+import cn.cpoet.patch.assistant.control.tree.AppTreeInfo;
+import cn.cpoet.patch.assistant.control.tree.TreeNodeType;
+import cn.cpoet.patch.assistant.control.tree.node.FileNode;
+import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.exception.AppException;
 import cn.cpoet.patch.assistant.model.AppPackSign;
 import cn.cpoet.patch.assistant.util.CollectionUtil;
 import cn.cpoet.patch.assistant.util.HashUtil;
-import cn.cpoet.patch.assistant.view.HomeContext;
-import cn.cpoet.patch.assistant.view.ProgressContext;
-import cn.cpoet.patch.assistant.view.tree.AppTreeInfo;
-import cn.cpoet.patch.assistant.view.tree.FileNode;
-import cn.cpoet.patch.assistant.view.tree.TreeNode;
-import cn.cpoet.patch.assistant.view.tree.TreeNodeType;
+import cn.cpoet.patch.assistant.view.home.HomeContext;
+import cn.cpoet.patch.assistant.view.progress.ProgressContext;
 
 import java.io.*;
-import java.nio.charset.Charset;
 import java.util.Iterator;
 import java.util.zip.ZipInputStream;
 
@@ -26,9 +25,7 @@ import java.util.zip.ZipInputStream;
  */
 public class AppPackService extends BasePackService {
 
-    public static AppPackService getInstance() {
-        return AppContext.getInstance().getService(AppPackService.class);
-    }
+    public static final AppPackService INSTANCE = new AppPackService();
 
     /**
      * 获取树形节点
@@ -64,7 +61,7 @@ public class AppPackService extends BasePackService {
     }
 
     private void getTreeNode(InputStream in, TreeNode rootNode) {
-        try (ZipInputStream zin = new ZipInputStream(in, Charset.forName("GBK"))) {
+        try (ZipInputStream zin = new ZipInputStream(in, CharsetConst.GBK)) {
             doReadZipEntry(rootNode, zin, false);
         } catch (Exception ex) {
             throw new AppException("读取应用包失败", ex);

@@ -18,7 +18,7 @@ import java.util.regex.Pattern;
  *
  * @author CPoet
  */
-public class AppContext extends ServiceFactory {
+public class AppContext {
 
     private static AppContext INSTANCE;
 
@@ -139,7 +139,6 @@ public class AppContext extends ServiceFactory {
     }
 
     public void destroy() {
-        super.destroy();
         this.syncConf2File();
     }
 

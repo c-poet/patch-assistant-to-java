@@ -1,17 +1,18 @@
 package cn.cpoet.patch.assistant.service;
 
+import cn.cpoet.patch.assistant.constant.CharsetConst;
 import cn.cpoet.patch.assistant.constant.FileExtConst;
 import cn.cpoet.patch.assistant.constant.JarInfoConst;
 import cn.cpoet.patch.assistant.exception.AppException;
 import cn.cpoet.patch.assistant.util.CollectionUtil;
 import cn.cpoet.patch.assistant.util.FileNameUtil;
+import cn.cpoet.patch.assistant.util.HashUtil;
 import cn.cpoet.patch.assistant.util.StringUtil;
-import cn.cpoet.patch.assistant.view.tree.TreeNode;
-import cn.cpoet.patch.assistant.view.tree.ZipEntryNode;
+import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
+import cn.cpoet.patch.assistant.control.tree.node.ZipEntryNode;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -30,7 +31,7 @@ public abstract class BasePackService {
             return false;
         }
         try (ByteArrayInputStream in = new ByteArrayInputStream(rootNode.getBytes());
-             ZipInputStream zin = new ZipInputStream(in, Charset.forName("GBK"))) {
+             ZipInputStream zin = new ZipInputStream(in, CharsetConst.GBK)) {
             doReadZipEntry(rootNode, zin, isPatch);
             return true;
         } catch (IOException ex) {
@@ -48,6 +49,15 @@ public abstract class BasePackService {
         if (CollectionUtil.isNotEmpty(parentNode.getChildren())) {
             handleInnerClass(parentNode.getChildren(), innerClasses);
         }
+    }
+
+    protected void creteNodeTempFile(TreeNode node, byte[] bytes) {
+
+    }
+
+    protected void createNodeTempFileAndHash(TreeNode node, byte[] bytes) {
+        node.setMd5(HashUtil.md5(bytes));
+        creteNodeTempFile(node, bytes);
     }
 
     /**
@@ -107,7 +117,7 @@ public abstract class BasePackService {
             zipEntryNode.setPatch(isPatch);
             if (!zipEntry.isDirectory()) {
                 zipEntryNode.setSize(zipEntry.getSize());
-                zipEntryNode.setBytes(zin.readAllBytes());
+                createNodeTempFileAndHash(zipEntryNode, zin.readAllBytes());
                 if (zipEntryNode.getName().endsWith(FileExtConst.DOT_CLASS)) {
                     if (zipEntryNode.getName().indexOf('$') != -1) {
                         innerClasses.add(zipEntryNode);

@@ -1,7 +1,11 @@
 package cn.cpoet.patch.assistant.view.content;
 
 import cn.cpoet.patch.assistant.util.FileNameUtil;
-import cn.cpoet.patch.assistant.view.tree.TreeNode;
+import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
+import cn.cpoet.patch.assistant.view.content.facotry.*;
+import cn.cpoet.patch.assistant.view.content.parser.ClassContentParser;
+import cn.cpoet.patch.assistant.view.content.parser.ContentParser;
+import cn.cpoet.patch.assistant.view.content.parser.TextContentParser;
 
 /**
  * @author CPoet

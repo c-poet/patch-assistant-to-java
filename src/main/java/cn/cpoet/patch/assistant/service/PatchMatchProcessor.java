@@ -1,11 +1,11 @@
 package cn.cpoet.patch.assistant.service;
 
 import cn.cpoet.patch.assistant.constant.FileExtConst;
+import cn.cpoet.patch.assistant.control.tree.TotalInfo;
+import cn.cpoet.patch.assistant.control.tree.TreeNodeType;
+import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.util.CollectionUtil;
 import cn.cpoet.patch.assistant.util.TreeNodeUtil;
-import cn.cpoet.patch.assistant.view.tree.TotalInfo;
-import cn.cpoet.patch.assistant.view.tree.TreeNode;
-import cn.cpoet.patch.assistant.view.tree.TreeNodeType;
 
 import java.util.Collections;
 import java.util.List;
@@ -44,10 +44,7 @@ public class PatchMatchProcessor {
      */
     private TreeNode patchRootNode;
 
-    private final PatchPackService patchPackService;
-
     public PatchMatchProcessor(TotalInfo totalInfo, boolean isWithPath, boolean isWithName) {
-        this.patchPackService = PatchPackService.getInstance();
         this.totalInfo = totalInfo;
         this.isWithPath = isWithPath;
         this.isWithName = isWithName;
@@ -101,7 +98,7 @@ public class PatchMatchProcessor {
     }
 
     private boolean matchWithPath(TreeNode appNode, TreeNode patchNode, Map<String, TreeNode> nameMapping) {
-        if (!patchPackService.matchPatchName(appNode, patchNode)) {
+        if (!PatchPackService.INSTANCE.matchPatchName(appNode, patchNode)) {
             return false;
         }
         if (appNode.isDir()) {
@@ -114,7 +111,7 @@ public class PatchMatchProcessor {
             List<TreeNode> oldChildren = appNode.getChildren();
             if (CollectionUtil.isEmpty(oldChildren)) {
                 appNode.setChildren(null);
-                if (patchPackService.buildNodeChildrenWithZip(appNode, false)
+                if (PatchPackService.INSTANCE.buildNodeChildrenWithZip(appNode, false)
                         && match(appNode.getChildren(), patchNode.getChildren(), nameMapping)) {
                     return true;
                 }
@@ -123,7 +120,7 @@ public class PatchMatchProcessor {
             appNode.setChildren(oldChildren);
         }
         TreeNodeUtil.mappedNode(totalInfo, appNode, patchNode, TreeNodeType.MOD);
-        patchPackService.mappedInnerClassNode(totalInfo, appNode, patchNode);
+        PatchPackService.INSTANCE.mappedInnerClassNode(totalInfo, appNode, patchNode);
         return true;
     }
 
@@ -134,7 +131,7 @@ public class PatchMatchProcessor {
         TreeNode patchNode = nameMapping.remove(appNode.getName());
         if (patchNode != null) {
             TreeNodeUtil.mappedNode(totalInfo, appNode, patchNode, TreeNodeType.MOD);
-            patchPackService.mappedInnerClassNode(totalInfo, appNode, patchNode);
+            PatchPackService.INSTANCE.mappedInnerClassNode(totalInfo, appNode, patchNode);
             return true;
         }
         return false;

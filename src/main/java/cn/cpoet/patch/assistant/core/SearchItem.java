@@ -1,7 +1,5 @@
 package cn.cpoet.patch.assistant.core;
 
-import cn.cpoet.patch.assistant.view.tree.TreeNode;
-
 import java.util.Objects;
 
 /**

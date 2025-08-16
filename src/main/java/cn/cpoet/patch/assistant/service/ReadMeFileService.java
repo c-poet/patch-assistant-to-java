@@ -1,11 +1,10 @@
 package cn.cpoet.patch.assistant.service;
 
-import cn.cpoet.patch.assistant.core.AppContext;
+import cn.cpoet.patch.assistant.control.tree.PatchRootInfo;
+import cn.cpoet.patch.assistant.control.tree.PatchTreeInfo;
+import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.model.PatchSign;
 import cn.cpoet.patch.assistant.util.StringUtil;
-import cn.cpoet.patch.assistant.view.tree.PatchRootInfo;
-import cn.cpoet.patch.assistant.view.tree.PatchTreeInfo;
-import cn.cpoet.patch.assistant.view.tree.TreeNode;
 
 import java.io.BufferedReader;
 import java.io.StringReader;
@@ -24,9 +23,7 @@ public class ReadMeFileService {
 
     private final Pattern pattern = Pattern.compile("([!+-]?)([a-zA-Z-/.0-9]+)\\s+([a-zA-Z-/.0-9]+)(\\s+([a-zA-Z-/.0-9]*))?");
 
-    public static ReadMeFileService getInstance() {
-        return AppContext.getInstance().getService(ReadMeFileService.class);
-    }
+    public final static ReadMeFileService INSTANCE = new ReadMeFileService();
 
     /**
      * 获取补丁文件的路径信息

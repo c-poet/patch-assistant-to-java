@@ -1,8 +1,8 @@
 package cn.cpoet.patch.assistant.component;
 
+import cn.cpoet.patch.assistant.control.tree.node.VirtualNode;
 import cn.cpoet.patch.assistant.core.Configuration;
-import cn.cpoet.patch.assistant.view.tree.TreeNode;
-import cn.cpoet.patch.assistant.view.tree.VirtualTreeNode;
+import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 
 import java.util.function.Predicate;
 
@@ -20,6 +20,6 @@ public class OnlyChangeFilter implements Predicate<TreeNode> {
         if (!Boolean.TRUE.equals(Configuration.getInstance().getIsOnlyChanges())) {
             return true;
         }
-        return node.getMappedNode() != null || node instanceof VirtualTreeNode;
+        return node.getMappedNode() != null || node instanceof VirtualNode;
     }
 }

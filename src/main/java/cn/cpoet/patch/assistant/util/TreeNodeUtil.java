@@ -1,8 +1,14 @@
 package cn.cpoet.patch.assistant.util;
 
-import cn.cpoet.patch.assistant.view.tree.*;
+import cn.cpoet.patch.assistant.control.tree.FileTreeItem;
+import cn.cpoet.patch.assistant.control.tree.TotalInfo;
+import cn.cpoet.patch.assistant.control.tree.TreeNodeType;
+import cn.cpoet.patch.assistant.control.tree.node.MappedNode;
+import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
+import cn.cpoet.patch.assistant.control.tree.node.VirtualNode;
 import javafx.scene.control.TreeItem;
 
+import java.io.File;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -74,7 +80,7 @@ public abstract class TreeNodeUtil {
         }
         node.setType(TreeNodeType.NONE);
         node.setMappedNode(null);
-        if (!node.isPatch() && (node instanceof VirtualTreeNode || node instanceof VirtualMappedNode)) {
+        if (!node.isPatch() && (node instanceof VirtualNode || node instanceof MappedNode)) {
             removeNodeChild(node);
         }
     }
@@ -325,5 +331,21 @@ public abstract class TreeNodeUtil {
             parent = parent.getParent();
         }
         return true;
+    }
+
+    /**
+     * 读取节点相关的文件内容并设置hash值
+     *
+     * @param node 节点
+     * @param file 文件
+     * @return 节点内容
+     */
+    public static byte[] readNodeFile(TreeNode node, File file) {
+        byte[] data = FileUtil.readFile(file);
+        node.setSize(data.length);
+        if (node.getMd5() == null) {
+            node.setMd5(HashUtil.md5(data));
+        }
+        return data;
     }
 }

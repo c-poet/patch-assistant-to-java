@@ -1,17 +1,20 @@
 package cn.cpoet.patch.assistant.service;
 
 import cn.cpoet.patch.assistant.constant.AppConst;
+import cn.cpoet.patch.assistant.constant.CharsetConst;
 import cn.cpoet.patch.assistant.constant.FileExtConst;
-import cn.cpoet.patch.assistant.core.AppContext;
+import cn.cpoet.patch.assistant.control.tree.*;
+import cn.cpoet.patch.assistant.control.tree.node.FileNode;
+import cn.cpoet.patch.assistant.control.tree.node.MappedNode;
+import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
+import cn.cpoet.patch.assistant.control.tree.node.VirtualNode;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.core.PatchConf;
 import cn.cpoet.patch.assistant.exception.AppException;
 import cn.cpoet.patch.assistant.model.PatchSign;
 import cn.cpoet.patch.assistant.util.*;
-import cn.cpoet.patch.assistant.view.tree.*;
 
 import java.io.*;
-import java.nio.charset.Charset;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
@@ -26,9 +29,7 @@ import java.util.zip.ZipInputStream;
  */
 public class PatchPackService extends BasePackService {
 
-    public static PatchPackService getInstance() {
-        return AppContext.getInstance().getService(PatchPackService.class);
-    }
+    public static final PatchPackService INSTANCE = new PatchPackService();
 
     /**
      * 更新根节点信息
@@ -117,7 +118,7 @@ public class PatchPackService extends BasePackService {
     }
 
     private void refreshMappedNodeWithReadme(TotalInfo totalInfo, AppTreeInfo appTreeInfo, PatchTreeInfo patchTreeInfo, TreeNode treeNode) {
-        List<ReadMePathInfo> pathInfos = ReadMeFileService.getInstance().getPathInfos(patchTreeInfo, treeNode);
+        List<ReadMePathInfo> pathInfos = ReadMeFileService.INSTANCE.getPathInfos(patchTreeInfo, treeNode);
         if (CollectionUtil.isEmpty(pathInfos)) {
             return;
         }
@@ -166,14 +167,14 @@ public class PatchPackService extends BasePackService {
         TreeNode newAppNode = null;
         while (index < paths.length) {
             if (index + 1 == paths.length) {
-                newAppNode = new VirtualMappedNode(patchNode);
+                newAppNode = new MappedNode(patchNode);
             } else {
-                VirtualTreeNode virtualTreeNode = new VirtualTreeNode();
-                virtualTreeNode.setName(paths[index]);
-                virtualTreeNode.setText(paths[index]);
-                virtualTreeNode.setDir(true);
-                virtualTreeNode.setModifyTime(now);
-                newAppNode = virtualTreeNode;
+                VirtualNode virtualNode = new VirtualNode();
+                virtualNode.setName(paths[index]);
+                virtualNode.setText(paths[index]);
+                virtualNode.setDir(true);
+                virtualNode.setModifyTime(now);
+                newAppNode = virtualNode;
             }
             newAppNode.setParent(parent);
             newAppNode.setPath(sb.append(paths[index]).toString());
@@ -198,14 +199,14 @@ public class PatchPackService extends BasePackService {
             TreeNode childAppNode = childAppNodeMap.get(childPatchNode.getName());
             if (childAppNode == null) {
                 if (!childPatchNode.isDir()) {
-                    childAppNode = new VirtualMappedNode(childPatchNode);
+                    childAppNode = new MappedNode(childPatchNode);
                 } else {
-                    VirtualTreeNode virtualTreeNode = new VirtualTreeNode();
-                    virtualTreeNode.setName(childPatchNode.getName());
-                    virtualTreeNode.setText(childPatchNode.getText());
-                    virtualTreeNode.setDir(true);
-                    virtualTreeNode.setModifyTime(childPatchNode.getModifyTime());
-                    childAppNode = virtualTreeNode;
+                    VirtualNode virtualNode = new VirtualNode();
+                    virtualNode.setName(childPatchNode.getName());
+                    virtualNode.setText(childPatchNode.getText());
+                    virtualNode.setDir(true);
+                    virtualNode.setModifyTime(childPatchNode.getModifyTime());
+                    childAppNode = virtualNode;
                 }
                 childAppNode.setParent(appNode);
                 childAppNode.setPath(FileNameUtil.joinPath(appNode.getPath(), childAppNode.getName()));
@@ -284,7 +285,7 @@ public class PatchPackService extends BasePackService {
         for (TreeNode patchInnerNode : patchNode.getChildren()) {
             TreeNode appInnerNode = innerNodeMap.get(patchInnerNode.getName());
             if (appInnerNode == null) {
-                appInnerNode = new VirtualMappedNode(patchInnerNode);
+                appInnerNode = new MappedNode(patchInnerNode);
                 appInnerNode.setParent(appNode);
                 appInnerNode.setPath(FileNameUtil.joinPath(FileNameUtil.getDirPath(appNode.getPath()), patchInnerNode.getName()));
                 appNode.getAndInitChildren().add(appInnerNode);
@@ -401,7 +402,7 @@ public class PatchPackService extends BasePackService {
     }
 
     private void doGetTreeNodeWithZip(InputStream in, TreeNode rootNode) {
-        try (ZipInputStream zin = new ZipInputStream(in, Charset.forName("GBK"))) {
+        try (ZipInputStream zin = new ZipInputStream(in, CharsetConst.GBK)) {
             doReadZipEntry(rootNode, zin, true);
         } catch (IOException ex) {
             throw new AppException("读取补丁压缩包失败", ex);
