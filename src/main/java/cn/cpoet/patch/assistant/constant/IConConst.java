@@ -33,6 +33,11 @@ public interface IConConst {
     String FILE_ZIP = "/icons/file-zip.png";
 
     /**
+     * 文件-Rar
+     */
+    String FILE_RAR = "/icons/file-rar.png";
+
+    /**
      * 文件-类
      */
     String FILE_CLASS = "/icons/file-class.png";
@@ -96,4 +101,5 @@ public interface IConConst {
      * 搜索
      */
     String SEARCH = "/icons/search.png";
+
 }

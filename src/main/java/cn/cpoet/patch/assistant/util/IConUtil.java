@@ -5,6 +5,8 @@ import cn.cpoet.patch.assistant.constant.IConConst;
 import javafx.scene.image.Image;
 
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Function;
 
 /**
@@ -13,6 +15,9 @@ import java.util.function.Function;
  * @author CPoet
  */
 public abstract class IConUtil {
+
+    private static final Map<String, Image> IMAGE_CACHE = new HashMap<>();
+
     private IConUtil() {
     }
 
@@ -25,7 +30,16 @@ public abstract class IConUtil {
      */
     public static Image loadIconByFileExt(String name, Function<InputStream, Image> imgFactory) {
         String path = getPathByFileExt(name);
-        return path == null ? null : ImageUtil.loadImage(path, imgFactory);
+        if (StringUtil.isEmpty(path)) {
+            return null;
+        }
+        Image image = IMAGE_CACHE.get(path);
+        if (image != null) {
+            return image;
+        }
+        image = ImageUtil.loadImage(path, imgFactory);
+        IMAGE_CACHE.put(path, image);
+        return image;
     }
 
     /**
@@ -41,6 +55,8 @@ public abstract class IConUtil {
             return IConConst.FILE_ZIP;
         } else if (name.endsWith(FileExtConst.DOT_CLASS)) {
             return IConConst.FILE_CLASS;
+        } else if (name.endsWith(FileExtConst.DOT_RAR)) {
+            return IConConst.FILE_RAR;
         } else if (name.endsWith(".js")) {
             return IConConst.FILE_JS;
         } else if (name.endsWith(".html")) {
