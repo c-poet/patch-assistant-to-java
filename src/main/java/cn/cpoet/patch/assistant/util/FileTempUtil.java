@@ -87,7 +87,19 @@ public abstract class FileTempUtil {
      * @return 写入的文件
      */
     public static File writeFile2TempDir(Path path, String name, byte[] bytes) {
-        File file = new File(path.toFile(), name);
+        return writeFile2TempDir(path.toFile(), name, bytes);
+    }
+
+    /**
+     * 写入文件到目录中
+     *
+     * @param dir   临时目录路径
+     * @param name  文件名称
+     * @param bytes 文件数据
+     * @return 写入的文件
+     */
+    public static File writeFile2TempDir(File dir, String name, byte[] bytes) {
+        File file = new File(dir, name);
         FileUtil.writeFile(file, bytes);
         return file;
     }
@@ -103,7 +115,7 @@ public abstract class FileTempUtil {
         try {
             return Files.createTempDirectory(prefix, attrs);
         } catch (Exception e) {
-            throw new AppException("临时目录创建失败", e);
+            throw new AppException("Failed to create temporary directory", e);
         }
     }
 
@@ -127,7 +139,26 @@ public abstract class FileTempUtil {
      */
     public static void deleteTempFile(File file) {
         if (!FileUtil.deleteFile(file) && file.exists()) {
-            throw new AppException("删除临时文件失败");
+            throw new AppException("Failed to delete temporary file");
         }
+    }
+
+    /**
+     * 删除所有临时文件
+     *
+     * @param file 文件
+     */
+    public static void deleteAllTempFile(File file) {
+        if (file.isFile() && file.exists()) {
+            deleteTempFile(file);
+            return;
+        }
+        File[] files = file.listFiles();
+        if (files != null) {
+            for (File childFile : files) {
+                deleteAllTempFile(childFile);
+            }
+        }
+        deleteTempFile(file);
     }
 }

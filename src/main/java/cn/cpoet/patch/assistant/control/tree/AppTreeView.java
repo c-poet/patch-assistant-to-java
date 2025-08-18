@@ -31,6 +31,7 @@ public class AppTreeView extends CustomTreeView<AppTreeInfo> {
 
     public AppTreeView() {
         super();
-        setEditable(true);
+        // TODO BY CPoet 存在缺陷，优化中
+        setEditable(false);
     }
 }

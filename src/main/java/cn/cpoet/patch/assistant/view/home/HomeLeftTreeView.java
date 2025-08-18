@@ -166,7 +166,7 @@ public class HomeLeftTreeView extends HomeTreeView {
             if (selectedItem != null) {
                 TreeNode selectedTreeNode = selectedItem.getValue();
                 if (selectedTreeNode.getText().endsWith(FileExtConst.DOT_JAR)) {
-                    if (AppPackService.INSTANCE.buildNodeChildrenWithZip(selectedTreeNode, false)) {
+                    if (AppPackService.INSTANCE.buildChildrenWithCompress(selectedTreeNode, false)) {
                         TreeNodeUtil.buildNodeChildren(selectedItem, selectedTreeNode, OnlyChangeFilter.INSTANCE);
                     }
                 } else {

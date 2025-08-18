@@ -7,6 +7,7 @@ import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.core.AppContext;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.service.PatchPackService;
+import cn.cpoet.patch.assistant.service.compress.FileCompressor;
 import cn.cpoet.patch.assistant.util.*;
 import cn.cpoet.patch.assistant.view.node_mapped.NodeMappedView;
 import cn.cpoet.patch.assistant.view.patch_sign.PatchSignView;
@@ -97,7 +98,7 @@ public class HomeRightTreeView extends HomeTreeView {
             cancelMappedMenuItem.setVisible(selectedNode.getMappedNode() != null);
             if (!TreeNodeType.ROOT.equals(selectedNode.getType())
                     && CollectionUtil.isNotEmpty(selectedNode.getChildren())
-                    && (selectedNode.isDir() || selectedNode.getName().endsWith(FileExtConst.DOT_ZIP))
+                    && (selectedNode.isDir() || TreeNodeUtil.isCompressNode(selectedNode))
                     && TreeNodeUtil.isNotUnderCustomRoot(selectedNode)) {
                 markRootMenuItem.setVisible(true);
                 if (TreeNodeType.CUSTOM_ROOT.equals(selectedNode.getType())) {
@@ -202,8 +203,7 @@ public class HomeRightTreeView extends HomeTreeView {
             return;
         }
         List<File> files = event.getDragboard().getFiles();
-        if (files.size() == 1 && (files.get(0).isDirectory() ||
-                files.get(0).getName().endsWith(FileExtConst.DOT_ZIP))) {
+        if (files.size() == 1 && (files.get(0).isDirectory() || FileCompressor.isCompressFile(files.get(0).getName()))) {
             event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
         }
         event.consume();
@@ -237,8 +237,8 @@ public class HomeRightTreeView extends HomeTreeView {
             TreeItem<TreeNode> selectedItem = patchTree.getSelectionModel().getSelectedItem();
             if (selectedItem != null) {
                 TreeNode selectedTreeNode = selectedItem.getValue();
-                if (selectedTreeNode.getText().endsWith(FileExtConst.DOT_ZIP)) {
-                    if (PatchPackService.INSTANCE.buildNodeChildrenWithZip(selectedTreeNode, true)) {
+                if (TreeNodeUtil.isCompressNode(selectedTreeNode)) {
+                    if (PatchPackService.INSTANCE.buildChildrenWithCompress(selectedTreeNode, true)) {
                         TreeNodeUtil.buildNodeChildren(selectedItem, selectedTreeNode);
                     }
                 } else {

@@ -157,6 +157,7 @@ public abstract class FileUtil {
     public static void writeFile(File file, byte[] bytes) {
         try (OutputStream out = new FileOutputStream(file)) {
             out.write(bytes);
+            out.flush();
         } catch (Exception e) {
             throw new AppException("写入文件失败", e);
         }

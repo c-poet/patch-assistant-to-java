@@ -3,6 +3,7 @@ package cn.cpoet.patch.assistant.control.tree;
 import cn.cpoet.patch.assistant.constant.AppConst;
 import cn.cpoet.patch.assistant.constant.IConConst;
 import cn.cpoet.patch.assistant.constant.StyleConst;
+import cn.cpoet.patch.assistant.core.AppContext;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.util.*;
 import cn.cpoet.patch.assistant.view.home.HomeContext;
@@ -28,7 +29,6 @@ import java.util.stream.Collectors;
  */
 public class FileTreeCell extends TreeCell<TreeNode> {
 
-    public final static String COPY_FILE_DIR = AppConst.APP_NAME + ".cell-drag";
     public final static ThreadLocal<FileTreeCellDragInfo> DRAG_INFO_TL = new ThreadLocal<>();
 
     protected HBox box;
@@ -62,13 +62,15 @@ public class FileTreeCell extends TreeCell<TreeNode> {
                 .collect(Collectors.toList());
         dragInfo.setTreeNodes(patchNodes);
         List<File> files = patchNodes.stream().map(patchNode -> {
+            File tempDir = AppContext.getInstance().getTempDir();
             if (patchNode.isDir()) {
-                File file = FileTempUtil.createTempDir(COPY_FILE_DIR, patchNode.getName());
+                File file = FileUtil.mkdir(tempDir, FileNameUtil.uniqueFileName(patchNode.getName()));
                 updateCellDragInfo(dragInfo, patchNode, file);
                 deepWriteFile2Path(file, patchNode, dragInfo);
                 return file;
             }
-            File file = FileTempUtil.writeFile2TempDir(COPY_FILE_DIR, patchNode.getName(), patchNode.getBytes());
+            File file = new File(tempDir, FileNameUtil.uniqueFileName(patchNode.getName()));
+            FileUtil.writeFile(file, patchNode.getBytes());
             updateCellDragInfo(dragInfo, patchNode, file);
             return file;
         }).collect(Collectors.toList());

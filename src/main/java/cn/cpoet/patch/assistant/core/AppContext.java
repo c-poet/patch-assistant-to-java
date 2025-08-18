@@ -3,10 +3,12 @@ package cn.cpoet.patch.assistant.core;
 import cn.cpoet.patch.assistant.constant.AppConst;
 import cn.cpoet.patch.assistant.constant.ThemeEnum;
 import cn.cpoet.patch.assistant.exception.AppException;
+import cn.cpoet.patch.assistant.util.FileTempUtil;
 import cn.cpoet.patch.assistant.util.FileUtil;
 import cn.cpoet.patch.assistant.util.XMLUtil;
 import javafx.scene.Scene;
 
+import java.io.File;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,6 +25,10 @@ public class AppContext {
     private static AppContext INSTANCE;
 
     private Scene mainScene;
+    /**
+     * 全局缓存目录
+     */
+    private File globalTempDir;
     /**
      * 启动参数，一次性解析不考虑线程安全问题
      */
@@ -138,8 +144,23 @@ public class AppContext {
         }
     }
 
+    public File getTempDir() {
+        if (globalTempDir != null && globalTempDir.exists()) {
+            return globalTempDir;
+        }
+        synchronized (AppContext.class) {
+            if (globalTempDir == null) {
+                globalTempDir = FileTempUtil.createTempDir(AppConst.APP_NAME).toFile();
+            }
+        }
+        return globalTempDir;
+    }
+
     public void destroy() {
         this.syncConf2File();
+        if (globalTempDir != null && globalTempDir.exists()) {
+            FileTempUtil.deleteAllTempFile(globalTempDir);
+        }
     }
 
     public static AppContext getInstance() {

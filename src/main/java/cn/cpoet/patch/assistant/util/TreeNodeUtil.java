@@ -6,6 +6,7 @@ import cn.cpoet.patch.assistant.control.tree.TreeNodeType;
 import cn.cpoet.patch.assistant.control.tree.node.MappedNode;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.control.tree.node.VirtualNode;
+import cn.cpoet.patch.assistant.service.compress.FileCompressor;
 import javafx.scene.control.TreeItem;
 
 import java.io.File;
@@ -219,19 +220,7 @@ public abstract class TreeNodeUtil {
      * @param filter 过滤器
      */
     public static void buildChildNode(TreeItem<TreeNode> parent, int index, TreeNode node, Predicate<TreeNode> filter) {
-        if (node.getChildren() != null && node.isDir() && node.getChildren().size() == 1) {
-            StringBuilder sb = new StringBuilder();
-            do {
-                if (sb.length() > 0) {
-                    sb.append(FileNameUtil.SEPARATOR);
-                }
-                sb.append(node.getName());
-                node = node.getChildren().get(0);
-            } while (node.getChildren() != null && node.isDir() && node.getChildren().size() == 1);
-            node.setText(sb.append(FileNameUtil.SEPARATOR).append(node.getName()).toString());
-        } else {
-            node.setText(node.getName());
-        }
+        node.setText(node.getName());
         TreeItem<TreeNode> childItem = new FileTreeItem();
         bindTreeNodeAndItem(node, childItem);
         if (node.getChildren() != null && !node.getChildren().isEmpty()) {
@@ -331,6 +320,16 @@ public abstract class TreeNodeUtil {
             parent = parent.getParent();
         }
         return true;
+    }
+
+    /**
+     * 判断是否是压缩文件节点
+     *
+     * @param treeNode 节点
+     * @return 是否是压缩文件节点
+     */
+    public static boolean isCompressNode(TreeNode treeNode) {
+        return FileCompressor.isCompressFile(treeNode.getName());
     }
 
     /**

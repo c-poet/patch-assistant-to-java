@@ -1,23 +1,23 @@
 package cn.cpoet.patch.assistant.service;
 
-import cn.cpoet.patch.assistant.constant.CharsetConst;
 import cn.cpoet.patch.assistant.constant.FileExtConst;
 import cn.cpoet.patch.assistant.constant.JarInfoConst;
+import cn.cpoet.patch.assistant.control.tree.node.CompressNode;
+import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.exception.AppException;
+import cn.cpoet.patch.assistant.service.compress.FileCompressor;
+import cn.cpoet.patch.assistant.service.compress.CompressNodeFactory;
 import cn.cpoet.patch.assistant.util.CollectionUtil;
 import cn.cpoet.patch.assistant.util.FileNameUtil;
-import cn.cpoet.patch.assistant.util.HashUtil;
 import cn.cpoet.patch.assistant.util.StringUtil;
-import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
-import cn.cpoet.patch.assistant.control.tree.node.ZipEntryNode;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 /**
  * 压缩包处理基类
@@ -25,19 +25,6 @@ import java.util.zip.ZipInputStream;
  * @author CPoet
  */
 public abstract class BasePackService {
-
-    public boolean buildNodeChildrenWithZip(TreeNode rootNode, boolean isPatch) {
-        if (rootNode.getChildren() != null) {
-            return false;
-        }
-        try (ByteArrayInputStream in = new ByteArrayInputStream(rootNode.getBytes());
-             ZipInputStream zin = new ZipInputStream(in, CharsetConst.GBK)) {
-            doReadZipEntry(rootNode, zin, isPatch);
-            return true;
-        } catch (IOException ex) {
-            throw new AppException("读取压缩文件失败", ex);
-        }
-    }
 
     /**
      * 处理内部类
@@ -49,15 +36,6 @@ public abstract class BasePackService {
         if (CollectionUtil.isNotEmpty(parentNode.getChildren())) {
             handleInnerClass(parentNode.getChildren(), innerClasses);
         }
-    }
-
-    protected void creteNodeTempFile(TreeNode node, byte[] bytes) {
-
-    }
-
-    protected void createNodeTempFileAndHash(TreeNode node, byte[] bytes) {
-        node.setMd5(HashUtil.md5(bytes));
-        creteNodeTempFile(node, bytes);
     }
 
     /**
@@ -102,53 +80,59 @@ public abstract class BasePackService {
         }
     }
 
-    public void doReadZipEntry(TreeNode rootNode, ZipInputStream zin, boolean isPatch) throws IOException {
-        ZipEntry zipEntry;
-        TreeNode manifestNode = null;
+    public boolean buildChildrenWithCompress(TreeNode rootNode, boolean isPatch) {
+        if (rootNode.getChildren() != null) {
+            return false;
+        }
+        try (ByteArrayInputStream in = new ByteArrayInputStream(rootNode.getBytes())) {
+            buildChildrenWithCompress(rootNode, in, isPatch);
+            return true;
+        } catch (IOException ex) {
+            throw new AppException("Failed to read compressed file", ex);
+        }
+    }
+
+    public void buildChildrenWithCompress(TreeNode rootNode, InputStream in, boolean isPatch) throws IOException {
         List<TreeNode> classes = new ArrayList<>();
         List<TreeNode> innerClasses = new ArrayList<>();
         Map<String, TreeNode> treeNodeMap = new HashMap<>();
-        while ((zipEntry = zin.getNextEntry()) != null) {
-            ZipEntryNode zipEntryNode = new ZipEntryNode();
-            zipEntryNode.setName(FileNameUtil.getFileName(zipEntry.getName()));
-            zipEntryNode.setText(zipEntryNode.getName());
-            zipEntryNode.setPath(zipEntry.getName());
-            zipEntryNode.setEntry(zipEntry);
-            zipEntryNode.setPatch(isPatch);
-            if (!zipEntry.isDirectory()) {
-                zipEntryNode.setSize(zipEntry.getSize());
-                createNodeTempFileAndHash(zipEntryNode, zin.readAllBytes());
-                if (zipEntryNode.getName().endsWith(FileExtConst.DOT_CLASS)) {
-                    if (zipEntryNode.getName().indexOf('$') != -1) {
-                        innerClasses.add(zipEntryNode);
-                        continue;
+        AtomicReference<TreeNode> manifestNodeRef = new AtomicReference<>();
+        FileCompressor fileCompressor = FileCompressor.getInstance(rootNode.getName());
+        fileCompressor.decompress(in, (entry, bytes) -> {
+            CompressNode node = CompressNodeFactory.getInstance(entry).create(entry, bytes);
+            node.setPatch(isPatch);
+            if (!node.isDir()) {
+                if (node.getName().endsWith(FileExtConst.DOT_CLASS)) {
+                    if (node.getName().indexOf('$') != -1) {
+                        innerClasses.add(node);
+                        return;
                     } else {
-                        classes.add(zipEntryNode);
+                        classes.add(node);
                     }
                 }
             }
-            TreeNode parentNode = treeNodeMap.getOrDefault(FileNameUtil.getDirPath(zipEntry.getName()), rootNode);
-            if (JarInfoConst.MANIFEST_PATH.equals(zipEntry.getName())) {
+            TreeNode parentNode = treeNodeMap.getOrDefault(FileNameUtil.getDirPath(node.getPath()), rootNode);
+            if (JarInfoConst.MANIFEST_PATH.equals(node.getName())) {
                 if (parentNode != rootNode) {
-                    zipEntryNode.setParent(parentNode);
-                    parentNode.getAndInitChildren().add(zipEntryNode);
+                    node.setParent(parentNode);
+                    parentNode.getAndInitChildren().add(node);
                 } else {
-                    manifestNode = zipEntryNode;
+                    manifestNodeRef.set(node);
                 }
-                continue;
+                return;
             }
-            if (JarInfoConst.META_INFO_DIR.equals(zipEntry.getName())) {
-                if (manifestNode != null) {
-                    manifestNode.setParent(zipEntryNode);
-                    zipEntryNode.getAndInitChildren().add(manifestNode);
+            if (JarInfoConst.META_INFO_DIR.equals(node.getName())) {
+                if (manifestNodeRef.get() != null) {
+                    manifestNodeRef.get().setParent(node);
+                    node.getAndInitChildren().add(manifestNodeRef.get());
                 }
             }
-            zipEntryNode.setParent(parentNode);
-            parentNode.getAndInitChildren().add(zipEntryNode);
-            if (zipEntry.isDirectory()) {
-                treeNodeMap.put(zipEntry.getName().substring(0, zipEntry.getName().length() - 1), zipEntryNode);
+            node.setParent(parentNode);
+            parentNode.getAndInitChildren().add(node);
+            if (node.isDir()) {
+                treeNodeMap.put(FileNameUtil.unPerfectDirPath(node.getPath()), node);
             }
-        }
+        });
         if (CollectionUtil.isNotEmpty(classes) && CollectionUtil.isNotEmpty(innerClasses)) {
             handleInnerClass(classes, innerClasses);
         }

@@ -1,4 +1,4 @@
-package cn.cpoet.patch.assistant.service;
+package cn.cpoet.patch.assistant.model;
 
 /**
  * Readme填写的路径信息

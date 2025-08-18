@@ -1,7 +1,6 @@
 package cn.cpoet.patch.assistant.service;
 
 import cn.cpoet.patch.assistant.constant.AppConst;
-import cn.cpoet.patch.assistant.constant.CharsetConst;
 import cn.cpoet.patch.assistant.constant.JarInfoConst;
 import cn.cpoet.patch.assistant.control.tree.AppTreeInfo;
 import cn.cpoet.patch.assistant.control.tree.TreeNodeType;
@@ -16,7 +15,6 @@ import cn.cpoet.patch.assistant.view.progress.ProgressContext;
 
 import java.io.*;
 import java.util.Iterator;
-import java.util.zip.ZipInputStream;
 
 /**
  * 应用包处理
@@ -61,10 +59,10 @@ public class AppPackService extends BasePackService {
     }
 
     private void getTreeNode(InputStream in, TreeNode rootNode) {
-        try (ZipInputStream zin = new ZipInputStream(in, CharsetConst.GBK)) {
-            doReadZipEntry(rootNode, zin, false);
+        try {
+            buildChildrenWithCompress(rootNode, in, false);
         } catch (Exception ex) {
-            throw new AppException("读取应用包失败", ex);
+            throw new AppException("Failed to read application package", ex);
         }
     }
 

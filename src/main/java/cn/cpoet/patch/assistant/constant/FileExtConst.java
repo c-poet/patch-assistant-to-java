@@ -1,5 +1,7 @@
 package cn.cpoet.patch.assistant.constant;
 
+import cn.cpoet.patch.assistant.util.FileNameUtil;
+
 /**
  * 常用文件后缀
  *
@@ -14,7 +16,17 @@ public interface FileExtConst {
     /**
      * zip压缩文件
      */
-    String DOT_ZIP = "." + ZIP;
+    String DOT_ZIP = FileNameUtil.C_EXT_SEPARATOR + ZIP;
+
+    /**
+     * zip压缩文件
+     */
+    String RAR = "rar";
+
+    /**
+     * zip压缩文件
+     */
+    String DOT_RAR = FileNameUtil.C_EXT_SEPARATOR + RAR;
 
     /**
      * jar文件
@@ -24,7 +36,7 @@ public interface FileExtConst {
     /**
      * jar文件
      */
-    String DOT_JAR = "." + JAR;
+    String DOT_JAR = FileNameUtil.C_EXT_SEPARATOR + JAR;
 
     /**
      * class文件
@@ -34,7 +46,7 @@ public interface FileExtConst {
     /**
      * class文件
      */
-    String DOT_CLASS = "." + CLASS;
+    String DOT_CLASS = FileNameUtil.C_EXT_SEPARATOR + CLASS;
 
     /**
      * java文件
@@ -44,5 +56,5 @@ public interface FileExtConst {
     /**
      * java文件
      */
-    String DOT_JAVA = "." + JAVA;
+    String DOT_JAVA = FileNameUtil.C_EXT_SEPARATOR + JAVA;
 }

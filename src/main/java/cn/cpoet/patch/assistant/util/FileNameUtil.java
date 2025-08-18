@@ -1,5 +1,7 @@
 package cn.cpoet.patch.assistant.util;
 
+import java.util.UUID;
+
 /**
  * 文件名工具
  *
@@ -99,5 +101,24 @@ public abstract class FileNameUtil {
             return path;
         }
         return path + FileNameUtil.SEPARATOR;
+    }
+
+    /**
+     * 和 {@link #perfectDirPath(String)}执行相反的操作
+     *
+     * @param path 路径
+     * @return 非 {@link #SEPARATOR}结束的路径
+     */
+    public static String unPerfectDirPath(String path) {
+        if (path.endsWith(FileNameUtil.SEPARATOR)) {
+            return path.substring(0, path.length() - 1);
+        }
+        return path;
+    }
+
+    public static String uniqueFileName(String name) {
+        String fileName = getName(name) + "_" + UUIDUtil.random32();
+        String fileExt = getExt(name);
+        return StringUtil.isBlank(fileExt) ? fileName : fileName + EXT_SEPARATOR + fileExt;
     }
 }

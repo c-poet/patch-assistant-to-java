@@ -111,7 +111,7 @@ public class PatchMatchProcessor {
             List<TreeNode> oldChildren = appNode.getChildren();
             if (CollectionUtil.isEmpty(oldChildren)) {
                 appNode.setChildren(null);
-                if (PatchPackService.INSTANCE.buildNodeChildrenWithZip(appNode, false)
+                if (PatchPackService.INSTANCE.buildChildrenWithCompress(appNode, false)
                         && match(appNode.getChildren(), patchNode.getChildren(), nameMapping)) {
                     return true;
                 }

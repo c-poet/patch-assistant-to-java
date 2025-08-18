@@ -4,6 +4,8 @@ import cn.cpoet.patch.assistant.constant.AppConst;
 import cn.cpoet.patch.assistant.constant.FileExtConst;
 import cn.cpoet.patch.assistant.constant.JarInfoConst;
 import cn.cpoet.patch.assistant.control.tree.*;
+import cn.cpoet.patch.assistant.control.tree.node.CompressNode;
+import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.core.DockerConf;
 import cn.cpoet.patch.assistant.core.PatchConf;
@@ -14,8 +16,6 @@ import cn.cpoet.patch.assistant.model.PatchUpSign;
 import cn.cpoet.patch.assistant.util.*;
 import cn.cpoet.patch.assistant.view.home.HomeContext;
 import cn.cpoet.patch.assistant.view.progress.ProgressContext;
-import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
-import cn.cpoet.patch.assistant.control.tree.node.ZipEntryNode;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpProgressMonitor;
@@ -298,7 +298,7 @@ public class AppPackWriteProcessor {
     }
 
     private void writePatchSign(ZipOutputStream zipOut, TreeNode patchUpSignNode, boolean isPatchSign) throws IOException {
-        if (patchUpSignNode instanceof ZipEntryNode) {
+        if (patchUpSignNode instanceof CompressNode) {
             ZipEntry zipEntry = getNewEntryWithZipEntry(patchUpSignNode);
             writePatchSign(zipOut, zipEntry, isPatchSign, patchUpSignNode.getBytes());
             return;
@@ -354,7 +354,7 @@ public class AppPackWriteProcessor {
         }
         if (!node.isDir() && node.getName().endsWith(FileExtConst.DOT_JAR)) {
             progressContext.step("Write:" + node.getName());
-            writeTreeNode2PackWithJar(zipOut, (ZipEntryNode) node);
+            writeTreeNode2PackWithJar(zipOut, (CompressNode) node);
             return;
         }
         if (node.getMappedNode() == null) {
@@ -380,24 +380,22 @@ public class AppPackWriteProcessor {
         }
     }
 
-    private void writeTreeNode2PackWithJar(ZipOutputStream zipOut, ZipEntryNode node) throws IOException {
+    private void writeTreeNode2PackWithJar(ZipOutputStream zipOut, CompressNode node) throws IOException {
         if (node.getChildren() == null || node.getChildren().isEmpty()) {
-            zipOut.putNextEntry(getNewEntryWithZipEntry(node.getEntry()));
+            zipOut.putNextEntry(getNewEntryWithZipEntry(node));
             zipOut.write(node.getBytes());
             return;
         }
         byte[] bytes = getBytesWithJarNode(node);
-        ZipEntry zipEntry = getNewEntryWithZipEntry(node.getEntry());
+        ZipEntry zipEntry = getNewEntryWithZipEntry(node);
         zipEntry.setSize(bytes.length);
-        CRC32 crc32 = new CRC32();
-        crc32.update(bytes);
-        zipEntry.setCrc(crc32.getValue());
+        updateCrc32(zipEntry, bytes);
         zipEntry.setTimeLocal(LocalDateTime.now());
         zipOut.putNextEntry(zipEntry);
         zipOut.write(bytes);
     }
 
-    private byte[] getBytesWithJarNode(ZipEntryNode jarNode) throws IOException {
+    private byte[] getBytesWithJarNode(CompressNode jarNode) throws IOException {
         try (ByteArrayOutputStream out = new ByteArrayOutputStream();
              ZipOutputStream zipOut = new ZipOutputStream(out)) {
             for (TreeNode child : jarNode.getChildren()) {
@@ -409,35 +407,39 @@ public class AppPackWriteProcessor {
     }
 
     private ZipEntry getNewEntryWithZipEntry(TreeNode node) {
-        if (node instanceof ZipEntryNode) {
-            return getNewEntryWithZipEntry(((ZipEntryNode) node).getEntry());
-        }
         ZipEntry entry = new ZipEntry(node.isDir() ? FileNameUtil.perfectDirPath(node.getPath()) : node.getPath());
-        if (node.getName().endsWith(FileExtConst.DOT_JAR)) {
-            entry.setMethod(ZipEntry.STORED);
+        if (!node.isDir()) {
+            entry.setSize(node.getSizeOrInit());
+            if (node.getName().endsWith(FileExtConst.DOT_JAR)) {
+                entry.setMethod(ZipEntry.STORED);
+            }
+        }
+        if (node instanceof CompressNode) {
+            CompressNode cNode = (CompressNode) node;
+            entry.setComment(cNode.getComment());
+            entry.setCreationTime(DateUtil.toFileTimeOrCur(cNode.getCreateTime()));
+            entry.setLastAccessTime(DateUtil.toFileTimeOrCur(cNode.getAccessTime()));
+            entry.setLastModifiedTime(DateUtil.toFileTimeOrCur(cNode.getModifyTime()));
+            if (cNode.getCrc() != -1) {
+                entry.setCrc(cNode.getCrc());
+            }
+            entry.setExtra(cNode.getExtra());
+        }
+        if (entry.getMethod() == ZipEntry.STORED && entry.getCrc() < 0) {
+            updateCrc32(entry, node.getBytes());
         }
         return entry;
     }
 
-    private ZipEntry getNewEntryWithZipEntry(ZipEntry zipEntry) {
-        String name = zipEntry.getName();
-        ZipEntry newEntry = new ZipEntry(zipEntry.isDirectory() ? FileNameUtil.perfectDirPath(name) : name);
-        newEntry.setComment(zipEntry.getComment());
-        if (zipEntry.getCreationTime() != null) {
-            newEntry.setCreationTime(zipEntry.getCreationTime());
-        }
-        if (zipEntry.getLastAccessTime() != null) {
-            newEntry.setLastAccessTime(zipEntry.getLastAccessTime());
-        }
-        newEntry.setLastModifiedTime(zipEntry.getLastModifiedTime());
-        newEntry.setExtra(zipEntry.getExtra());
-        if (name.endsWith(FileExtConst.DOT_JAR)) {
-            newEntry.setMethod(ZipEntry.STORED);
-            newEntry.setSize(zipEntry.getSize());
-            newEntry.setCrc(zipEntry.getCrc());
-        } else {
-            newEntry.setMethod(ZipEntry.DEFLATED);
-        }
-        return newEntry;
+    /**
+     * 更新Crc32值
+     *
+     * @param entry 压缩实体
+     * @param bytes 数据
+     */
+    private void updateCrc32(ZipEntry entry, byte[] bytes) {
+        CRC32 crc32 = new CRC32();
+        crc32.update(bytes);
+        entry.setCrc(crc32.getValue());
     }
 }

@@ -4,6 +4,7 @@ import cn.cpoet.patch.assistant.control.tree.PatchRootInfo;
 import cn.cpoet.patch.assistant.control.tree.PatchTreeInfo;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.model.PatchSign;
+import cn.cpoet.patch.assistant.model.ReadMePathInfo;
 import cn.cpoet.patch.assistant.util.StringUtil;
 
 import java.io.BufferedReader;

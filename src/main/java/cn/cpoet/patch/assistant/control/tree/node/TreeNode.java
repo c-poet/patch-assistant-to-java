@@ -1,8 +1,9 @@
 package cn.cpoet.patch.assistant.control.tree.node;
 
+import cn.cpoet.patch.assistant.control.tree.TreeNodeType;
 import cn.cpoet.patch.assistant.jdk.SortLinkedList;
 import cn.cpoet.patch.assistant.util.HashUtil;
-import cn.cpoet.patch.assistant.control.tree.TreeNodeType;
+import cn.cpoet.patch.assistant.util.StringUtil;
 import javafx.scene.control.TreeItem;
 
 import java.time.LocalDateTime;
@@ -64,7 +65,7 @@ public abstract class TreeNode {
     /**
      * 内容大小
      */
-    protected long size;
+    protected long size = -1;
 
     /**
      * 节点是否展开，用以保留展开状态
@@ -160,10 +161,18 @@ public abstract class TreeNode {
     }
 
     public String getMd5() {
-        if (md5 != null) {
+        return md5;
+    }
+
+    public String getMd5OrInit() {
+        if (!StringUtil.isEmpty(md5)) {
             return md5;
         }
-        return (md5 = HashUtil.md5(getBytes()));
+        byte[] bytes = getBytes();
+        if (!StringUtil.isEmpty(md5)) {
+            return md5;
+        }
+        return (md5 = HashUtil.md5(bytes));
     }
 
     public void setMd5(String md5) {
@@ -171,10 +180,11 @@ public abstract class TreeNode {
     }
 
     public long getSize() {
-        if (size != 0 && size != -1) {
-            return size;
-        }
-        return (size = getBytes().length);
+        return size;
+    }
+
+    public long getSizeOrInit() {
+        return size != -1 ? size : (size = getBytes().length);
     }
 
     public void setSize(long size) {

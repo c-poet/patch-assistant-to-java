@@ -9,6 +9,7 @@ module cn.cpoet.patch.assistant {
     requires org.fxmisc.flowless;
     requires io.github.javadiffutils;
     requires com.jcraft.jsch;
+    requires junrar;
 
     exports cn.cpoet.patch.assistant;
 

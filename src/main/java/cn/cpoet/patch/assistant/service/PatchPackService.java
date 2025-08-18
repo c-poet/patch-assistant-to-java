@@ -1,7 +1,6 @@
 package cn.cpoet.patch.assistant.service;
 
 import cn.cpoet.patch.assistant.constant.AppConst;
-import cn.cpoet.patch.assistant.constant.CharsetConst;
 import cn.cpoet.patch.assistant.constant.FileExtConst;
 import cn.cpoet.patch.assistant.control.tree.*;
 import cn.cpoet.patch.assistant.control.tree.node.FileNode;
@@ -12,6 +11,7 @@ import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.core.PatchConf;
 import cn.cpoet.patch.assistant.exception.AppException;
 import cn.cpoet.patch.assistant.model.PatchSign;
+import cn.cpoet.patch.assistant.model.ReadMePathInfo;
 import cn.cpoet.patch.assistant.util.*;
 
 import java.io.*;
@@ -20,7 +20,6 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.zip.ZipInputStream;
 
 /**
  * 补丁包处理
@@ -238,7 +237,7 @@ public class PatchPackService extends BasePackService {
         if (CollectionUtil.isNotEmpty(appNode.getChildren())) {
             return doMatchMappedNodeWithReadme(totalInfo, pathInfo, paths, ++index, appNode.getChildren(), patchNode);
         }
-        if (appNode.getName().endsWith(FileExtConst.DOT_JAR) && buildNodeChildrenWithZip(appNode, false)) {
+        if (appNode.getName().endsWith(FileExtConst.DOT_JAR) && buildChildrenWithCompress(appNode, false)) {
             return doMatchMappedNodeWithReadme(totalInfo, pathInfo, paths, ++index, appNode.getChildren(), patchNode);
         }
         return false;
@@ -349,7 +348,7 @@ public class PatchPackService extends BasePackService {
         if (file.isDirectory()) {
             doGetTreeNodeWithDir(file, rootNode);
         } else {
-            doGetTreeNodeWithZip(patchSign, file, rootNode);
+            doGetTreeNodeWithCompress(patchSign, file, rootNode);
         }
         treeInfo.setRootNode(rootNode);
         PatchRootInfo patchRootInfo = createPatchRootInfo(rootNode);
@@ -387,7 +386,7 @@ public class PatchPackService extends BasePackService {
         }
     }
 
-    private void doGetTreeNodeWithZip(PatchSign patchSign, File file, TreeNode rootNode) {
+    private void doGetTreeNodeWithCompress(PatchSign patchSign, File file, TreeNode rootNode) {
         byte[] bytes;
         try (InputStream in = new FileInputStream(file)) {
             bytes = in.readAllBytes();
@@ -398,14 +397,14 @@ public class PatchPackService extends BasePackService {
         patchSign.setMd5(HashUtil.md5(bytes));
         rootNode.setMd5(patchSign.getMd5());
         patchSign.setSha1(HashUtil.sha1(bytes));
-        doGetTreeNodeWithZip(new ByteArrayInputStream(bytes), rootNode);
+        doGetTreeNodeWithCompress(new ByteArrayInputStream(bytes), rootNode);
     }
 
-    private void doGetTreeNodeWithZip(InputStream in, TreeNode rootNode) {
-        try (ZipInputStream zin = new ZipInputStream(in, CharsetConst.GBK)) {
-            doReadZipEntry(rootNode, zin, true);
+    private void doGetTreeNodeWithCompress(InputStream in, TreeNode rootNode) {
+        try {
+            buildChildrenWithCompress(rootNode, in, true);
         } catch (IOException ex) {
-            throw new AppException("读取补丁压缩包失败", ex);
+            throw new AppException("Failed to read patch compressed package", ex);
         }
     }
 
