@@ -131,10 +131,11 @@ public class HomeRightTreeView extends HomeTreeView {
             }
             if (TreeNodeType.CUSTOM_ROOT.equals(selectedNode.getType())) {
                 viewPatchSign.setVisible(true);
-                viewNodeMappedItem.setVisible(true);
+                viewNodeMappedItem.setVisible(appTree.getTreeInfo() != null);
             } else if (TreeNodeType.ROOT.equals(selectedNode.getType())) {
                 viewPatchSign.setVisible(true);
-                viewNodeMappedItem.setVisible(CollectionUtil.isEmpty(patchTree.getTreeInfo().getCustomRootInfoMap()));
+                viewNodeMappedItem.setVisible(appTree.getTreeInfo() != null
+                        && CollectionUtil.isEmpty(patchTree.getTreeInfo().getCustomRootInfoMap()));
             }
         });
         patchTree.setContextMenu(contextMenu);
