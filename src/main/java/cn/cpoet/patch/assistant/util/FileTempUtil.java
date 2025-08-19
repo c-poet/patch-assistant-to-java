@@ -138,7 +138,7 @@ public abstract class FileTempUtil {
      * @param file 文件信息
      */
     public static void deleteTempFile(File file) {
-        if (!FileUtil.deleteFile(file) && file.exists()) {
+        if (!FileUtil.deleteFile(file)) {
             throw new AppException("Failed to delete temporary file");
         }
     }

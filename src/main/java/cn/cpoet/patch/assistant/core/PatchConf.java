@@ -36,6 +36,11 @@ public class PatchConf implements Cloneable {
      */
     private Boolean writePatchSign = Boolean.TRUE;
 
+    /**
+     * unrar路径
+     */
+    private String unrarPath = "C:\\Program Files\\WinRAR";
+
     public String getUsername() {
         return StringUtil.isBlank(username) ? EnvUtil.getUserName() : username;
     }
@@ -74,6 +79,14 @@ public class PatchConf implements Cloneable {
 
     public void setWritePatchSign(Boolean writePatchSign) {
         this.writePatchSign = writePatchSign;
+    }
+
+    public String getUnrarPath() {
+        return unrarPath;
+    }
+
+    public void setUnrarPath(String unrarPath) {
+        this.unrarPath = unrarPath;
     }
 
     @Override

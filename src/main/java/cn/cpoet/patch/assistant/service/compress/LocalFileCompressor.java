@@ -2,12 +2,9 @@ package cn.cpoet.patch.assistant.service.compress;
 
 import cn.cpoet.patch.assistant.constant.FileExtConst;
 import cn.cpoet.patch.assistant.core.AppContext;
+import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.exception.AppException;
-import cn.cpoet.patch.assistant.util.FileNameUtil;
-import cn.cpoet.patch.assistant.util.FileTempUtil;
-import cn.cpoet.patch.assistant.util.FileUtil;
-import cn.cpoet.patch.assistant.util.UUIDUtil;
-import javafx.scene.control.ProgressBar;
+import cn.cpoet.patch.assistant.util.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,18 +19,35 @@ public class LocalFileCompressor extends FileCompressor {
 
     @Override
     public void decompress(InputStream in, UnCallback callback) {
-        // TODO By CPoet 调用本地失败
         String unrarPath = checkAndGetUnRarPath();
         File file = save2LocalFile(in);
         File dir = createTempDir();
-        decompress(unrarPath, dir, file);
+        try {
+            decompress(unrarPath, dir, file);
+            deepGetFile(dir, callback);
+        } catch (Exception e) {
+            FileTempUtil.deleteAllTempFile(dir);
+            throw e;
+        } finally {
+            FileTempUtil.deleteTempFile(file);
+        }
     }
 
     private void decompress(String unrarPath, File dir, File file) {
         try {
             Process process = Runtime.getRuntime().exec(new String[]{unrarPath, "x", file.getPath(), dir.getPath()});
+            waitDecompress(process);
         } catch (Exception e) {
             throw new AppException("Failed to decompress using the local tool", e);
+        }
+    }
+
+    private void waitDecompress(Process process) throws IOException {
+        try (InputStream in = process.getInputStream()) {
+            if (in.readAllBytes().length == 0) {
+                // TODO BY CPoet 空语句体处理方案
+                System.out.println();
+            }
         }
     }
 
@@ -76,11 +90,24 @@ public class LocalFileCompressor extends FileCompressor {
     }
 
     private String checkAndGetUnRarPath() {
-        String path = "C:\\Program Files\\WinRAR";
-        File file = new File(path, "unrar.exe");
-        if (file.exists()) {
-            return file.getPath();
+        String unrarPath = Configuration.getInstance().getPatch().getUnrarPath();
+        if (!StringUtil.isBlank(unrarPath)) {
+            File file = new File(unrarPath);
+            if (file.isDirectory()) {
+                file = new File(file, getUnrarProgramName());
+            }
+            if (file.exists()) {
+                return file.getPath();
+            }
         }
         throw new AppException("There is no tool available locally that can operate on RAR files");
+    }
+
+    private String getUnrarProgramName() {
+        String os = System.getProperty("os.name").toLowerCase();
+        if (os.indexOf("win") > 0) {
+            return "unrar.exe";
+        }
+        return "unrar";
     }
 }
