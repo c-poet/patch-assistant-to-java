@@ -60,4 +60,14 @@ public interface AppConst {
      * 补丁操作签名文件
      */
     String PATCH_UP_SIGN = "patch-up.sign";
+
+    /**
+     * 应用信息
+     */
+    String APPLICATION_XML = "application/" + APP_NAME + ".xml";
+
+    /**
+     * 插件信息
+     */
+    String PLUGIN_XML = "plugin/" + APP_NAME + ".xml";
 }

@@ -138,6 +138,12 @@ public class Configuration {
     private String lastSavePackPath;
 
     /**
+     * 聚焦状态
+     */
+    @JacksonXmlProperty
+    private Integer focusTreeStatus;
+
+    /**
      * 常规配置
      */
     private GeneraConf genera = new GeneraConf();
@@ -335,6 +341,14 @@ public class Configuration {
 
     public void setLastSavePackPath(String lastSavePackPath) {
         this.lastSavePackPath = lastSavePackPath;
+    }
+
+    public Integer getFocusTreeStatus() {
+        return focusTreeStatus;
+    }
+
+    public void setFocusTreeStatus(Integer focusTreeStatus) {
+        this.focusTreeStatus = focusTreeStatus;
     }
 
     public GeneraConf getGenera() {

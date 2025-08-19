@@ -71,32 +71,39 @@ public class HomeLeftTreeView extends HomeTreeView {
         ContextMenu contextMenu = new ContextMenu();
         MenuItem mkdirMenuItem = new MenuItem(I18nUtil.t("app.view.left-tree.mkdir"));
         contextMenu.getItems().add(mkdirMenuItem);
+
         MenuItem renameMenuItem = new MenuItem(I18nUtil.t("app.view.left-tree.rename"));
         renameMenuItem.setOnAction(this::handleRename);
         contextMenu.getItems().add(renameMenuItem);
+
         MenuItem manualDelMenuItem = new MenuItem(I18nUtil.t("app.view.left-tree.delete"));
         manualDelMenuItem.setOnAction(this::handleManualDel);
         contextMenu.getItems().add(manualDelMenuItem);
+
         MenuItem markDelMenuItem = new MenuItem();
         markDelMenuItem.setOnAction(this::handleMarkDel);
         contextMenu.getItems().add(markDelMenuItem);
+
         MenuItem saveFileMenuItem = new MenuItem(I18nUtil.t("app.view.left-tree.save-file"));
         saveFileMenuItem.setOnAction(e -> saveFile(appTree));
         contextMenu.getItems().add(saveFileMenuItem);
+
         MenuItem saveSourceFileMenuItem = new MenuItem(I18nUtil.t("app.view.left-tree.save-source-file"));
         saveSourceFileMenuItem.setOnAction(e -> saveSourceFile(appTree));
         contextMenu.getItems().add(saveSourceFileMenuItem);
 
+        MenuItem focusAppTreeItem = new MenuItem();
+        focusAppTreeItem.setOnAction(e -> context.focusTreeStatus.set(context.focusTreeStatus.get() != 0 ? 0 : 1));
+        contextMenu.getItems().add(focusAppTreeItem);
+
         contextMenu.setOnShowing(e -> {
+            focusAppTreeItem.setText(I18nUtil.t((context.focusTreeStatus.get() & 1) == 1 ?
+                    "app.view.left-tree.cancel-focus-app-tree" : "app.view.left-tree.focus-app-tree"));
+            hideMenItem(contextMenu, item -> item == focusAppTreeItem);
             ObservableList<TreeItem<TreeNode>> selectedItems = appTree.getSelectionModel().getSelectedItems();
-            boolean isNoneNode = selectedItems.stream().anyMatch(item -> item.equals(appTree.getRoot()) || !item.getValue().getType().equals(TreeNodeType.NONE));
-            mkdirMenuItem.setVisible(false);
-            renameMenuItem.setVisible(false);
+            boolean isNoneNode = CollectionUtil.isEmpty(selectedItems) || selectedItems.stream().anyMatch(item -> item.equals(appTree.getRoot()) || !item.getValue().getType().equals(TreeNodeType.NONE));
             manualDelMenuItem.setVisible(!isNoneNode);
-            saveFileMenuItem.setVisible(false);
-            saveSourceFileMenuItem.setVisible(false);
-            markDelMenuItem.setVisible(false);
-            if (selectedItems.size() == 1) {
+            if (selectedItems.size() == 1 && selectedItems.get(0).getValue() != null) {
                 TreeNode node = selectedItems.get(0).getValue();
                 if (!node.isDir()) {
                     saveFileMenuItem.setVisible(true);
@@ -163,7 +170,7 @@ public class HomeLeftTreeView extends HomeTreeView {
     private void onMouseClicked(MouseEvent event) {
         if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2) {
             TreeItem<TreeNode> selectedItem = appTree.getSelectionModel().getSelectedItem();
-            if (selectedItem != null) {
+            if (selectedItem != null && selectedItem.getValue() != null) {
                 TreeNode selectedTreeNode = selectedItem.getValue();
                 if (selectedTreeNode.getText().endsWith(FileExtConst.DOT_JAR)) {
                     if (AppPackService.INSTANCE.buildChildrenWithCompress(selectedTreeNode, false)) {

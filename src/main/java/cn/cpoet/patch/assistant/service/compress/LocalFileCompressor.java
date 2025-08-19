@@ -7,6 +7,7 @@ import cn.cpoet.patch.assistant.util.FileNameUtil;
 import cn.cpoet.patch.assistant.util.FileTempUtil;
 import cn.cpoet.patch.assistant.util.FileUtil;
 import cn.cpoet.patch.assistant.util.UUIDUtil;
+import javafx.scene.control.ProgressBar;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,10 +23,10 @@ public class LocalFileCompressor extends FileCompressor {
     @Override
     public void decompress(InputStream in, UnCallback callback) {
         // TODO By CPoet 调用本地失败
-       /* String unrarPath = checkAndGetUnRarPath();
+        String unrarPath = checkAndGetUnRarPath();
         File file = save2LocalFile(in);
         File dir = createTempDir();
-        decompress(unrarPath, dir, file);*/
+        decompress(unrarPath, dir, file);
     }
 
     private void decompress(String unrarPath, File dir, File file) {

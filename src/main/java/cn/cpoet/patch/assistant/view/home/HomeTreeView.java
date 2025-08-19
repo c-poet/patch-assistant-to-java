@@ -1,24 +1,23 @@
 package cn.cpoet.patch.assistant.view.home;
 
 import cn.cpoet.patch.assistant.constant.FileExtConst;
+import cn.cpoet.patch.assistant.control.tree.AppTreeView;
+import cn.cpoet.patch.assistant.control.tree.PatchTreeView;
+import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.util.FileNameUtil;
 import cn.cpoet.patch.assistant.util.FileUtil;
 import cn.cpoet.patch.assistant.util.I18nUtil;
-import cn.cpoet.patch.assistant.view.content.parser.ContentParser;
 import cn.cpoet.patch.assistant.view.content.ContentSupports;
-import cn.cpoet.patch.assistant.control.tree.AppTreeView;
-import cn.cpoet.patch.assistant.control.tree.PatchTreeView;
-import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
-import javafx.scene.control.MultipleSelectionModel;
-import javafx.scene.control.TreeCell;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeView;
+import cn.cpoet.patch.assistant.view.content.parser.ContentParser;
+import javafx.scene.control.*;
 import javafx.scene.input.DragEvent;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 /**
  * @author CPoet
@@ -52,7 +51,7 @@ public abstract class HomeTreeView {
         try {
             SELECTED_LINK_FLAG_TL.set(Boolean.TRUE);
             TreeItem<TreeNode> originItem = originTree.getSelectionModel().getSelectedItem();
-            if (originItem == null) {
+            if (originItem == null || originItem.getValue() == null) {
                 return;
             }
             TreeNode originNode = originItem.getValue();
@@ -109,5 +108,19 @@ public abstract class HomeTreeView {
 
     protected boolean isDragFromTreeCell(DragEvent event) {
         return event.getGestureSource() instanceof TreeCell;
+    }
+
+    /**
+     * 隐藏菜单项
+     *
+     * @param menu   菜单
+     * @param filter 过滤器
+     */
+    protected void hideMenItem(ContextMenu menu, Predicate<MenuItem> filter) {
+        menu.getItems().forEach(item -> {
+            if (filter == null || !filter.test(item)) {
+                item.setVisible(false);
+            }
+        });
     }
 }

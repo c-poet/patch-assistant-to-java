@@ -9,9 +9,9 @@ import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.service.PatchPackService;
 import cn.cpoet.patch.assistant.service.compress.FileCompressor;
 import cn.cpoet.patch.assistant.util.*;
+import cn.cpoet.patch.assistant.view.content.ContentView;
 import cn.cpoet.patch.assistant.view.node_mapped.NodeMappedView;
 import cn.cpoet.patch.assistant.view.patch_sign.PatchSignView;
-import cn.cpoet.patch.assistant.view.content.ContentView;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.geometry.Insets;
@@ -75,21 +75,39 @@ public class HomeRightTreeView extends HomeTreeView {
 
     private void buildPatchTreeContextMenu() {
         ContextMenu contextMenu = new ContextMenu();
-        MenuItem markRootMenuItem = new MenuItem();
-        markRootMenuItem.setOnAction(e -> handleMarkRoot());
+
         MenuItem cancelMappedMenuItem = new MenuItem(I18nUtil.t("app.view.right-tree.cancel-binding"));
         cancelMappedMenuItem.setOnAction(this::handleCancelMapped);
+        contextMenu.getItems().add(cancelMappedMenuItem);
+
+        MenuItem markRootMenuItem = new MenuItem();
+        markRootMenuItem.setOnAction(e -> handleMarkRoot());
+        contextMenu.getItems().add(markRootMenuItem);
+
         MenuItem saveFileMenuItem = new MenuItem(I18nUtil.t("app.view.right-tree.save-file"));
         saveFileMenuItem.setOnAction(e -> saveFile(patchTree));
+        contextMenu.getItems().add(saveFileMenuItem);
+
         MenuItem saveSourceFileMenuItem = new MenuItem(I18nUtil.t("app.view.right-tree.save-source-file"));
         saveSourceFileMenuItem.setOnAction(e -> saveSourceFile(patchTree));
+        contextMenu.getItems().add(saveSourceFileMenuItem);
+
         MenuItem viewPatchSign = new MenuItem(I18nUtil.t("app.view.right-tree.view-sign"));
         viewPatchSign.setOnAction(this::handleViewPatchSign);
+        contextMenu.getItems().add(viewPatchSign);
+
         MenuItem viewNodeMappedItem = new MenuItem(I18nUtil.t("app.view.right-tree.view-node-mapped"));
         viewNodeMappedItem.setOnAction(this::handleViewNodeMapped);
-        contextMenu.getItems().addAll(cancelMappedMenuItem, markRootMenuItem, saveFileMenuItem, saveSourceFileMenuItem,
-                viewPatchSign, viewNodeMappedItem);
+        contextMenu.getItems().add(viewNodeMappedItem);
+
+        MenuItem focusPatchTreeItem = new MenuItem();
+        focusPatchTreeItem.setOnAction(e -> context.focusTreeStatus.set(context.focusTreeStatus.get() != 0 ? 0 : 2));
+        contextMenu.getItems().add(focusPatchTreeItem);
+
         contextMenu.setOnShowing(e -> {
+            hideMenItem(contextMenu, item -> item == focusPatchTreeItem);
+            focusPatchTreeItem.setText(I18nUtil.t((context.focusTreeStatus.get() & 2) == 2 ?
+                    "app.view.right-tree.cancel-focus-patch-tree" : "app.view.right-tree.focus-patch-tree"));
             TreeItem<TreeNode> selectedItem = patchTree.getSelectionModel().getSelectedItem();
             if (selectedItem == null) {
                 return;
@@ -106,13 +124,8 @@ public class HomeRightTreeView extends HomeTreeView {
                 } else {
                     markRootMenuItem.setText(I18nUtil.t("app.view.right-tree.mark-root"));
                 }
-            } else {
-                markRootMenuItem.setVisible(false);
             }
-            if (selectedNode.isDir()) {
-                saveFileMenuItem.setVisible(false);
-                saveSourceFileMenuItem.setVisible(false);
-            } else {
+            if (!selectedNode.isDir()) {
                 saveFileMenuItem.setVisible(true);
                 saveSourceFileMenuItem.setVisible(selectedNode.getText().endsWith(FileExtConst.DOT_CLASS));
             }
@@ -122,9 +135,6 @@ public class HomeRightTreeView extends HomeTreeView {
             } else if (TreeNodeType.ROOT.equals(selectedNode.getType())) {
                 viewPatchSign.setVisible(true);
                 viewNodeMappedItem.setVisible(CollectionUtil.isEmpty(patchTree.getTreeInfo().getCustomRootInfoMap()));
-            } else {
-                viewPatchSign.setVisible(false);
-                viewNodeMappedItem.setVisible(false);
             }
         });
         patchTree.setContextMenu(contextMenu);

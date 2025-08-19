@@ -6,6 +6,7 @@ import cn.cpoet.patch.assistant.control.tree.AppTreeView;
 import cn.cpoet.patch.assistant.control.tree.PatchRootInfo;
 import cn.cpoet.patch.assistant.control.tree.PatchTreeInfo;
 import cn.cpoet.patch.assistant.control.tree.PatchTreeView;
+import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.service.AppPackService;
 import cn.cpoet.patch.assistant.util.*;
@@ -13,7 +14,6 @@ import cn.cpoet.patch.assistant.view.about.AboutView;
 import cn.cpoet.patch.assistant.view.config.ConfigView;
 import cn.cpoet.patch.assistant.view.progress.ProgressView;
 import cn.cpoet.patch.assistant.view.search.SearchView;
-import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.geometry.Insets;
@@ -118,13 +118,32 @@ public class HomeView extends HomeContext {
         return titledPane;
     }
 
+    private void focusTree(SplitPane pane, Node leftTree, Node rightTree, int status) {
+        pane.getItems().clear();
+        if (status == 0) {
+            pane.getItems().addAll(leftTree, rightTree);
+        } else if (status == 1) {
+            pane.getItems().add(leftTree);
+        } else {
+            pane.getItems().add(rightTree);
+        }
+    }
+
     private Node buildCentre() {
         StackPane treeStackPane = new StackPane();
         Node leftTree = new HomeLeftTreeView(stage, this).build();
         Node rightTree = new HomeRightTreeView(stage, this).build();
-        SplitPane topPane = new SplitPane(leftTree, rightTree);
+        SplitPane topPane = new SplitPane();
+        focusTree(topPane, leftTree, rightTree, focusTreeStatus.get());
+        focusTreeStatus.addListener((observableValue, oldVal, newVal) -> {
+            int focusStatus = newVal.intValue();
+            Configuration.getInstance().setFocusTreeStatus(focusStatus);
+            focusTree(topPane, leftTree, rightTree, focusStatus);
+        });
         treeStackPane.getChildren().add(topPane);
-        SplitPane centrePane = new SplitPane(treeStackPane, buildBottomCentre());
+        Node patchInfo = buildBottomCentre();
+        SplitPane centrePane = new SplitPane(treeStackPane, patchInfo);
+
         centrePane.setOrientation(Orientation.VERTICAL);
         centrePane.setDividerPositions(0.7);
         return centrePane;
