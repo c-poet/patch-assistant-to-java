@@ -127,7 +127,7 @@ public class HomeRightTreeView extends HomeTreeView {
             }
             if (!selectedNode.isDir()) {
                 saveFileMenuItem.setVisible(true);
-                saveSourceFileMenuItem.setVisible(selectedNode.getText().endsWith(FileExtConst.DOT_CLASS));
+                saveSourceFileMenuItem.setVisible(selectedNode.getName().endsWith(FileExtConst.DOT_CLASS));
             }
             if (TreeNodeType.CUSTOM_ROOT.equals(selectedNode.getType())) {
                 viewPatchSign.setVisible(true);

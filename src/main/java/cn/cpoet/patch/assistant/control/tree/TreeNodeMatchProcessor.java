@@ -76,7 +76,6 @@ public class TreeNodeMatchProcessor {
         if (patchNode.isDir()) {
             VirtualNode virtualNode = new VirtualNode();
             virtualNode.setName(patchNode.getName());
-            virtualNode.setText(patchNode.getText());
             virtualNode.setModifyTime(patchNode.getModifyTime());
             virtualNode.setDir(true);
             childNode = virtualNode;

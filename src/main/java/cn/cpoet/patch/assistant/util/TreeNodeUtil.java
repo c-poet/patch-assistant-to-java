@@ -220,7 +220,6 @@ public abstract class TreeNodeUtil {
      * @param filter 过滤器
      */
     public static void buildChildNode(TreeItem<TreeNode> parent, int index, TreeNode node, Predicate<TreeNode> filter) {
-        node.setText(node.getName());
         TreeItem<TreeNode> childItem = new FileTreeItem();
         bindTreeNodeAndItem(node, childItem);
         if (node.getChildren() != null && !node.getChildren().isEmpty()) {

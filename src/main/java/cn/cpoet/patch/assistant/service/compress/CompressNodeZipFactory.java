@@ -17,7 +17,6 @@ public class CompressNodeZipFactory extends CompressNodeFactory<ZipEntry> {
     public CompressNode create(ZipEntry entry, byte[] bytes) {
         CompressNode node = new CompressNode();
         node.setName(FileNameUtil.getFileName(entry.getName()));
-        node.setText(node.getName());
         node.setPath(entry.getName());
         node.setExtra(entry.getExtra());
         node.setCreateTime(DateUtil.toLocalDateTime(entry.getCreationTime()));

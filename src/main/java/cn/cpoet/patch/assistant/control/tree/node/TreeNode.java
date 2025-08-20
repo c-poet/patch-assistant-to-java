@@ -15,12 +15,6 @@ import java.util.List;
  * @author CPoet
  */
 public abstract class TreeNode {
-
-    /**
-     * 节点显示文本
-     */
-    protected String text;
-
     /**
      * 节点名称
      */
@@ -77,14 +71,6 @@ public abstract class TreeNode {
      */
     protected TreeNodeType type = TreeNodeType.NONE;
 
-    public String getText() {
-        return text;
-    }
-
-    public void setText(String text) {
-        this.text = text;
-    }
-
     public String getName() {
         return name;
     }
@@ -124,9 +110,9 @@ public abstract class TreeNode {
     public List<TreeNode> getAndInitChildren() {
         return children == null ? (children = new SortLinkedList<>((o1, o2) -> {
             if (o1.isDir()) {
-                return o2.isDir() ? o1.text.compareToIgnoreCase(o2.text) : -1;
+                return o2.isDir() ? o1.name.compareToIgnoreCase(o2.name) : -1;
             }
-            return o2.isDir() ? 1 : o1.text.compareToIgnoreCase(o2.text);
+            return o2.isDir() ? 1 : o1.name.compareToIgnoreCase(o2.name);
         })) : children;
     }
 

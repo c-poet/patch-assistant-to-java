@@ -21,7 +21,6 @@ public class CompressNodeFileFactory extends CompressNodeFactory<LocalFileInfo> 
         File file = fileInfo.getFile();
         CompressNode node = new CompressNode();
         node.setName(file.getName());
-        node.setText(file.getName());
         node.setPath(fileInfo.getPath());
         LocalDateTime modifyTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(file.lastModified()), ZoneId.systemDefault());
         node.setCreateTime(modifyTime);

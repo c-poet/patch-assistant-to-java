@@ -46,7 +46,7 @@ public class PatchPackService extends BasePackService {
         }
         TreeNode readmeNode = null;
         for (TreeNode child : rootNode.getChildren()) {
-            if (readmeFileName.equalsIgnoreCase(child.getText())) {
+            if (readmeFileName.equalsIgnoreCase(child.getName())) {
                 readmeNode = child;
                 break;
             }
@@ -170,7 +170,6 @@ public class PatchPackService extends BasePackService {
             } else {
                 VirtualNode virtualNode = new VirtualNode();
                 virtualNode.setName(paths[index]);
-                virtualNode.setText(paths[index]);
                 virtualNode.setDir(true);
                 virtualNode.setModifyTime(now);
                 newAppNode = virtualNode;
@@ -202,7 +201,6 @@ public class PatchPackService extends BasePackService {
                 } else {
                     VirtualNode virtualNode = new VirtualNode();
                     virtualNode.setName(childPatchNode.getName());
-                    virtualNode.setText(childPatchNode.getText());
                     virtualNode.setDir(true);
                     virtualNode.setModifyTime(childPatchNode.getModifyTime());
                     childAppNode = virtualNode;
@@ -338,7 +336,6 @@ public class PatchPackService extends BasePackService {
         PatchTreeInfo treeInfo = new PatchTreeInfo();
         FileNode rootNode = new FileNode();
         rootNode.setName(file.getName());
-        rootNode.setText(file.getName());
         rootNode.setPath(file.getPath());
         rootNode.setFile(file);
         rootNode.setPatch(true);
@@ -363,7 +360,6 @@ public class PatchPackService extends BasePackService {
             for (File childFile : files) {
                 FileNode fileNode = new FileNode();
                 fileNode.setName(childFile.getName());
-                fileNode.setText(childFile.getName());
                 fileNode.setPath(childFile.getPath());
                 fileNode.setFile(childFile);
                 fileNode.setParent(parentNode);

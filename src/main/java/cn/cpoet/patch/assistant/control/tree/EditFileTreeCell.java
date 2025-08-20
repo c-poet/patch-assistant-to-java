@@ -1,8 +1,11 @@
 package cn.cpoet.patch.assistant.control.tree;
 
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
+import cn.cpoet.patch.assistant.util.FileNameUtil;
 import cn.cpoet.patch.assistant.view.home.HomeContext;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TreeView;
+import javafx.scene.input.KeyCode;
 
 /**
  * 可编辑的树形列
@@ -17,29 +20,58 @@ public class EditFileTreeCell extends FileTreeCell {
         super(context);
     }
 
-    private void initTextField() {
+    private void createTextField() {
         textField = new TextField(textLbl.getText());
         textField.setStyle("-fx-background-insets: 0; -fx-background-color: transparent, white, transparent, white;");
+        textField.setOnAction(event -> {
+            TreeNode node = getItem();
+            node.setName(textField.getText());
+            String dirPath = FileNameUtil.getDirPath(node.getPath());
+            node.setPath(FileNameUtil.joinPath(dirPath, node.getName()));
+            commitEdit(node);
+            event.consume();
+        });
+        textField.setOnKeyReleased(t -> {
+            if (t.getCode() == KeyCode.ESCAPE) {
+                cancelEdit();
+                t.consume();
+            }
+        });
     }
 
     @Override
     public void startEdit() {
-        super.startEdit();
-        if (textField == null) {
-            initTextField();
+        if (!isEditable() || !getTreeView().isEditable()) {
+            return;
         }
-        setGraphic(textField);
-        textField.selectAll();
-        textField.requestFocus();
+        super.startEdit();
+        if (isEditing()) {
+            if (textField == null) {
+                createTextField();
+            }
+            setGraphic(textField);
+        }
     }
 
     @Override
     public void cancelEdit() {
         super.cancelEdit();
+        setGraphic(box);
+        textField = null;
+        resetEditable();
     }
 
     @Override
-    public void commitEdit(TreeNode newValue) {
-        super.commitEdit(newValue);
+    public void commitEdit(TreeNode node) {
+        super.commitEdit(node);
+        textField = null;
+        resetEditable();
+    }
+
+    private void resetEditable() {
+        TreeView<TreeNode> treeView = getTreeView();
+        if (treeView instanceof AppTreeView) {
+            ((AppTreeView) treeView).resetEditable();
+        }
     }
 }

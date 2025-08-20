@@ -166,7 +166,7 @@ public class FileTreeCell extends TreeCell<TreeNode> {
         } else {
             box = new HBox();
             addIcon(node);
-            textLbl = new Label(node.getText());
+            textLbl = new Label(node.getName());
             fillTextColor(node, textLbl);
             box.getChildren().add(textLbl);
             addFileDetail(node);

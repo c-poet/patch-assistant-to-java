@@ -1,6 +1,8 @@
 package cn.cpoet.patch.assistant.control.tree;
 
+import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import javafx.event.EventType;
+import javafx.scene.control.TreeItem;
 
 /**
  * @author CPoet
@@ -31,7 +33,14 @@ public class AppTreeView extends CustomTreeView<AppTreeInfo> {
 
     public AppTreeView() {
         super();
-        // TODO BY CPoet 存在缺陷，优化中
+    }
+
+    public void tryEdit(TreeItem<TreeNode> item) {
+        setEditable(true);
+        edit(item);
+    }
+
+    public void resetEditable() {
         setEditable(false);
     }
 }

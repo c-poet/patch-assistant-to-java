@@ -17,7 +17,6 @@ public class CompressNodeRarFactory extends CompressNodeFactory<FileHeader> {
     public CompressNode create(FileHeader header, byte[] bytes) {
         CompressNode node = new CompressNode();
         node.setName(FileNameUtil.getFileName(header.getFileName()));
-        node.setText(node.getName());
         node.setPath(header.getFileName());
         node.setCreateTime(DateUtil.toLocalDateTime(header.getCreationTime()));
         node.setModifyTime(DateUtil.toLocalDateTime(header.getLastModifiedTime()));

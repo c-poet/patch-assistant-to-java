@@ -3,6 +3,7 @@ package cn.cpoet.patch.assistant.view.home;
 import cn.cpoet.patch.assistant.constant.FileExtConst;
 import cn.cpoet.patch.assistant.control.tree.*;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
+import cn.cpoet.patch.assistant.control.tree.node.VirtualNode;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.service.AppPackService;
 import cn.cpoet.patch.assistant.util.*;
@@ -25,7 +26,9 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -64,12 +67,47 @@ public class HomeLeftTreeView extends HomeTreeView {
 
     private void handleRename(ActionEvent event) {
         TreeItem<TreeNode> selectedItem = appTree.getSelectionModel().getSelectedItem();
-        appTree.edit(selectedItem);
+        appTree.tryEdit(selectedItem);
+    }
+
+    private void handleMkdir(ActionEvent event) {
+        TreeItem<TreeNode> treeItem = appTree.getSelectionModel().getSelectedItem();
+        TreeNode treeNode = treeItem.getValue();
+        VirtualNode newNode = new VirtualNode();
+        String name = getNextMkdirName(treeNode);
+        newNode.setName(name);
+        newNode.setModifyTime(LocalDateTime.now());
+        newNode.setPath(FileNameUtil.joinPath(treeNode.getPath(), name));
+        newNode.setDir(true);
+        newNode.setParent(treeNode);
+        treeNode.getAndInitChildren().add(newNode);
+        TreeItem<TreeNode> newTreeItem = new TreeItem<>(newNode);
+        treeItem.getChildren().add(newTreeItem);
+        appTree.getSelectionModel().clearSelection();
+        appTree.getSelectionModel().select(newTreeItem);
+    }
+
+    private String getNextMkdirName(TreeNode node) {
+        String name = I18nUtil.t("app.view.left-tree.mkdir-new");
+        if (CollectionUtil.isEmpty(node.getChildren())) {
+            return name;
+        }
+        Set<String> nameSet = node.getChildren().stream().map(TreeNode::getName).collect(Collectors.toSet());
+        if (!nameSet.contains(name)) {
+            return name;
+        }
+        int i = 1;
+        String newName;
+        do {
+            newName = name + " " + i++;
+        } while (nameSet.contains(newName));
+        return newName;
     }
 
     private void buildAppTreeContextMenu() {
         ContextMenu contextMenu = new ContextMenu();
         MenuItem mkdirMenuItem = new MenuItem(I18nUtil.t("app.view.left-tree.mkdir"));
+        mkdirMenuItem.setOnAction(this::handleMkdir);
         contextMenu.getItems().add(mkdirMenuItem);
 
         MenuItem renameMenuItem = new MenuItem(I18nUtil.t("app.view.left-tree.rename"));
@@ -97,9 +135,9 @@ public class HomeLeftTreeView extends HomeTreeView {
         contextMenu.getItems().add(focusAppTreeItem);
 
         contextMenu.setOnShowing(e -> {
+            hideMenItem(contextMenu, item -> item == focusAppTreeItem);
             focusAppTreeItem.setText(I18nUtil.t((context.focusTreeStatus.get() & 1) == 1 ?
                     "app.view.left-tree.cancel-focus-app-tree" : "app.view.left-tree.focus-app-tree"));
-            hideMenItem(contextMenu, item -> item == focusAppTreeItem);
             ObservableList<TreeItem<TreeNode>> selectedItems = appTree.getSelectionModel().getSelectedItems();
             boolean isNoneNode = CollectionUtil.isEmpty(selectedItems) || selectedItems.stream().anyMatch(item -> item.equals(appTree.getRoot()) || !item.getValue().getType().equals(TreeNodeType.NONE));
             manualDelMenuItem.setVisible(!isNoneNode);
@@ -107,7 +145,7 @@ public class HomeLeftTreeView extends HomeTreeView {
                 TreeNode node = selectedItems.get(0).getValue();
                 if (!node.isDir()) {
                     saveFileMenuItem.setVisible(true);
-                    saveSourceFileMenuItem.setVisible(node.getText().endsWith(FileExtConst.DOT_CLASS));
+                    saveSourceFileMenuItem.setVisible(node.getName().endsWith(FileExtConst.DOT_CLASS));
                 } else {
                     mkdirMenuItem.setVisible(true);
                 }
@@ -172,7 +210,7 @@ public class HomeLeftTreeView extends HomeTreeView {
             TreeItem<TreeNode> selectedItem = appTree.getSelectionModel().getSelectedItem();
             if (selectedItem != null && selectedItem.getValue() != null) {
                 TreeNode selectedTreeNode = selectedItem.getValue();
-                if (selectedTreeNode.getText().endsWith(FileExtConst.DOT_JAR)) {
+                if (selectedTreeNode.getName().endsWith(FileExtConst.DOT_JAR)) {
                     if (AppPackService.INSTANCE.buildChildrenWithCompress(selectedTreeNode, false)) {
                         TreeNodeUtil.buildNodeChildren(selectedItem, selectedTreeNode, OnlyChangeFilter.INSTANCE);
                     }

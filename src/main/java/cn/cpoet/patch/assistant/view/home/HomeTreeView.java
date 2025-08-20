@@ -72,7 +72,7 @@ public abstract class HomeTreeView {
     protected void doSaveFile(TreeNode node, byte[] content, String ext) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle(I18nUtil.t("app.view.tree.save-file"));
-        String name = FileNameUtil.getName(FileNameUtil.getFileName(node.getText()));
+        String name = FileNameUtil.getName(FileNameUtil.getFileName(node.getName()));
         if (ext == null) {
             fileChooser.setInitialFileName(name);
         } else {
@@ -92,12 +92,12 @@ public abstract class HomeTreeView {
             return;
         }
         TreeNode node = selectedItem.getValue();
-        doSaveFile(node, node.getBytes(), FileNameUtil.getExt(node.getText()));
+        doSaveFile(node, node.getBytes(), FileNameUtil.getExt(node.getName()));
     }
 
     protected void saveSourceFile(TreeView<TreeNode> treeView) {
         TreeItem<TreeNode> selectedItem = treeView.getSelectionModel().getSelectedItem();
-        if (selectedItem == null || !selectedItem.getValue().getText().endsWith(FileExtConst.DOT_CLASS)) {
+        if (selectedItem == null || !selectedItem.getValue().getName().endsWith(FileExtConst.DOT_CLASS)) {
             return;
         }
         TreeNode node = selectedItem.getValue();
