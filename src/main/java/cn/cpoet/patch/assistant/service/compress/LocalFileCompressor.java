@@ -105,7 +105,7 @@ public class LocalFileCompressor extends FileCompressor {
 
     private String getUnrarProgramName() {
         String os = System.getProperty("os.name").toLowerCase();
-        if (os.indexOf("win") > 0) {
+        if (os.contains("win")) {
             return "unrar.exe";
         }
         return "unrar";
