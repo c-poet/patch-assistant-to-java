@@ -359,7 +359,8 @@ public class HomeRightTreeView extends HomeTreeView {
                 node.setOnAction(e -> {
                     FileChooser fileChooser = new FileChooser();
                     fileChooser.setTitle(I18nUtil.t("app.view.right-tree.select-patch"));
-                    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(I18nUtil.t("app.view.right-tree.patch-pack"), "*.zip"));
+                    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(I18nUtil.t("app.view.right-tree.patch-pack")
+                            , "*" + FileExtConst.DOT_ZIP, "*" + FileExtConst.DOT_RAR));
                     File file = fileChooser.showOpenDialog(stage);
                     if (file != null) {
                         refreshPatchTree(file);
