@@ -41,15 +41,18 @@ public class HomeLeftTreeView extends HomeTreeView {
     }
 
     private void handleManualDel(ActionEvent event) {
-        List<TreeNode> treeNodes = appTree.getSelectionModel().getSelectedItems().stream()
-                .map(TreeItem::getValue)
-                .collect(Collectors.toList());
-        treeNodes.forEach(node -> {
-            TreeNodeUtil.deepCleanMappedNode(context.totalInfo, node);
-            TreeNodeUtil.removeNodeChild(node);
-            TreeNodeUtil.countNodeType(context.totalInfo, node, TreeNodeType.MANUAL_DEL);
-        });
-        patchTree.refresh();
+        ButtonType buttonType = AlterUtil.confirm(stage, I18nUtil.t("app.view.left-tree.delete-confirm"), ButtonType.YES, ButtonType.NO);
+        if (ButtonType.YES.equals(buttonType)) {
+            List<TreeNode> treeNodes = appTree.getSelectionModel().getSelectedItems().stream()
+                    .map(TreeItem::getValue)
+                    .collect(Collectors.toList());
+            treeNodes.forEach(node -> {
+                TreeNodeUtil.deepCleanMappedNode(context.totalInfo, node);
+                TreeNodeUtil.removeNodeChild(node);
+                TreeNodeUtil.countNodeType(context.totalInfo, node, TreeNodeType.MANUAL_DEL);
+            });
+            patchTree.refresh();
+        }
     }
 
     private void handleMarkDel(ActionEvent event) {

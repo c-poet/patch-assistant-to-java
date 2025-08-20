@@ -3,6 +3,7 @@ package cn.cpoet.patch.assistant.view.content.facotry;
 import cn.cpoet.patch.assistant.util.FileUtil;
 import cn.cpoet.patch.assistant.util.StringUtil;
 import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
@@ -57,7 +58,13 @@ public abstract class CodeAreaFactory {
         copyItem.setOnAction(e -> codeArea.copy());
         MenuItem selectedAllItem = new MenuItem("全选");
         selectedAllItem.setOnAction(e -> codeArea.selectAll());
-        ContextMenu contextMenu = new ContextMenu(copyItem, selectedAllItem);
+        Menu charsetMenu = new Menu("字符编码");
+        charsetMenu.getItems().add(new MenuItem("GBK"));
+        charsetMenu.getItems().add(new MenuItem("UTF-8"));
+        Menu showModeMenu = new Menu("显示模式");
+        showModeMenu.getItems().add(new MenuItem("对比模式"));
+        showModeMenu.getItems().add(new MenuItem("差异模式"));
+        ContextMenu contextMenu = new ContextMenu(copyItem, selectedAllItem, charsetMenu, showModeMenu);
         contextMenu.setOnShowing(e -> {
             String selectedText = codeArea.getSelectedText();
             copyItem.setVisible(!StringUtil.isEmpty(selectedText));
