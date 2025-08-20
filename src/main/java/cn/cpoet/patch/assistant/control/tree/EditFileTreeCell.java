@@ -4,6 +4,7 @@ import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.util.FileNameUtil;
 import cn.cpoet.patch.assistant.view.home.HomeContext;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.input.KeyCode;
 
@@ -50,6 +51,8 @@ public class EditFileTreeCell extends FileTreeCell {
                 createTextField();
             }
             setGraphic(textField);
+            textField.selectAll();
+            textField.requestFocus();
         }
     }
 
@@ -66,6 +69,8 @@ public class EditFileTreeCell extends FileTreeCell {
         super.commitEdit(node);
         textField = null;
         resetEditable();
+        // 请求回焦点
+        getTreeView().requestFocus();
     }
 
     private void resetEditable() {

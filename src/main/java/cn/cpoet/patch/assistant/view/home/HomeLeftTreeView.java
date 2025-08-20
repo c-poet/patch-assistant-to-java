@@ -15,10 +15,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
-import javafx.scene.input.DragEvent;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.input.TransferMode;
+import javafx.scene.input.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -225,6 +222,20 @@ public class HomeLeftTreeView extends HomeTreeView {
         }
     }
 
+    private void onKeyReleased(KeyEvent event) {
+        if (KeyCode.DELETE.equals(event.getCode())) {
+            if (!appTree.getSelectionModel().isEmpty()) {
+                handleManualDel(null);
+            }
+            event.consume();
+        } else if (KeyCode.F2.equals(event.getCode())) {
+            if (!appTree.getSelectionModel().isEmpty()) {
+                handleRename(null);
+            }
+            event.consume();
+        }
+    }
+
     private void buildAppTree() {
         appTree.setCellFactory(treeView -> new EditFileTreeCell(context));
         buildAppTreeContextMenu();
@@ -233,6 +244,7 @@ public class HomeLeftTreeView extends HomeTreeView {
         appTree.getSelectionModel().selectedItemProperty().addListener((observableValue, oldVal, newVal)
                 -> selectedLink(appTree, patchTree));
         appTree.setOnMouseClicked(this::onMouseClicked);
+        appTree.setOnKeyReleased(this::onKeyReleased);
         initAppTreeDrag();
         String lastAppPackPath = Configuration.getInstance().getLastAppPackPath();
         if (StringUtil.isBlank(lastAppPackPath)) {
