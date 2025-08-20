@@ -5,13 +5,16 @@ import cn.cpoet.patch.assistant.control.tree.AppTreeView;
 import cn.cpoet.patch.assistant.control.tree.PatchTreeView;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.core.Configuration;
+import cn.cpoet.patch.assistant.util.CollectionUtil;
 import cn.cpoet.patch.assistant.util.FileNameUtil;
 import cn.cpoet.patch.assistant.util.FileUtil;
 import cn.cpoet.patch.assistant.util.I18nUtil;
 import cn.cpoet.patch.assistant.view.content.ContentSupports;
+import cn.cpoet.patch.assistant.view.content.ContentView;
 import cn.cpoet.patch.assistant.view.content.parser.ContentParser;
 import javafx.scene.control.*;
 import javafx.scene.input.DragEvent;
+import javafx.scene.input.KeyEvent;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -122,5 +125,23 @@ public abstract class HomeTreeView {
                 item.setVisible(false);
             }
         });
+    }
+
+    /**
+     * 处理Enter事件
+     *
+     * @param event 事件
+     */
+    protected void handleEnterKey(KeyEvent event, TreeView<TreeNode> treeView) {
+        TreeItem<TreeNode> selectedItem = treeView.getSelectionModel().getSelectedItem();
+        if (selectedItem != null && selectedItem.getValue() != null) {
+            TreeNode selectedNode = selectedItem.getValue();
+            if (CollectionUtil.isNotEmpty(selectedNode.getChildren())) {
+                selectedItem.setExpanded(!selectedItem.isExpanded());
+            } else if (!selectedNode.isDir()) {
+                new ContentView(selectedNode).showDialog(stage);
+            }
+        }
+        event.consume();
     }
 }

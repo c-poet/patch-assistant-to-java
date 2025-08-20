@@ -233,6 +233,8 @@ public class HomeLeftTreeView extends HomeTreeView {
                 handleRename(null);
             }
             event.consume();
+        } else if (KeyCode.ENTER.equals(event.getCode())) {
+            handleEnterKey(event, appTree);
         }
     }
 

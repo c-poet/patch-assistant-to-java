@@ -299,6 +299,12 @@ public class HomeRightTreeView extends HomeTreeView {
         }
     }
 
+    private void onKeyReleased(KeyEvent event) {
+        if (KeyCode.ENTER.equals(event.getCode())) {
+            handleEnterKey(event, patchTree);
+        }
+    }
+
     private void buildPatchTree() {
         patchTree.setCellFactory(v -> new FileTreeCell(context));
         buildPatchTreeContextMenu();
@@ -310,6 +316,7 @@ public class HomeRightTreeView extends HomeTreeView {
                 -> selectedLink(patchTree, appTree));
         patchTree.setOnMouseClicked(this::onMouseClicked);
         patchTree.setOnKeyPressed(this::onKeyPressed);
+        patchTree.setOnKeyReleased(this::onKeyReleased);
         initPatchTreeDrag();
         File file = getInitPatchFile();
         if (file != null) {
