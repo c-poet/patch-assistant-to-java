@@ -4,6 +4,7 @@ import cn.cpoet.patch.assistant.fernflower.SingleClassDecompiler;
 import cn.cpoet.patch.assistant.util.CollectionUtil;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -15,7 +16,7 @@ import java.util.Stack;
 public class ClassContentParser extends ContentParser {
 
     @Override
-    public String parse(TreeNode node) {
+    public String parse(TreeNode node, Charset charset) {
         SingleClassDecompiler decompiler = new SingleClassDecompiler(Collections.emptyMap());
         if (CollectionUtil.isEmpty(node.getChildren())) {
             return decompiler.decompile(node.getBytes());

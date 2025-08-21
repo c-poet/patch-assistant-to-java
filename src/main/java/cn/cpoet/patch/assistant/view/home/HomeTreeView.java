@@ -20,7 +20,6 @@ import javafx.stage.Stage;
 
 import java.io.File;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 /**
  * @author CPoet

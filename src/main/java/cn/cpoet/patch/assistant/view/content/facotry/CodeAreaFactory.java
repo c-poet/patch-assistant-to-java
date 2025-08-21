@@ -1,7 +1,12 @@
 package cn.cpoet.patch.assistant.view.content.facotry;
 
+import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
+import cn.cpoet.patch.assistant.core.Configuration;
+import cn.cpoet.patch.assistant.core.ContentConf;
 import cn.cpoet.patch.assistant.util.FileUtil;
 import cn.cpoet.patch.assistant.util.StringUtil;
+import javafx.event.Event;
+import javafx.event.EventType;
 import javafx.scene.control.*;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
@@ -20,6 +25,9 @@ import java.util.regex.Matcher;
 public abstract class CodeAreaFactory {
 
     protected static final String CODE_AREA_CSS = FileUtil.getResourceAndExternalForm("/css/code-area.css");
+
+    public static final EventType<?> SHOW_MODE_CHANGE = new EventType<>("SHOW_MODE_CHANGE");
+    public static final EventType<CharsetChangeEvent> CHARSET_CHANGE = new EventType<>("CHARSET_CHANGE");
 
     /**
      * 获取样式表路径
@@ -51,25 +59,46 @@ public abstract class CodeAreaFactory {
         return spansBuilder.create();
     }
 
-    private ContextMenu getContextMenu(CodeArea codeArea) {
+    private void emitCharsetChange(CodeArea codeArea, String charset) {
+        CharsetChangeEvent charsetChangeEvent = new CharsetChangeEvent(CHARSET_CHANGE);
+        codeArea.fireEvent(charsetChangeEvent);
+    }
+
+    private ContextMenu getContextMenu(CodeArea codeArea, TreeNode leftNode, TreeNode rightNode) {
+        ContextMenu contextMenu = new ContextMenu();
+
         MenuItem copyItem = new MenuItem("复制");
         copyItem.setOnAction(e -> codeArea.copy());
+        contextMenu.getItems().add(copyItem);
+
         MenuItem selectedAllItem = new MenuItem("全选");
         selectedAllItem.setOnAction(e -> codeArea.selectAll());
+        contextMenu.getItems().add(selectedAllItem);
+
         Menu charsetMenu = new Menu("字符编码");
-        charsetMenu.getItems().add(new RadioMenuItem("GBK"));
-        charsetMenu.getItems().add(new RadioMenuItem("UTF-8"));
+        ToggleGroup charsetGroup = new ToggleGroup();
+        RadioMenuItem gbkItem = new RadioMenuItem("GBK");
+        gbkItem.setToggleGroup(charsetGroup);
+        gbkItem.setOnAction(e -> emitCharsetChange(codeArea, "GBK"));
+        RadioMenuItem utf8Item = new RadioMenuItem("UTF-8");
+        utf8Item.setToggleGroup(charsetGroup);
+        utf8Item.setOnAction(e -> emitCharsetChange(codeArea, "UTF-8"));
+        charsetMenu.getItems().add(gbkItem);
+        charsetMenu.getItems().add(utf8Item);
+        contextMenu.getItems().add(charsetMenu);
+        charsetGroup.selectToggle(utf8Item);
 
-        Menu showModeMenu = new Menu("显示模式");
-        ToggleGroup toggleGroup = new ToggleGroup();
-        RadioMenuItem compareMode = new RadioMenuItem("对比模式");
-        compareMode.setToggleGroup(toggleGroup);
-        RadioMenuItem diffMode = new RadioMenuItem("差异模式");
-        diffMode.setToggleGroup(toggleGroup);
-        showModeMenu.getItems().add(compareMode);
-        showModeMenu.getItems().add(diffMode);
+        if (leftNode != null && rightNode != null) {
+            RadioMenuItem diffModeItem = new RadioMenuItem("差异模式");
+            diffModeItem.setSelected(Boolean.TRUE.equals(Configuration.getInstance().getContent().getDiffModel()));
+            diffModeItem.setOnAction(e -> {
+                ContentConf content = Configuration.getInstance().getContent();
+                content.setDiffModel(!Boolean.TRUE.equals(content.getDiffModel()));
+                codeArea.fireEvent(new Event(SHOW_MODE_CHANGE));
+            });
+            contextMenu.getItems().add(diffModeItem);
+        }
 
-        ContextMenu contextMenu = new ContextMenu(copyItem, selectedAllItem, charsetMenu, showModeMenu);
         contextMenu.setOnShowing(e -> {
             String selectedText = codeArea.getSelectedText();
             copyItem.setVisible(!StringUtil.isEmpty(selectedText));
@@ -80,10 +109,12 @@ public abstract class CodeAreaFactory {
     /**
      * 创建代码域
      *
+     * @param leftNode  左节点
+     * @param rightNode 右节点
      * @return 代码域
      */
-    public CodeArea create() {
-        CodeArea codeArea = new CodeArea();
+    public NodeCodeArea create(TreeNode leftNode, TreeNode rightNode) {
+        NodeCodeArea codeArea = new NodeCodeArea();
         codeArea.setEditable(false);
         codeArea.setParagraphGraphicFactory(LineNumberFactory.get(codeArea));
         codeArea.getStylesheets().addAll(CODE_AREA_CSS);
@@ -100,7 +131,7 @@ public abstract class CodeAreaFactory {
                         codeArea.setStyleSpans(0, styleSpans);
                     }
                 });
-        ContextMenu contextMenu = getContextMenu(codeArea);
+        ContextMenu contextMenu = getContextMenu(codeArea, leftNode, rightNode);
         codeArea.setContextMenu(contextMenu);
         return codeArea;
     }
