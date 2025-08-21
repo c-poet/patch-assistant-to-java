@@ -6,6 +6,8 @@ import cn.cpoet.patch.assistant.util.FileUtil;
 import cn.cpoet.patch.assistant.util.StringUtil;
 
 import java.io.File;
+import java.io.FileFilter;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * 临时文件清理
@@ -23,7 +25,15 @@ public class TemporaryFileClear {
         if (file == null) {
             return;
         }
-        File[] files = file.listFiles((dir, name) -> name.startsWith(AppConst.APP_NAME));
+        long currentTime = System.currentTimeMillis();
+        // 删除超时24小时的缓存（避免异常退出的导致缓存长时间累积）
+        long twentyFourHoursInMillis = 24 * 60 * 60 * 1000;
+        File[] files = file.listFiles(childFile -> {
+            if (!childFile.getName().startsWith(AppConst.APP_NAME)) {
+                return false;
+            }
+            return (currentTime - file.lastModified()) > twentyFourHoursInMillis;
+        });
         if (files != null) {
             for (File tempFile : files) {
                 cleanOldTemporaryFile(tempFile);
@@ -43,6 +53,6 @@ public class TemporaryFileClear {
     }
 
     public static void asyncClean() {
-        new Thread(TemporaryFileClear::clean).start();
+        CompletableFuture.runAsync(TemporaryFileClear::clean);
     }
 }
