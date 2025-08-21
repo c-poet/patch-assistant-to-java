@@ -6,7 +6,6 @@ import cn.cpoet.patch.assistant.util.FileUtil;
 import cn.cpoet.patch.assistant.util.StringUtil;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.util.concurrent.CompletableFuture;
 
 /**
