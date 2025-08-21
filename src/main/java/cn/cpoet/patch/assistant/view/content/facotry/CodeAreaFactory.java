@@ -3,6 +3,7 @@ package cn.cpoet.patch.assistant.view.content.facotry;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.core.ContentConf;
 import cn.cpoet.patch.assistant.util.FileUtil;
+import cn.cpoet.patch.assistant.util.I18nUtil;
 import cn.cpoet.patch.assistant.util.StringUtil;
 import javafx.event.Event;
 import javafx.event.EventType;
@@ -14,6 +15,7 @@ import org.fxmisc.richtext.model.StyleSpansBuilder;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.regex.Matcher;
 
 /**
@@ -67,15 +69,18 @@ public abstract class CodeAreaFactory {
     private ContextMenu getContextMenu(CodeArea codeArea, boolean hasDiffMode) {
         ContextMenu contextMenu = new ContextMenu();
 
-        MenuItem copyItem = new MenuItem("复制");
+        MenuItem copyItem = new MenuItem(I18nUtil.t("app.view.content.copy"));
         copyItem.setOnAction(e -> codeArea.copy());
         contextMenu.getItems().add(copyItem);
 
-        MenuItem selectedAllItem = new MenuItem("全选");
+        MenuItem selectedAllItem = new MenuItem(I18nUtil.t("app.view.content.select-all"));
         selectedAllItem.setOnAction(e -> codeArea.selectAll());
         contextMenu.getItems().add(selectedAllItem);
+        MenuItem unSelectedItem = new MenuItem(I18nUtil.t("app.view.content.deselect"));
+        unSelectedItem.setOnAction(e -> codeArea.deselect());
+        contextMenu.getItems().add(unSelectedItem);
 
-        Menu charsetMenu = new Menu("字符编码");
+        Menu charsetMenu = new Menu(I18nUtil.t("app.view.content.charset"));
         ToggleGroup charsetGroup = new ToggleGroup();
         RadioMenuItem gbkItem = new RadioMenuItem("GBK");
         gbkItem.setToggleGroup(charsetGroup);
@@ -88,7 +93,7 @@ public abstract class CodeAreaFactory {
         contextMenu.getItems().add(charsetMenu);
         charsetGroup.selectToggle(utf8Item);
         if (hasDiffMode) {
-            RadioMenuItem diffModeItem = new RadioMenuItem("差异模式");
+            RadioMenuItem diffModeItem = new RadioMenuItem(I18nUtil.t("app.view.content.diff-show-mode"));
             diffModeItem.setSelected(Boolean.TRUE.equals(Configuration.getInstance().getContent().getDiffModel()));
             diffModeItem.setOnAction(e -> {
                 ContentConf content = Configuration.getInstance().getContent();
@@ -99,8 +104,17 @@ public abstract class CodeAreaFactory {
         }
 
         contextMenu.setOnShowing(e -> {
+            copyItem.setVisible(false);
+            unSelectedItem.setVisible(false);
+            selectedAllItem.setVisible(false);
             String selectedText = codeArea.getSelectedText();
-            copyItem.setVisible(!StringUtil.isEmpty(selectedText));
+            if (!StringUtil.isEmpty(selectedText)) {
+                copyItem.setVisible(true);
+                unSelectedItem.setVisible(true);
+            }
+            if (!Objects.equals(selectedText, codeArea.getText())) {
+                selectedAllItem.setVisible(true);
+            }
         });
         return contextMenu;
     }
