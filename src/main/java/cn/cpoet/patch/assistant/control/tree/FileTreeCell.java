@@ -102,9 +102,13 @@ public class FileTreeCell extends TreeCell<TreeNode> {
         if (dragInfo == null || appTree != getTreeView()) {
             return;
         }
-        new TreeNodeMatchProcessor(context.getTotalInfo(), getTreeItem().getValue(), dragInfo.getTreeNodes()).exec();
-        appTree.refresh();
-        patchTree.refresh();
+        UIUtil.runNotUI(() -> {
+            new TreeNodeMatchProcessor(context.getTotalInfo(), getTreeItem().getValue(), dragInfo.getTreeNodes()).exec();
+            UIUtil.runUI(() -> {
+                appTree.refresh();
+                patchTree.refresh();
+            });
+        });
         event.consume();
     }
 
@@ -114,10 +118,12 @@ public class FileTreeCell extends TreeCell<TreeNode> {
             return;
         }
         DRAG_INFO_TL.remove();
-        Stack<File> tempFileStack = dragInfo.getTempFileStack();
-        while (!tempFileStack.empty()) {
-            FileTempUtil.deleteTempFile(tempFileStack.pop());
-        }
+        UIUtil.runNotUI(() -> {
+            Stack<File> tempFileStack = dragInfo.getTempFileStack();
+            while (!tempFileStack.empty()) {
+                FileTempUtil.deleteTempFile(tempFileStack.pop());
+            }
+        });
         event.consume();
     }
 

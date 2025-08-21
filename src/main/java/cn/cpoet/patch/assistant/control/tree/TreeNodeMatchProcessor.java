@@ -1,13 +1,13 @@
 package cn.cpoet.patch.assistant.control.tree;
 
-import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.control.tree.node.MappedNode;
+import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.control.tree.node.VirtualNode;
 import cn.cpoet.patch.assistant.service.PatchPackService;
 import cn.cpoet.patch.assistant.util.CollectionUtil;
 import cn.cpoet.patch.assistant.util.FileNameUtil;
 import cn.cpoet.patch.assistant.util.TreeNodeUtil;
-import javafx.application.Platform;
+import cn.cpoet.patch.assistant.util.UIUtil;
 
 import java.util.List;
 
@@ -32,14 +32,12 @@ public class TreeNodeMatchProcessor {
         if (CollectionUtil.isEmpty(patchNodes)) {
             return;
         }
-        Platform.runLater(() -> {
-            if (patchNodes.size() == 1 && patchNodes.get(0).isDir() && appNode.isDir()) {
-                matchWithDir(patchNodes.get(0), appNode);
-                return;
-            }
-            TreeNode tarAppNode = appNode.isDir() ? appNode : appNode.getParent();
-            patchNodes.forEach(patchNode -> match(patchNode, tarAppNode));
-        });
+        if (patchNodes.size() == 1 && patchNodes.get(0).isDir() && appNode.isDir()) {
+            matchWithDir(patchNodes.get(0), appNode);
+            return;
+        }
+        TreeNode tarAppNode = appNode.isDir() ? appNode : appNode.getParent();
+        patchNodes.forEach(patchNode -> match(patchNode, tarAppNode));
     }
 
     private void matchWithDir(TreeNode patchNode, TreeNode appNode) {
@@ -102,7 +100,7 @@ public class TreeNodeMatchProcessor {
         FileTreeItem childItem = new FileTreeItem();
         childNode.setTreeItem(childItem);
         childItem.setValue(childNode);
-        appNode.getTreeItem().getChildren().add(childItem);
+        UIUtil.runUI(() -> appNode.getTreeItem().getChildren().add(childItem));
         if (!patchNode.isDir()) {
             TreeNodeUtil.mappedNode(totalInfo, childNode, patchNode, TreeNodeType.ADD);
         }
