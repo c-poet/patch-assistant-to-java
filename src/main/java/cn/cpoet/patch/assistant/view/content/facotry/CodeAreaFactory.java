@@ -1,6 +1,5 @@
 package cn.cpoet.patch.assistant.view.content.facotry;
 
-import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.core.ContentConf;
 import cn.cpoet.patch.assistant.util.FileUtil;
@@ -61,10 +60,11 @@ public abstract class CodeAreaFactory {
 
     private void emitCharsetChange(CodeArea codeArea, String charset) {
         CharsetChangeEvent charsetChangeEvent = new CharsetChangeEvent(CHARSET_CHANGE);
+        charsetChangeEvent.setCharset(charset);
         codeArea.fireEvent(charsetChangeEvent);
     }
 
-    private ContextMenu getContextMenu(CodeArea codeArea, TreeNode leftNode, TreeNode rightNode) {
+    private ContextMenu getContextMenu(CodeArea codeArea, boolean hasDiffMode) {
         ContextMenu contextMenu = new ContextMenu();
 
         MenuItem copyItem = new MenuItem("复制");
@@ -87,8 +87,7 @@ public abstract class CodeAreaFactory {
         charsetMenu.getItems().add(utf8Item);
         contextMenu.getItems().add(charsetMenu);
         charsetGroup.selectToggle(utf8Item);
-
-        if (leftNode != null && rightNode != null) {
+        if (hasDiffMode) {
             RadioMenuItem diffModeItem = new RadioMenuItem("差异模式");
             diffModeItem.setSelected(Boolean.TRUE.equals(Configuration.getInstance().getContent().getDiffModel()));
             diffModeItem.setOnAction(e -> {
@@ -109,11 +108,10 @@ public abstract class CodeAreaFactory {
     /**
      * 创建代码域
      *
-     * @param leftNode  左节点
-     * @param rightNode 右节点
+     * @param hasDiffMode 是否存在比较模式
      * @return 代码域
      */
-    public NodeCodeArea create(TreeNode leftNode, TreeNode rightNode) {
+    public NodeCodeArea create(boolean hasDiffMode) {
         NodeCodeArea codeArea = new NodeCodeArea();
         codeArea.setEditable(false);
         codeArea.setParagraphGraphicFactory(LineNumberFactory.get(codeArea));
@@ -131,7 +129,7 @@ public abstract class CodeAreaFactory {
                         codeArea.setStyleSpans(0, styleSpans);
                     }
                 });
-        ContextMenu contextMenu = getContextMenu(codeArea, leftNode, rightNode);
+        ContextMenu contextMenu = getContextMenu(codeArea, hasDiffMode);
         codeArea.setContextMenu(contextMenu);
         return codeArea;
     }

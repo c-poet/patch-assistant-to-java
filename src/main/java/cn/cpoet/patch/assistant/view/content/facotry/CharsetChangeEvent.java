@@ -1,5 +1,6 @@
 package cn.cpoet.patch.assistant.view.content.facotry;
 
+import cn.cpoet.patch.assistant.constant.CharsetConst;
 import cn.cpoet.patch.assistant.util.StringUtil;
 import javafx.event.Event;
 import javafx.event.EventType;
@@ -31,6 +32,6 @@ public class CharsetChangeEvent extends Event {
     }
 
     public Charset toCharset() {
-        return StringUtil.isBlank(charset) ? StandardCharsets.UTF_8 : Charset.forName(charset);
+        return StringUtil.isBlank(charset) ? CharsetConst.UTF_8 : Charset.forName(charset);
     }
 }

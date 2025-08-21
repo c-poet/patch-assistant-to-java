@@ -112,7 +112,7 @@ public class ContentView {
     }
 
     private VirtualizedScrollPane<NodeCodeArea> crateCodeAreaPane(Consumer<NodeCodeArea> consumer) {
-        NodeCodeArea codeArea = codeAreaFactory.create(leftNode, rightNode);
+        NodeCodeArea codeArea = codeAreaFactory.create(rightNode != null);
         codeArea.addEventHandler(CodeAreaFactory.CHARSET_CHANGE, event -> {
             handleCharsetChange(codeArea, event);
             event.consume();
