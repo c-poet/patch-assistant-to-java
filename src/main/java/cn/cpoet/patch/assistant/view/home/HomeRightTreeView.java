@@ -1,6 +1,7 @@
 package cn.cpoet.patch.assistant.view.home;
 
 import cn.cpoet.patch.assistant.constant.FileExtConst;
+import cn.cpoet.patch.assistant.constant.FocusTreeStatusConst;
 import cn.cpoet.patch.assistant.constant.ParamNameConst;
 import cn.cpoet.patch.assistant.control.tree.*;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
@@ -80,7 +81,7 @@ public class HomeRightTreeView extends HomeTreeView {
         cancelMappedMenuItem.setOnAction(this::handleCancelMapped);
         contextMenu.getItems().add(cancelMappedMenuItem);
 
-        MenuItem markRootMenuItem = new MenuItem();
+        RadioMenuItem markRootMenuItem = new RadioMenuItem(I18nUtil.t("app.view.right-tree.mark-root"));
         markRootMenuItem.setOnAction(e -> handleMarkRoot());
         contextMenu.getItems().add(markRootMenuItem);
 
@@ -100,14 +101,13 @@ public class HomeRightTreeView extends HomeTreeView {
         viewNodeMappedItem.setOnAction(this::handleViewNodeMapped);
         contextMenu.getItems().add(viewNodeMappedItem);
 
-        MenuItem focusPatchTreeItem = new MenuItem();
-        focusPatchTreeItem.setOnAction(e -> context.focusTreeStatus.set(context.focusTreeStatus.get() != 0 ? 0 : 2));
+        RadioMenuItem focusPatchTreeItem = new RadioMenuItem(I18nUtil.t("app.view.right-tree.focus-patch-tree"));
+        focusPatchTreeItem.setSelected((context.focusTreeStatus.get() & FocusTreeStatusConst.PATCH) == FocusTreeStatusConst.PATCH);
+        focusPatchTreeItem.setOnAction(e -> context.focusTreeStatus.set(context.focusTreeStatus.get() != FocusTreeStatusConst.ALL ? FocusTreeStatusConst.ALL : FocusTreeStatusConst.PATCH));
         contextMenu.getItems().add(focusPatchTreeItem);
 
         contextMenu.setOnShowing(e -> {
             hideMenItem(contextMenu, item -> item == focusPatchTreeItem);
-            focusPatchTreeItem.setText(I18nUtil.t((context.focusTreeStatus.get() & 2) == 2 ?
-                    "app.view.right-tree.cancel-focus-patch-tree" : "app.view.right-tree.focus-patch-tree"));
             TreeItem<TreeNode> selectedItem = patchTree.getSelectionModel().getSelectedItem();
             if (selectedItem == null) {
                 return;
@@ -119,11 +119,7 @@ public class HomeRightTreeView extends HomeTreeView {
                     && (selectedNode.isDir() || TreeNodeUtil.isCompressNode(selectedNode))
                     && TreeNodeUtil.isNotUnderCustomRoot(selectedNode)) {
                 markRootMenuItem.setVisible(true);
-                if (TreeNodeType.CUSTOM_ROOT.equals(selectedNode.getType())) {
-                    markRootMenuItem.setText(I18nUtil.t("app.view.right-tree.cancel-root-mark"));
-                } else {
-                    markRootMenuItem.setText(I18nUtil.t("app.view.right-tree.mark-root"));
-                }
+                markRootMenuItem.setSelected(TreeNodeType.CUSTOM_ROOT.equals(selectedNode.getType()));
             }
             if (!selectedNode.isDir()) {
                 saveFileMenuItem.setVisible(true);

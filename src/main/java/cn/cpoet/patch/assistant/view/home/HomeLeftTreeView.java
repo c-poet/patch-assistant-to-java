@@ -1,6 +1,7 @@
 package cn.cpoet.patch.assistant.view.home;
 
 import cn.cpoet.patch.assistant.constant.FileExtConst;
+import cn.cpoet.patch.assistant.constant.FocusTreeStatusConst;
 import cn.cpoet.patch.assistant.control.tree.*;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.control.tree.node.VirtualNode;
@@ -118,7 +119,7 @@ public class HomeLeftTreeView extends HomeTreeView {
         manualDelMenuItem.setOnAction(this::handleManualDel);
         contextMenu.getItems().add(manualDelMenuItem);
 
-        MenuItem markDelMenuItem = new MenuItem();
+        RadioMenuItem markDelMenuItem = new RadioMenuItem(I18nUtil.t("app.view.left-tree.mark-delete"));
         markDelMenuItem.setOnAction(this::handleMarkDel);
         contextMenu.getItems().add(markDelMenuItem);
 
@@ -130,14 +131,13 @@ public class HomeLeftTreeView extends HomeTreeView {
         saveSourceFileMenuItem.setOnAction(e -> saveSourceFile(appTree));
         contextMenu.getItems().add(saveSourceFileMenuItem);
 
-        MenuItem focusAppTreeItem = new MenuItem();
-        focusAppTreeItem.setOnAction(e -> context.focusTreeStatus.set(context.focusTreeStatus.get() != 0 ? 0 : 1));
+        RadioMenuItem focusAppTreeItem = new RadioMenuItem(I18nUtil.t("app.view.left-tree.focus-app-tree"));
+        focusAppTreeItem.setSelected((context.focusTreeStatus.get() & FocusTreeStatusConst.APP) == FocusTreeStatusConst.APP);
+        focusAppTreeItem.setOnAction(e -> context.focusTreeStatus.set(context.focusTreeStatus.get() != FocusTreeStatusConst.ALL ? FocusTreeStatusConst.ALL : FocusTreeStatusConst.APP));
         contextMenu.getItems().add(focusAppTreeItem);
 
         contextMenu.setOnShowing(e -> {
             hideMenItem(contextMenu, item -> item == focusAppTreeItem);
-            focusAppTreeItem.setText(I18nUtil.t((context.focusTreeStatus.get() & 1) == 1 ?
-                    "app.view.left-tree.cancel-focus-app-tree" : "app.view.left-tree.focus-app-tree"));
             ObservableList<TreeItem<TreeNode>> selectedItems = appTree.getSelectionModel().getSelectedItems();
             boolean isNoneNode = CollectionUtil.isEmpty(selectedItems) || selectedItems.stream().anyMatch(item -> item.equals(appTree.getRoot()) || !item.getValue().getType().equals(TreeNodeType.NONE));
             manualDelMenuItem.setVisible(!isNoneNode);
@@ -151,8 +151,7 @@ public class HomeLeftTreeView extends HomeTreeView {
                 }
                 renameMenuItem.setVisible(true);
                 markDelMenuItem.setVisible(true);
-                markDelMenuItem.setText(TreeNodeType.DEL.equals(node.getType()) ? I18nUtil.t("app.view.left-tree.unmark-delete") :
-                        I18nUtil.t("app.view.left-tree.mark-delete"));
+                markDelMenuItem.setSelected(TreeNodeType.DEL.equals(node.getType()));
             }
         });
         appTree.setContextMenu(contextMenu);

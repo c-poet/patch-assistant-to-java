@@ -2,9 +2,7 @@ package cn.cpoet.patch.assistant.view.content.facotry;
 
 import cn.cpoet.patch.assistant.util.FileUtil;
 import cn.cpoet.patch.assistant.util.StringUtil;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuItem;
+import javafx.scene.control.*;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
 import org.fxmisc.richtext.model.StyleSpans;
@@ -59,11 +57,18 @@ public abstract class CodeAreaFactory {
         MenuItem selectedAllItem = new MenuItem("全选");
         selectedAllItem.setOnAction(e -> codeArea.selectAll());
         Menu charsetMenu = new Menu("字符编码");
-        charsetMenu.getItems().add(new MenuItem("GBK"));
-        charsetMenu.getItems().add(new MenuItem("UTF-8"));
+        charsetMenu.getItems().add(new RadioMenuItem("GBK"));
+        charsetMenu.getItems().add(new RadioMenuItem("UTF-8"));
+
         Menu showModeMenu = new Menu("显示模式");
-        showModeMenu.getItems().add(new MenuItem("对比模式"));
-        showModeMenu.getItems().add(new MenuItem("差异模式"));
+        ToggleGroup toggleGroup = new ToggleGroup();
+        RadioMenuItem compareMode = new RadioMenuItem("对比模式");
+        compareMode.setToggleGroup(toggleGroup);
+        RadioMenuItem diffMode = new RadioMenuItem("差异模式");
+        diffMode.setToggleGroup(toggleGroup);
+        showModeMenu.getItems().add(compareMode);
+        showModeMenu.getItems().add(diffMode);
+
         ContextMenu contextMenu = new ContextMenu(copyItem, selectedAllItem, charsetMenu, showModeMenu);
         contextMenu.setOnShowing(e -> {
             String selectedText = codeArea.getSelectedText();
