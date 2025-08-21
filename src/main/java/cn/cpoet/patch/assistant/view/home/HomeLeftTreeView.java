@@ -158,29 +158,33 @@ public class HomeLeftTreeView extends HomeTreeView {
     }
 
     private void refreshAppTree(File file) {
-        AppTreeInfo appTreeInfo = AppPackService.INSTANCE.getTreeNode(file);
-        appTree.setTreeInfo(appTreeInfo);
-        refreshAppTree(AppTreeView.REFRESH_FLAG_EMIT_EVENT);
+        UIUtil.runNotUI(() -> {
+            AppTreeInfo appTreeInfo = AppPackService.INSTANCE.getTreeNode(file);
+            appTree.setTreeInfo(appTreeInfo);
+            refreshAppTree(AppTreeView.REFRESH_FLAG_EMIT_EVENT);
+        });
     }
 
     private void refreshAppTree(int refreshFlag) {
-        if ((refreshFlag & AppTreeView.REFRESH_FLAG_EMIT_EVENT) == AppTreeView.REFRESH_FLAG_EMIT_EVENT) {
-            appTree.fireEvent(new Event(AppTreeView.APP_TREE_REFRESHING));
-        }
-        TreeItem<TreeNode> rootItem = appTree.getRoot();
-        if (rootItem == null) {
-            rootItem = new TreeItem<>();
-            appTree.setRoot(rootItem);
-        } else {
-            rootItem.getChildren().clear();
-        }
-        AppTreeInfo treeInfo = appTree.getTreeInfo();
-        if (treeInfo != null) {
-            TreeNodeUtil.buildNode(rootItem, treeInfo.getRootNode(), OnlyChangeFilter.INSTANCE);
-        }
-        if ((refreshFlag & AppTreeView.REFRESH_FLAG_EMIT_EVENT) == AppTreeView.REFRESH_FLAG_EMIT_EVENT) {
-            appTree.fireEvent(new Event(AppTreeView.APP_TREE_REFRESH));
-        }
+        UIUtil.runUI(() -> {
+            if ((refreshFlag & AppTreeView.REFRESH_FLAG_EMIT_EVENT) == AppTreeView.REFRESH_FLAG_EMIT_EVENT) {
+                appTree.fireEvent(new Event(AppTreeView.APP_TREE_REFRESHING));
+            }
+            TreeItem<TreeNode> rootItem = appTree.getRoot();
+            if (rootItem == null) {
+                rootItem = new TreeItem<>();
+                appTree.setRoot(rootItem);
+            } else {
+                rootItem.getChildren().clear();
+            }
+            AppTreeInfo treeInfo = appTree.getTreeInfo();
+            if (treeInfo != null) {
+                TreeNodeUtil.buildNode(appTree.getRoot(), treeInfo.getRootNode(), OnlyChangeFilter.INSTANCE);
+            }
+            if ((refreshFlag & AppTreeView.REFRESH_FLAG_EMIT_EVENT) == AppTreeView.REFRESH_FLAG_EMIT_EVENT) {
+                appTree.fireEvent(new Event(AppTreeView.APP_TREE_REFRESH));
+            }
+        });
     }
 
     private void onDragOver(DragEvent event) {
@@ -247,14 +251,16 @@ public class HomeLeftTreeView extends HomeTreeView {
         appTree.setOnMouseClicked(this::onMouseClicked);
         appTree.setOnKeyReleased(this::onKeyReleased);
         initAppTreeDrag();
-        String lastAppPackPath = Configuration.getInstance().getLastAppPackPath();
-        if (StringUtil.isBlank(lastAppPackPath)) {
-            return;
-        }
-        File file = FileUtil.getExistsFile(lastAppPackPath);
-        if (file != null) {
-            refreshAppTree(file);
-        }
+        UIUtil.runNotUI(() -> {
+            String lastAppPackPath = Configuration.getInstance().getLastAppPackPath();
+            if (StringUtil.isBlank(lastAppPackPath)) {
+                return;
+            }
+            File file = FileUtil.getExistsFile(lastAppPackPath);
+            if (file != null) {
+                refreshAppTree(file);
+            }
+        });
     }
 
     public Node build() {

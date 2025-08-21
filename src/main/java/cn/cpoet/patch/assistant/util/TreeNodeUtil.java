@@ -97,7 +97,7 @@ public abstract class TreeNodeUtil {
     public static void mappedNode(TotalInfo totalInfo, TreeNode node1, TreeNode node2, TreeNodeType status) {
         mappedNode(node1, node2, status);
         if (!node1.isDir()) {
-            totalInfo.incrTotal(status);
+            UIUtil.runUI(() -> totalInfo.incrTotal(status));
         }
     }
 

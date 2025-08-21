@@ -138,71 +138,85 @@ public class HomeRightTreeView extends HomeTreeView {
     }
 
     private void refreshPatchTree(File file) {
-        PatchTreeInfo patchTreeInfo = PatchPackService.INSTANCE.getTreeNode(file);
-        patchTree.setTreeInfo(patchTreeInfo);
-        refreshPatchTree(PatchTreeView.REFRESH_FLAG_EMIT_EVENT | PatchTreeView.REFRESH_FLAG_BUILD_TREE_ITEM);
+        UIUtil.runNotUI(() -> {
+            PatchTreeInfo patchTreeInfo = PatchPackService.INSTANCE.getTreeNode(file);
+            patchTree.setTreeInfo(patchTreeInfo);
+            refreshPatchTree(PatchTreeView.REFRESH_FLAG_EMIT_EVENT | PatchTreeView.REFRESH_FLAG_BUILD_TREE_ITEM);
+        });
     }
 
     private void refreshPatchTree(int refreshFlag) {
-        if ((refreshFlag & PatchTreeView.REFRESH_FLAG_EMIT_EVENT) == PatchTreeView.REFRESH_FLAG_EMIT_EVENT) {
-            patchTree.fireEvent(new Event(PatchTreeView.PATCH_TREE_REFRESHING));
-        }
-        TreeItem<TreeNode> rootItem = patchTree.getRoot();
-        if ((refreshFlag & PatchTreeView.REFRESH_FLAG_BUILD_TREE_ITEM) == PatchTreeView.REFRESH_FLAG_BUILD_TREE_ITEM) {
-            if (rootItem == null) {
-                rootItem = new CheckBoxTreeItem<>();
-                patchTree.setRoot(rootItem);
-            } else {
-                rootItem.getChildren().clear();
+        UIUtil.runUI(() -> {
+            if ((refreshFlag & PatchTreeView.REFRESH_FLAG_EMIT_EVENT) == PatchTreeView.REFRESH_FLAG_EMIT_EVENT) {
+                patchTree.fireEvent(new Event(PatchTreeView.PATCH_TREE_REFRESHING));
+            }
+            TreeItem<TreeNode> rootItem = patchTree.getRoot();
+            if ((refreshFlag & PatchTreeView.REFRESH_FLAG_BUILD_TREE_ITEM) == PatchTreeView.REFRESH_FLAG_BUILD_TREE_ITEM) {
+                if (rootItem == null) {
+                    rootItem = new CheckBoxTreeItem<>();
+                    patchTree.setRoot(rootItem);
+                } else {
+                    rootItem.getChildren().clear();
+                }
+                if (patchTree.getTreeInfo() != null) {
+                    TreeNodeUtil.buildNode(rootItem, patchTree.getTreeInfo().getRootNode());
+                }
             }
             if (patchTree.getTreeInfo() != null) {
-                TreeNodeUtil.buildNode(rootItem, patchTree.getTreeInfo().getRootNode());
+                PatchTreeInfo patchTreeInfo = patchTree.getTreeInfo();
+                List<TreeItem<TreeNode>> treeItems;
+                Map<TreeNode, PatchRootInfo> customRootInfoMap = patchTreeInfo.getCustomRootInfoMap();
+                if (CollectionUtil.isNotEmpty(customRootInfoMap)) {
+                    treeItems = customRootInfoMap.keySet().stream().map(TreeNode::getTreeItem).collect(Collectors.toList());
+                } else {
+                    treeItems = Collections.singletonList(patchTreeInfo.getRootNode().getTreeItem());
+                }
+                TreeNodeUtil.expendedMappedOrCurRoot(context.totalInfo, rootItem, treeItems);
             }
-        }
-        if (patchTree.getTreeInfo() != null) {
-            PatchTreeInfo patchTreeInfo = patchTree.getTreeInfo();
-            List<TreeItem<TreeNode>> treeItems;
-            Map<TreeNode, PatchRootInfo> customRootInfoMap = patchTreeInfo.getCustomRootInfoMap();
-            if (CollectionUtil.isNotEmpty(customRootInfoMap)) {
-                treeItems = customRootInfoMap.keySet().stream().map(TreeNode::getTreeItem).collect(Collectors.toList());
-            } else {
-                treeItems = Collections.singletonList(patchTreeInfo.getRootNode().getTreeItem());
+            if ((refreshFlag & PatchTreeView.REFRESH_FLAG_EMIT_EVENT) == PatchTreeView.REFRESH_FLAG_EMIT_EVENT) {
+                patchTree.fireEvent(new Event(PatchTreeView.PATCH_TREE_REFRESH));
             }
-            TreeNodeUtil.expendedMappedOrCurRoot(context.totalInfo, rootItem, treeItems);
-        }
-        if ((refreshFlag & PatchTreeView.REFRESH_FLAG_EMIT_EVENT) == PatchTreeView.REFRESH_FLAG_EMIT_EVENT) {
-            patchTree.fireEvent(new Event(PatchTreeView.PATCH_TREE_REFRESH));
-        }
+        });
     }
 
     private void refreshPatchMappedNode(boolean isRefreshReadme) {
-        PatchTreeInfo treeInfo = patchTree.getTreeInfo();
-        if (treeInfo == null) {
-            return;
-        }
-        Map<TreeNode, PatchRootInfo> customRootInfoMap = treeInfo.getCustomRootInfoMap();
-        if (CollectionUtil.isNotEmpty(customRootInfoMap)) {
-            customRootInfoMap.forEach((node, info) -> refreshPatchMappedNode(isRefreshReadme, node));
-        } else {
-            refreshPatchMappedNode(isRefreshReadme, treeInfo.getRootNode());
-        }
+        UIUtil.runNotUI(() -> {
+            PatchTreeInfo treeInfo = patchTree.getTreeInfo();
+            if (treeInfo == null) {
+                return;
+            }
+            Map<TreeNode, PatchRootInfo> customRootInfoMap = treeInfo.getCustomRootInfoMap();
+            if (CollectionUtil.isNotEmpty(customRootInfoMap)) {
+                customRootInfoMap.forEach((node, info) -> refreshPatchMappedNode(isRefreshReadme, node));
+            } else {
+                refreshPatchMappedNode(isRefreshReadme, treeInfo.getRootNode());
+            }
+        });
     }
 
     private void refreshPatchMappedNode(boolean isRefreshReadme, TreeNode rootNode) {
-        AppTreeInfo appTreeInfo = appTree.getTreeInfo();
-        PatchTreeInfo patchTreeInfo = patchTree.getTreeInfo();
-        if (isRefreshReadme) {
-            PatchPackService.INSTANCE.refreshReadmeNode(patchTreeInfo, rootNode);
-        }
-        PatchPackService.INSTANCE.refreshMappedNode(context.totalInfo, appTreeInfo, patchTreeInfo, rootNode);
-        patchTree.refresh();
-        appTree.fireEvent(new Event(AppTreeView.APP_TREE_NONE_REFRESH_CALL));
+        UIUtil.runNotUI(() -> {
+            AppTreeInfo appTreeInfo = appTree.getTreeInfo();
+            PatchTreeInfo patchTreeInfo = patchTree.getTreeInfo();
+            if (isRefreshReadme) {
+                PatchPackService.INSTANCE.refreshReadmeNode(patchTreeInfo, rootNode);
+            }
+            PatchPackService.INSTANCE.refreshMappedNode(context.totalInfo, appTreeInfo, patchTreeInfo, rootNode);
+            UIUtil.runUI(() -> {
+                patchTree.refresh();
+                appTree.fireEvent(new Event(AppTreeView.APP_TREE_NONE_REFRESH_CALL));
+            });
+        });
     }
 
     private void cleanPatchMappedNode(TreeNode rootNode) {
-        PatchPackService.INSTANCE.cleanMappedNode(context.totalInfo, rootNode, false);
-        patchTree.refresh();
-        appTree.refresh();
+        UIUtil.runNotUI(() -> {
+            PatchPackService.INSTANCE.cleanMappedNode(context.totalInfo, rootNode, false);
+            UIUtil.runUI(() -> {
+                patchTree.refresh();
+                appTree.refresh();
+            });
+        });
     }
 
     private void onDragOver(DragEvent event) {
@@ -227,16 +241,18 @@ public class HomeRightTreeView extends HomeTreeView {
     }
 
     private void listenMarkRootChange(PatchMarkRootEvent event) {
-        TreeNode treeNode = event.getTreeNode();
-        if (TreeNodeType.CUSTOM_ROOT.equals(treeNode.getType())) {
-            patchTree.getTreeInfo().removeCustomRootInfo(treeNode);
-            cleanPatchMappedNode(treeNode);
-            return;
-        }
-        treeNode.setType(TreeNodeType.CUSTOM_ROOT);
-        PatchRootInfo patchRootInfo = PatchPackService.INSTANCE.createPatchRootInfo(treeNode);
-        patchTree.getTreeInfo().addCustomRootInfo(treeNode, patchRootInfo);
-        refreshPatchMappedNode(true, treeNode);
+        UIUtil.runNotUI(() -> {
+            TreeNode treeNode = event.getTreeNode();
+            if (TreeNodeType.CUSTOM_ROOT.equals(treeNode.getType())) {
+                patchTree.getTreeInfo().removeCustomRootInfo(treeNode);
+                cleanPatchMappedNode(treeNode);
+                return;
+            }
+            treeNode.setType(TreeNodeType.CUSTOM_ROOT);
+            PatchRootInfo patchRootInfo = PatchPackService.INSTANCE.createPatchRootInfo(treeNode);
+            patchTree.getTreeInfo().addCustomRootInfo(treeNode, patchRootInfo);
+            refreshPatchMappedNode(true, treeNode);
+        });
     }
 
     private void onMouseClicked(MouseEvent event) {
@@ -314,10 +330,12 @@ public class HomeRightTreeView extends HomeTreeView {
         patchTree.setOnKeyPressed(this::onKeyPressed);
         patchTree.setOnKeyReleased(this::onKeyReleased);
         initPatchTreeDrag();
-        File file = getInitPatchFile();
-        if (file != null) {
-            refreshPatchTree(file);
-        }
+        UIUtil.runNotUI(() -> {
+            File file = getInitPatchFile();
+            if (file != null) {
+                refreshPatchTree(file);
+            }
+        });
     }
 
     private File getInitPatchFile() {
