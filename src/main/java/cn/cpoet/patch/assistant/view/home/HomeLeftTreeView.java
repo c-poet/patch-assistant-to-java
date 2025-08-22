@@ -150,7 +150,7 @@ public class HomeLeftTreeView extends HomeTreeView {
                     mkdirMenuItem.setVisible(true);
                 }
                 renameMenuItem.setVisible(true);
-                markDelMenuItem.setVisible(true);
+                markDelMenuItem.setVisible(TreeNodeType.NONE.equals(node.getType()));
                 markDelMenuItem.setSelected(TreeNodeType.DEL.equals(node.getType()));
             }
         });
