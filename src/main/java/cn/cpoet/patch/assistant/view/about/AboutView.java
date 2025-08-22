@@ -2,8 +2,11 @@ package cn.cpoet.patch.assistant.view.about;
 
 import cn.cpoet.patch.assistant.constant.AppConst;
 import cn.cpoet.patch.assistant.constant.IConConst;
+import cn.cpoet.patch.assistant.model.Application;
+import cn.cpoet.patch.assistant.util.FileUtil;
 import cn.cpoet.patch.assistant.util.I18nUtil;
 import cn.cpoet.patch.assistant.util.ImageUtil;
+import cn.cpoet.patch.assistant.util.XMLUtil;
 import javafx.scene.Node;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
@@ -15,6 +18,8 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+
+import java.io.InputStream;
 
 /**
  * 关于页面
@@ -32,7 +37,8 @@ public class AboutView {
         hBox.getChildren().add(imageView);
         VBox vBox = new VBox();
         vBox.setSpacing(8);
-        Label titleLbl = new Label(I18nUtil.t("app.name", AppConst.APP_NAME) + " Beta");
+        Application applicationInfo = getApplicationInfo();
+        Label titleLbl = new Label(I18nUtil.t("app.name", AppConst.APP_NAME) + " " + (applicationInfo == null ? "Beta" : applicationInfo.getVersion()));
         titleLbl.setStyle("-fx-font-weight: bold;-fx-font-size:20");
         vBox.getChildren().add(titleLbl);
         Label descLbl = new Label(I18nUtil.t("app.view.about.desc")
@@ -41,6 +47,14 @@ public class AboutView {
         vBox.getChildren().add(descLbl);
         hBox.getChildren().add(vBox);
         return hBox;
+    }
+
+    private Application getApplicationInfo() {
+        try (InputStream in = FileUtil.getFileAsStream(AppConst.APPLICATION_INFO_NAME)) {
+            return XMLUtil.read(in, Application.class);
+        } catch (Exception ignored) {
+        }
+        return null;
     }
 
     public void showDialog(Stage stage) {

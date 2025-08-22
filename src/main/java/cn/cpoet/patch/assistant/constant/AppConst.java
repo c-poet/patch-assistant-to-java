@@ -37,6 +37,11 @@ public interface AppConst {
     String CONFIG_FILE_NAME = "application.xml";
 
     /**
+     * 应用信息文件
+     */
+    String APPLICATION_INFO_NAME = APP_NAME + ".xml";
+
+    /**
      * 样式文件名
      */
     String STYLE_FILE_NAME = "/css/theme.css";
@@ -60,14 +65,4 @@ public interface AppConst {
      * 补丁操作签名文件
      */
     String PATCH_UP_SIGN = "patch-up.sign";
-
-    /**
-     * 应用信息
-     */
-    String APPLICATION_XML = "application/" + APP_NAME + ".xml";
-
-    /**
-     * 插件信息
-     */
-    String PLUGIN_XML = "plugin/" + APP_NAME + ".xml";
 }
