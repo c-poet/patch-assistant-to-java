@@ -15,6 +15,11 @@ public abstract class FileNameUtil {
     public final static char C_SEPARATOR = '/';
 
     /**
+     * 统一分隔符Windows
+     */
+    public final static char C_SEPARATOR_WIN = '\\';
+
+    /**
      * 统一分隔符
      */
     public final static String SEPARATOR = Character.toString(C_SEPARATOR);
@@ -69,6 +74,7 @@ public abstract class FileNameUtil {
         if (path == null || path.isBlank()) {
             return path;
         }
+        path = path.replace(C_SEPARATOR_WIN, C_SEPARATOR);
         if (path.charAt(path.length() - 1) == C_SEPARATOR) {
             path = path.substring(0, path.length() - 1);
         }

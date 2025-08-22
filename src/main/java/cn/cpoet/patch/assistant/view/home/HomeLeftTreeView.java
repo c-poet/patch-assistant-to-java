@@ -289,6 +289,11 @@ public class HomeLeftTreeView extends HomeTreeView {
                 node.setOnAction(e -> {
                     FileChooser fileChooser = new FileChooser();
                     fileChooser.setTitle(I18nUtil.t("app.view.left-tree.select-jar"));
+                    String lastAppPackPath = Configuration.getInstance().getLastAppPackPath();
+                    if (!StringUtil.isBlank(lastAppPackPath)) {
+                        File dir = FileUtil.getExistsDirOrFile(FileNameUtil.getDirPath(lastAppPackPath));
+                        fileChooser.setInitialDirectory(dir);
+                    }
                     fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(I18nUtil.t("app.view.left-tree.java-package"), "*.jar"));
                     File file = fileChooser.showOpenDialog(stage);
                     if (file == null) {

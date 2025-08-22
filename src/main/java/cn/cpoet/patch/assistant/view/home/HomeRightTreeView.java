@@ -380,6 +380,11 @@ public class HomeRightTreeView extends HomeTreeView {
                 node.setOnAction(e -> {
                     FileChooser fileChooser = new FileChooser();
                     fileChooser.setTitle(I18nUtil.t("app.view.right-tree.select-patch"));
+                    String lastPatchPackPath = Configuration.getInstance().getLastPatchPackPath();
+                    if (!StringUtil.isBlank(lastPatchPackPath)) {
+                        File dir = FileUtil.getExistsDirOrFile(FileNameUtil.getDirPath(lastPatchPackPath));
+                        fileChooser.setInitialDirectory(dir);
+                    }
                     fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(I18nUtil.t("app.view.right-tree.patch-pack")
                             , "*" + FileExtConst.DOT_ZIP, "*" + FileExtConst.DOT_RAR));
                     File file = fileChooser.showOpenDialog(stage);
@@ -392,6 +397,11 @@ public class HomeRightTreeView extends HomeTreeView {
                 node.setOnAction(e -> {
                     DirectoryChooser directoryChooser = new DirectoryChooser();
                     directoryChooser.setTitle(I18nUtil.t("app.view.right-tree.select-patch-directory"));
+                    String lastPatchPackPath = Configuration.getInstance().getLastPatchPackPath();
+                    if (!StringUtil.isBlank(lastPatchPackPath)) {
+                        File file = FileUtil.getExistsDirOrFile(lastPatchPackPath);
+                        directoryChooser.setInitialDirectory(file == null ? null : (file.isFile() ? file.getParentFile() : file));
+                    }
                     File file = directoryChooser.showDialog(stage);
                     if (file != null) {
                         refreshPatchTree(file);
