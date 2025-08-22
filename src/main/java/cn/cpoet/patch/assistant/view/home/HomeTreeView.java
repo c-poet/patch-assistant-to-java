@@ -10,7 +10,6 @@ import cn.cpoet.patch.assistant.util.FileNameUtil;
 import cn.cpoet.patch.assistant.util.FileUtil;
 import cn.cpoet.patch.assistant.util.I18nUtil;
 import cn.cpoet.patch.assistant.view.content.ContentSupports;
-import cn.cpoet.patch.assistant.view.content.ContentView;
 import cn.cpoet.patch.assistant.view.content.parser.ContentParser;
 import javafx.scene.control.*;
 import javafx.scene.input.DragEvent;
@@ -137,8 +136,6 @@ public abstract class HomeTreeView {
             TreeNode selectedNode = selectedItem.getValue();
             if (CollectionUtil.isNotEmpty(selectedNode.getChildren())) {
                 selectedItem.setExpanded(!selectedItem.isExpanded());
-            } else if (!selectedNode.isDir()) {
-                new ContentView(selectedNode).showDialog(stage);
             }
         }
         event.consume();
