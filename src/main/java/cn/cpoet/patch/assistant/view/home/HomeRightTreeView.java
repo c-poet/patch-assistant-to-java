@@ -157,7 +157,7 @@ public class HomeRightTreeView extends HomeTreeView {
             TreeItem<TreeNode> rootItem = patchTree.getRoot();
             if ((refreshFlag & PatchTreeView.REFRESH_FLAG_BUILD_TREE_ITEM) == PatchTreeView.REFRESH_FLAG_BUILD_TREE_ITEM) {
                 if (rootItem == null) {
-                    rootItem = new CheckBoxTreeItem<>();
+                    rootItem = new FileTreeItem();
                     patchTree.setRoot(rootItem);
                 } else {
                     rootItem.getChildren().clear();

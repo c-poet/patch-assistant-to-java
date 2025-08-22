@@ -78,4 +78,12 @@ public class EditFileTreeCell extends FileTreeCell {
             ((AppTreeView) treeView).resetEditable();
         }
     }
+
+    @Override
+    public void updateItem(TreeNode node, boolean empty) {
+        if (isEditing()) {
+            return;
+        }
+        super.updateItem(node, empty);
+    }
 }

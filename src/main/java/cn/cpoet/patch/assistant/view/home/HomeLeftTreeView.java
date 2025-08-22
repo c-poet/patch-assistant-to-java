@@ -49,6 +49,7 @@ public class HomeLeftTreeView extends HomeTreeView {
                 TreeNodeUtil.removeNodeChild(node);
                 TreeNodeUtil.countNodeType(context.totalInfo, node, TreeNodeType.MANUAL_DEL);
             });
+            appTree.getSelectionModel().clearSelection();
             patchTree.refresh();
         }
     }
@@ -82,10 +83,12 @@ public class HomeLeftTreeView extends HomeTreeView {
         newNode.setDir(true);
         newNode.setParent(treeNode);
         treeNode.getAndInitChildren().add(newNode);
-        TreeItem<TreeNode> newTreeItem = new TreeItem<>(newNode);
+        TreeItem<TreeNode> newTreeItem = new FileTreeItem();
+        TreeNodeUtil.bindTreeNodeAndItem(newNode, newTreeItem);
         treeItem.getChildren().add(newTreeItem);
         appTree.getSelectionModel().clearSelection();
         appTree.getSelectionModel().select(newTreeItem);
+        appTree.tryEdit(newTreeItem);
     }
 
     private String getNextMkdirName(TreeNode node) {
@@ -172,7 +175,7 @@ public class HomeLeftTreeView extends HomeTreeView {
             }
             TreeItem<TreeNode> rootItem = appTree.getRoot();
             if (rootItem == null) {
-                rootItem = new TreeItem<>();
+                rootItem = new FileTreeItem();
                 appTree.setRoot(rootItem);
             } else {
                 rootItem.getChildren().clear();
