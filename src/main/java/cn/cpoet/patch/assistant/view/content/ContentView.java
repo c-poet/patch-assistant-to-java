@@ -2,6 +2,7 @@ package cn.cpoet.patch.assistant.view.content;
 
 import cn.cpoet.patch.assistant.constant.AppConst;
 import cn.cpoet.patch.assistant.control.DialogPurePane;
+import cn.cpoet.patch.assistant.control.tree.TreeNodeType;
 import cn.cpoet.patch.assistant.control.tree.node.FileNode;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.core.Configuration;
@@ -49,18 +50,29 @@ public class ContentView {
 
     public ContentView(TreeNode node) {
         tarNode = node;
-        if (node.getMappedNode() != null && node.isPatch()) {
-            leftNode = node.getMappedNode();
-            rightNode = node;
+        if (node.isPatch()) {
+            TreeNode mappedNode = node.getMappedNode();
+            if (mappedNode != null && !TreeNodeType.ADD.equals(mappedNode.getType())) {
+                leftNode = mappedNode;
+                rightNode = node;
+            } else {
+                leftNode = node;
+                rightNode = null;
+            }
         } else {
-            leftNode = node;
-            rightNode = node.getMappedNode();
+            if (TreeNodeType.ADD.equals(node.getType())) {
+                leftNode = node.getMappedNode();
+                rightNode = null;
+            } else {
+                leftNode = node;
+                rightNode = node.getMappedNode();
+            }
         }
     }
 
     public Node build() {
         codeAreaFactory = ContentSupports.getCodeAreaFactory(leftNode);
-        if (rightNode == null) {
+        if (!isLoadDiffMode()) {
             VirtualizedScrollPane<NodeCodeArea> scrollPane = crateCodeAreaPane(leftNode, leftContent);
             scrollPane.scrollYToPixel(0);
             return scrollPane;
@@ -112,7 +124,7 @@ public class ContentView {
     }
 
     private VirtualizedScrollPane<NodeCodeArea> crateCodeAreaPane(Consumer<NodeCodeArea> consumer) {
-        NodeCodeArea codeArea = codeAreaFactory.create(rightNode != null);
+        NodeCodeArea codeArea = codeAreaFactory.create(isLoadDiffMode());
         codeArea.addEventHandler(CodeAreaFactory.CHARSET_CHANGE, event -> {
             handleCharsetChange(codeArea, event);
             event.consume();
@@ -141,6 +153,10 @@ public class ContentView {
         }
     }
 
+    private boolean isLoadDiffMode() {
+        return rightNode != null;
+    }
+
     public void showDialog(Stage stage) {
         if (leftNode.isDir()) {
             return;
@@ -151,7 +167,7 @@ public class ContentView {
             return;
         }
         leftContent = contentParser.parse(leftNode);
-        if (rightNode != null) {
+        if (isLoadDiffMode()) {
             rightContent = contentParser.parse(rightNode);
         }
         Dialog<Boolean> dialog = new Dialog<>();
