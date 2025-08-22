@@ -64,10 +64,10 @@ public class AppPackWriteProcessor {
             if (StringUtil.isBlank(dockerfile)) {
                 throw new AppException("Dockerfile template file cannot be empty");
             }
-            createDockerTask(file, transitFile, dockerfile).start();
+            createDockerTask(file, transitFile, dockerfile);
             return;
         }
-        createTask(file, transitFile).start();
+        createTask(file, transitFile);
     }
 
     private void transitCompleted(File file, File transitFile, boolean isOk) {
@@ -92,9 +92,8 @@ public class AppPackWriteProcessor {
         }
     }
 
-    private Thread createDockerTask(File file, File transitFile, String dockerfile) {
-        Thread thread = new Thread(() -> {
-            progressContext.setRunLater(true);
+    private void createDockerTask(File file, File transitFile, String dockerfile) {
+        UIUtil.runNotUI(() -> {
             progressContext.step("Start write to Docker image pack");
             try {
                 writeDocker(transitFile, dockerfile);
@@ -107,13 +106,10 @@ public class AppPackWriteProcessor {
                 progressContext.end(false);
             }
         });
-        thread.setDaemon(true);
-        return thread;
     }
 
-    private Thread createTask(File file, File transitFile) {
-        Thread thread = new Thread(() -> {
-            progressContext.setRunLater(true);
+    private void createTask(File file, File transitFile) {
+        UIUtil.runNotUI(() -> {
             progressContext.step("Start write to JAR pack");
             try {
                 write(transitFile);
@@ -126,8 +122,6 @@ public class AppPackWriteProcessor {
                 progressContext.end(false);
             }
         });
-        thread.setDaemon(true);
-        return thread;
     }
 
     private void writeDocker(File file, String dockerfile) {
