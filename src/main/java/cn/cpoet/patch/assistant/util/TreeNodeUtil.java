@@ -34,7 +34,7 @@ public abstract class TreeNodeUtil {
             parent.getChildren().remove(node);
             TreeItem<TreeNode> treeItem = node.getTreeItem();
             if (treeItem != null) {
-                parent.getTreeItem().getChildren().remove(treeItem);
+                UIUtil.runUI(() -> parent.getTreeItem().getChildren().remove(treeItem));
             }
         }
     }
@@ -64,7 +64,8 @@ public abstract class TreeNodeUtil {
             node.getChildren().forEach(child -> deepCleanMappedNode(totalInfo, child, filter));
         }
         if (!node.isDir()) {
-            totalInfo.decrTotal(node.getType());
+            TreeNodeType nodeType = node.getType();
+            UIUtil.runUI(() -> totalInfo.decrTotal(nodeType));
         }
         cleanMappedNode(node.getMappedNode(), filter);
         cleanMappedNode(node, filter);

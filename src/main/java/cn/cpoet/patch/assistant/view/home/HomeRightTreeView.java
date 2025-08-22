@@ -139,6 +139,10 @@ public class HomeRightTreeView extends HomeTreeView {
 
     private void refreshPatchTree(File file) {
         UIUtil.runNotUI(() -> {
+            PatchTreeInfo oldTreeInfo = patchTree.getTreeInfo();
+            if (oldTreeInfo != null && oldTreeInfo.getRootNode() != null) {
+                cleanPatchMappedNode(oldTreeInfo.getRootNode());
+            }
             PatchTreeInfo patchTreeInfo = PatchPackService.INSTANCE.getTreeNode(file);
             patchTree.setTreeInfo(patchTreeInfo);
             refreshPatchTree(PatchTreeView.REFRESH_FLAG_EMIT_EVENT | PatchTreeView.REFRESH_FLAG_BUILD_TREE_ITEM);
