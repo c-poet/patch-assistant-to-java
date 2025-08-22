@@ -3,17 +3,16 @@ package cn.cpoet.patch.assistant.view.node_mapped;
 import cn.cpoet.patch.assistant.constant.AppConst;
 import cn.cpoet.patch.assistant.constant.FileExtConst;
 import cn.cpoet.patch.assistant.constant.SpringConst;
+import cn.cpoet.patch.assistant.control.tree.TreeNodeType;
+import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.util.*;
-import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
-import cn.cpoet.patch.assistant.control.tree.TreeNodeType;
+import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -23,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 查看最新绑定的信息
@@ -43,36 +43,40 @@ public class NodeMappedView {
     }
 
     private Node build() {
-        buildMappedInfo();
-        VBox box = new VBox();
-        box.setPadding(Insets.EMPTY);
         textArea = new TextArea();
+        textArea.setPadding(Insets.EMPTY);
         textArea.setEditable(false);
-        ToolBar toolBar = new ToolBar();
-        CheckBox diffModeCheckBox = new CheckBox("包含删除节点");
-        diffModeCheckBox.setSelected(true);
-        diffModeCheckBox.setOnAction(e -> updateText(textArea, diffModeCheckBox.isSelected()));
-        toolBar.getItems().add(diffModeCheckBox);
-        box.getChildren().add(toolBar);
-        box.getChildren().add(textArea);
-        updateText(textArea, true);
-        VBox.setVgrow(textArea, Priority.ALWAYS);
-        return box;
+        createContentMenu();
+        buildMappedInfo();
+        return textArea;
+    }
+
+    private void createContentMenu() {
+        ContextMenu contextMenu = new ContextMenu();
+        RadioMenuItem includeDelItem = new RadioMenuItem(I18nUtil.t("app.view.node-mapped.include-delete"));
+        includeDelItem.setSelected(true);
+        includeDelItem.setOnAction(e -> updateText(textArea, includeDelItem.isSelected()));
+        contextMenu.getItems().add(includeDelItem);
+        textArea.setContextMenu(contextMenu);
     }
 
     private void updateText(TextArea textArea, boolean appendDel) {
-        if (appendDel && delInfo == null) {
-            buildDelInfo();
-        }
-        if (!appendDel || StringUtil.isBlank(delInfo)) {
-            textArea.setText(mappedInfo);
-            return;
-        }
-        if (StringUtil.isBlank(mappedInfo)) {
-            textArea.setText(delInfo);
-        } else {
-            textArea.setText(mappedInfo + '\n' + delInfo);
-        }
+        UIUtil.runNotUI(() -> {
+            if (appendDel && delInfo == null) {
+                buildDelInfo();
+            }
+            UIUtil.runUI(() -> {
+                if (!appendDel || StringUtil.isBlank(delInfo)) {
+                    textArea.setText(mappedInfo);
+                    return;
+                }
+                if (StringUtil.isBlank(mappedInfo)) {
+                    textArea.setText(delInfo);
+                } else {
+                    textArea.setText(delInfo + '\n' + mappedInfo);
+                }
+            });
+        });
     }
 
     private void buildDelInfo() {
@@ -133,9 +137,12 @@ public class NodeMappedView {
     }
 
     private void buildMappedInfo() {
-        StringBuilder sb = new StringBuilder();
-        buildMappedInfo(sb, patchRootNode);
-        mappedInfo = sb.toString();
+        UIUtil.runNotUI(() -> {
+            StringBuilder sb = new StringBuilder();
+            buildMappedInfo(sb, patchRootNode);
+            mappedInfo = sb.toString();
+            updateText(textArea, true);
+        });
     }
 
     private void buildMappedInfo(StringBuilder sb, TreeNode rootNode) {
@@ -212,6 +219,7 @@ public class NodeMappedView {
         FileChooser fileChooser = new FileChooser();
         String readmeFile = Configuration.getInstance().getPatch().getReadmeFile();
         fileChooser.setInitialFileName(StringUtil.isBlank(readmeFile) ? AppConst.README_FILE : readmeFile);
+        fileChooser.setSelectedExtensionFilter(new FileChooser.ExtensionFilter("README FILE", "*.txt"));
         File file = fileChooser.showSaveDialog(stage);
         if (file != null) {
             FileUtil.writeFile(file, textArea.getText().getBytes());
@@ -231,16 +239,27 @@ public class NodeMappedView {
         dialogPane.widthProperty().addListener((observableValue, oldVal, newVal) -> configuration.setNodeMappedWidth(newVal.doubleValue()));
         dialogPane.heightProperty().addListener((observableValue, oldVal, newVal) -> configuration.setNodeMappedHeight(newVal.doubleValue()));
         dialog.setDialogPane(dialogPane);
-        dialogPane.getButtonTypes().add(new ButtonType(I18nUtil.t("app.view.node-mapped.save-as-file"), ButtonBar.ButtonData.YES));
-        dialogPane.getButtonTypes().add(new ButtonType(I18nUtil.t("app.view.node-mapped.copy-info"), ButtonBar.ButtonData.OK_DONE));
+        ButtonType yesButtonType = new ButtonType(I18nUtil.t("app.view.node-mapped.save-as-file"), ButtonBar.ButtonData.YES);
+        dialogPane.getButtonTypes().add(yesButtonType);
+        ButtonType okButtonType = new ButtonType(I18nUtil.t("app.view.node-mapped.copy-info"), ButtonBar.ButtonData.OK_DONE);
+        dialogPane.getButtonTypes().add(okButtonType);
         dialogPane.getButtonTypes().add(ButtonType.CANCEL);
-        dialog.setResultConverter(buttonType -> {
-            if (buttonType.getButtonData().equals(ButtonBar.ButtonData.OK_DONE)) {
-                handleCopyInfo();
-            } else if (buttonType.getButtonData().equals(ButtonBar.ButtonData.YES)) {
-                handleSaveAsFile(stage);
-            }
-            return Boolean.TRUE;
+        dialogPane.lookupButton(yesButtonType).addEventFilter(ActionEvent.ACTION, e -> {
+            handleSaveAsFile(stage);
+            e.consume();
+        });
+        Button okButton = (Button) dialogPane.lookupButton(okButtonType);
+        okButton.addEventFilter(ActionEvent.ACTION, e -> {
+            handleCopyInfo();
+            okButton.setDisable(true);
+            okButton.setText(I18nUtil.t("app.view.node-mapped.copy-info-ok"));
+            UIUtil.timeout(3, TimeUnit.SECONDS, () -> {
+                UIUtil.runUI(() -> {
+                    okButton.setDisable(false);
+                    okButton.setText(I18nUtil.t("app.view.node-mapped.copy-info"));
+                });
+            });
+            e.consume();
         });
         dialog.showAndWait();
     }
