@@ -1,5 +1,6 @@
 package cn.cpoet.patch.assistant.util;
 
+import cn.cpoet.patch.assistant.constant.OSExplorerConst;
 import cn.cpoet.patch.assistant.exception.AppException;
 
 import java.io.*;
@@ -257,6 +258,39 @@ public abstract class FileUtil {
             Files.move(source, target, options);
         } catch (Exception e) {
             throw new AppException("移动文件失败", e);
+        }
+    }
+
+    /**
+     * 在资源管理器中打开目录
+     *
+     * @param path 目录路径
+     */
+    public static void openFolder(String path) {
+        if (OSUtil.isLinux()) {
+            if (!OSUtil.execCommand(OSExplorerConst.LINUX_GNOME, path)
+                    && !OSUtil.execCommand(OSExplorerConst.LINUX_NAUTILUS, path)) {
+                OSUtil.execCommand(OSExplorerConst.LINUX_KDE, path);
+            }
+        } else if (OSUtil.isMacOS()) {
+            OSUtil.execCommand(OSExplorerConst.MACOS, path);
+        } else {
+            OSUtil.execCommand(OSExplorerConst.WINDOWS, path);
+        }
+    }
+
+    /**
+     * 在资源管理器中选中文件
+     *
+     * @param filePath 文件路径
+     */
+    public static void selectFile(String filePath) {
+        if (OSUtil.isLinux()) {
+            OSUtil.execCommand(OSExplorerConst.LINUX_GNOME, filePath);
+        } else if (OSUtil.isMacOS()) {
+            OSUtil.execCommand(OSExplorerConst.MACOS, filePath);
+        } else {
+            OSUtil.execCommand(OSExplorerConst.WINDOWS, "/e,/select," + filePath);
         }
     }
 }

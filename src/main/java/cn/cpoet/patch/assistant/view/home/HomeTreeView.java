@@ -11,6 +11,7 @@ import cn.cpoet.patch.assistant.util.FileUtil;
 import cn.cpoet.patch.assistant.util.I18nUtil;
 import cn.cpoet.patch.assistant.view.content.ContentSupports;
 import cn.cpoet.patch.assistant.view.content.parser.ContentParser;
+import javafx.event.ActionEvent;
 import javafx.scene.control.*;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.KeyEvent;
@@ -136,6 +137,25 @@ public abstract class HomeTreeView {
             TreeNode selectedNode = selectedItem.getValue();
             if (CollectionUtil.isNotEmpty(selectedNode.getChildren())) {
                 selectedItem.setExpanded(!selectedItem.isExpanded());
+            }
+        }
+        event.consume();
+    }
+
+    /**
+     * 在资源管理器中打开
+     *
+     * @param event    事件
+     * @param treeView 树
+     */
+    protected void handleOpenInExplorer(ActionEvent event, TreeView<TreeNode> treeView) {
+        TreeItem<TreeNode> selectedItem = treeView.getSelectionModel().getSelectedItem();
+        if (selectedItem != null && selectedItem.getValue() != null) {
+            TreeNode selectedNode = selectedItem.getValue();
+            if (selectedNode.isDir()) {
+                FileUtil.openFolder(selectedNode.getPath());
+            } else {
+                FileUtil.selectFile(selectedNode.getPath());
             }
         }
         event.consume();

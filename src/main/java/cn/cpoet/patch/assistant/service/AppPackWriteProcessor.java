@@ -191,12 +191,12 @@ public class AppPackWriteProcessor {
         FileUtil.writeFile(localWorkPath, rootNode.getName(), bytes);
         progressContext.step("Generate Docker image");
         OutputStream progressOut = progressContext.createOutputStream();
-        int status = CommandUtil.exec(localCommand + " build -t demo:1.0.0 .", localWorkPath, progressOut);
+        int status = OSUtil.execCommand(localCommand + " build -t demo:1.0.0 .", localWorkPath, progressOut);
         if (status != 0) {
             throw new AppException("Generate Docker image fail");
         }
         progressContext.step("Export Docker image");
-        status = CommandUtil.exec(localCommand + " save -o demo.tar demo:1.0.0", localWorkPath, progressOut);
+        status = OSUtil.execCommand(localCommand + " save -o demo.tar demo:1.0.0", localWorkPath, progressOut);
         if (status != 0) {
             throw new AppException("Export Docker image fail");
         }

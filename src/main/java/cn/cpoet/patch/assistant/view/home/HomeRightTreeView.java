@@ -4,6 +4,8 @@ import cn.cpoet.patch.assistant.constant.FileExtConst;
 import cn.cpoet.patch.assistant.constant.FocusTreeStatusConst;
 import cn.cpoet.patch.assistant.constant.ParamNameConst;
 import cn.cpoet.patch.assistant.control.tree.*;
+import cn.cpoet.patch.assistant.control.tree.node.CompressNode;
+import cn.cpoet.patch.assistant.control.tree.node.FileNode;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.core.AppContext;
 import cn.cpoet.patch.assistant.core.Configuration;
@@ -101,6 +103,10 @@ public class HomeRightTreeView extends HomeTreeView {
         viewNodeMappedItem.setOnAction(this::handleViewNodeMapped);
         contextMenu.getItems().add(viewNodeMappedItem);
 
+        MenuItem openInExplorerItem = new MenuItem(I18nUtil.t("app.view.right-tree.open-in-explorer"));
+        openInExplorerItem.setOnAction(e -> handleOpenInExplorer(e, patchTree));
+        contextMenu.getItems().add(openInExplorerItem);
+
         RadioMenuItem focusPatchTreeItem = new RadioMenuItem(I18nUtil.t("app.view.right-tree.focus-patch-tree"));
         focusPatchTreeItem.setSelected((context.focusTreeStatus.get() & FocusTreeStatusConst.PATCH) == FocusTreeStatusConst.PATCH);
         focusPatchTreeItem.setOnAction(e -> context.focusTreeStatus.set(context.focusTreeStatus.get() != FocusTreeStatusConst.ALL ? FocusTreeStatusConst.ALL : FocusTreeStatusConst.PATCH));
@@ -133,6 +139,7 @@ public class HomeRightTreeView extends HomeTreeView {
                 viewNodeMappedItem.setVisible(appTree.getTreeInfo() != null
                         && CollectionUtil.isEmpty(patchTree.getTreeInfo().getCustomRootInfoMap()));
             }
+            openInExplorerItem.setVisible(selectedNode instanceof FileNode && !(selectedNode instanceof CompressNode));
         });
         patchTree.setContextMenu(contextMenu);
     }
