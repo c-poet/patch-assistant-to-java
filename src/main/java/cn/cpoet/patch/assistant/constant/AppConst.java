@@ -17,6 +17,11 @@ public interface AppConst {
     String APP_PROJECT_NAME = "patch-assistant-to-java";
 
     /**
+     * 锁名称
+     */
+    String APP_LOCK_NAME = APP_NAME + ".lock";
+
+    /**
      * 作者名称
      */
     String APP_AUTHOR_NAME = "CPoet";

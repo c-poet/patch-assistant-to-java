@@ -15,6 +15,15 @@ public abstract class OSUtil {
     }
 
     /**
+     * 获取当前进程的pid
+     *
+     * @return pid
+     */
+    public static long getPid() {
+        return ProcessHandle.current().pid();
+    }
+
+    /**
      * 获取操作系统名称
      *
      * @return 操作系统名称

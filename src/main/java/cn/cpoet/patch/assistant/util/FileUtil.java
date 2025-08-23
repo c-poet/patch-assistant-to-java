@@ -1,5 +1,6 @@
 package cn.cpoet.patch.assistant.util;
 
+import cn.cpoet.patch.assistant.constant.AppConst;
 import cn.cpoet.patch.assistant.constant.OSExplorerConst;
 import cn.cpoet.patch.assistant.exception.AppException;
 
@@ -292,5 +293,32 @@ public abstract class FileUtil {
         } else {
             OSUtil.execCommand(OSExplorerConst.WINDOWS, "/e,/select," + filePath);
         }
+    }
+
+    /**
+     * 在目录中写入锁信息
+     *
+     * @param dir 目录
+     */
+    public static void writeDirLockInfo(File dir) {
+        File file = new File(dir, AppConst.APP_LOCK_NAME);
+        if (file.exists()) {
+            return;
+        }
+        FileUtil.writeFile(file, String.valueOf(OSUtil.getPid()).getBytes());
+    }
+
+    /**
+     * 读取目录中的锁信息
+     *
+     * @param dir 目录
+     * @return 锁信息
+     */
+    public static String readDirLockInfo(File dir) {
+        File file = new File(dir, AppConst.APP_LOCK_NAME);
+        if (!file.exists() || !file.isFile()) {
+            return null;
+        }
+        return new String(FileUtil.readFile(file));
     }
 }

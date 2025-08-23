@@ -151,6 +151,7 @@ public class AppContext {
         synchronized (AppContext.class) {
             if (globalTempDir == null) {
                 globalTempDir = FileTempUtil.createTempDir(AppConst.APP_NAME).toFile();
+                FileUtil.writeDirLockInfo(globalTempDir);
             }
         }
         return globalTempDir;
