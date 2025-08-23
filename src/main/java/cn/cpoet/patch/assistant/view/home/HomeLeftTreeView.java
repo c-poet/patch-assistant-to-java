@@ -84,10 +84,11 @@ public class HomeLeftTreeView extends HomeTreeView {
         newNode.setPath(FileNameUtil.joinPath(treeNode.getPath(), name));
         newNode.setDir(true);
         newNode.setParent(treeNode);
-        treeNode.getAndInitChildren().add(newNode);
+        List<TreeNode> children = treeNode.getAndInitChildren();
+        children.add(newNode);
         TreeItem<TreeNode> newTreeItem = new FileTreeItem();
         TreeNodeUtil.bindTreeNodeAndItem(newNode, newTreeItem);
-        treeItem.getChildren().add(newTreeItem);
+        treeItem.getChildren().add(children.indexOf(newNode), newTreeItem);
         appTree.getSelectionModel().clearSelection();
         appTree.getSelectionModel().select(newTreeItem);
         appTree.tryEdit(newTreeItem);
