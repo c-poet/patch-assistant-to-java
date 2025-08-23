@@ -120,6 +120,12 @@ public class Configuration {
     private Boolean isShowFileDetail;
 
     /**
+     * 显示补丁信息
+     */
+    @JacksonXmlProperty
+    private Boolean showPatchInfo;
+
+    /**
      * 最后的应用包路径
      */
     @JacksonXmlProperty
@@ -317,6 +323,14 @@ public class Configuration {
 
     public void setIsShowFileDetail(Boolean isShowFileDetail) {
         this.isShowFileDetail = isShowFileDetail;
+    }
+
+    public Boolean getShowPatchInfo() {
+        return showPatchInfo;
+    }
+
+    public void setShowPatchInfo(Boolean showPatchInfo) {
+        this.showPatchInfo = showPatchInfo;
     }
 
     public String getLastAppPackPath() {

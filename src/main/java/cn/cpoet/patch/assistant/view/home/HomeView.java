@@ -14,6 +14,8 @@ import cn.cpoet.patch.assistant.view.about.AboutView;
 import cn.cpoet.patch.assistant.view.config.ConfigView;
 import cn.cpoet.patch.assistant.view.progress.ProgressView;
 import cn.cpoet.patch.assistant.view.search.SearchView;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.geometry.Insets;
@@ -35,9 +37,11 @@ import java.util.Set;
 public class HomeView extends HomeContext {
 
     private final Stage stage;
+    private final BooleanProperty showPatchInfo;
 
     public HomeView(Stage stage) {
         this.stage = stage;
+        showPatchInfo = new SimpleBooleanProperty(Boolean.TRUE.equals(Configuration.getInstance().getShowPatchInfo()));
     }
 
     private Node buildHeader() {
@@ -46,6 +50,11 @@ public class HomeView extends HomeContext {
 
         HBox headerBox = new HBox();
         headerBox.setSpacing(10);
+        CheckBox showPatchInfoCB = new CheckBox(I18nUtil.t("app.view.home.show-patch-info"));
+        showPatchInfoCB.setSelected(showPatchInfo.get());
+        showPatchInfoCB.setOnAction(e -> showPatchInfo.set(!showPatchInfo.get()));
+        headerBox.getChildren().add(showPatchInfoCB);
+
         CheckBox checkSelectedLink = new CheckBox(I18nUtil.t("app.view.home.select-linkage"));
         checkSelectedLink.setSelected(Boolean.TRUE.equals(configuration.getIsSelectedLinked()));
         checkSelectedLink.setOnAction(e -> configuration.setIsSelectedLinked(!Boolean.TRUE.equals(configuration.getIsSelectedLinked())));
@@ -129,6 +138,14 @@ public class HomeView extends HomeContext {
         }
     }
 
+    private void handleShowPatchInfo(SplitPane centrePane, Node top, Node bottom, boolean showPatchInfo) {
+        centrePane.getItems().clear();
+        centrePane.getItems().add(top);
+        if (showPatchInfo) {
+            centrePane.getItems().add(bottom);
+        }
+    }
+
     private Node buildCentre() {
         StackPane treeStackPane = new StackPane();
         Node leftTree = new HomeLeftTreeView(stage, this).build();
@@ -143,7 +160,11 @@ public class HomeView extends HomeContext {
         treeStackPane.getChildren().add(topPane);
         Node patchInfo = buildBottomCentre();
         SplitPane centrePane = new SplitPane(treeStackPane, patchInfo);
-
+        handleShowPatchInfo(centrePane, treeStackPane, patchInfo, showPatchInfo.get());
+        showPatchInfo.addListener((observableValue, oldVal, newVal) -> {
+            Configuration.getInstance().setShowPatchInfo(newVal);
+            handleShowPatchInfo(centrePane, treeStackPane, patchInfo, newVal);
+        });
         centrePane.setOrientation(Orientation.VERTICAL);
         centrePane.setDividerPositions(0.7);
         return centrePane;
