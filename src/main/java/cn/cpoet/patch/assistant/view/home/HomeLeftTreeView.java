@@ -169,10 +169,15 @@ public class HomeLeftTreeView extends HomeTreeView {
     }
 
     private void refreshAppTree(File file) {
+        loadingFlag.set(true);
         UIUtil.runNotUI(() -> {
-            AppTreeInfo appTreeInfo = AppPackService.INSTANCE.getTreeNode(file);
-            appTree.setTreeInfo(appTreeInfo);
-            refreshAppTree(AppTreeView.REFRESH_FLAG_EMIT_EVENT);
+            try {
+                AppTreeInfo appTreeInfo = AppPackService.INSTANCE.getTreeNode(file);
+                appTree.setTreeInfo(appTreeInfo);
+                refreshAppTree(AppTreeView.REFRESH_FLAG_EMIT_EVENT);
+            } finally {
+                loadingFlag.set(false);
+            }
         });
     }
 
@@ -199,7 +204,7 @@ public class HomeLeftTreeView extends HomeTreeView {
     }
 
     private void onDragOver(DragEvent event) {
-        if (isDragFromTreeCell(event)) {
+        if (isDragFromTreeCell(event) || isLoadingFlag()) {
             return;
         }
         List<File> files = event.getDragboard().getFiles();
@@ -274,12 +279,7 @@ public class HomeLeftTreeView extends HomeTreeView {
         });
     }
 
-    public Node build() {
-        HBox appPackPathBox = FXUtil.pre(new HBox(), node -> {
-            node.setAlignment(Pos.CENTER);
-            node.setPadding(new Insets(3, 8, 3, 8));
-            node.setSpacing(3);
-        });
+    private void addPackPathLabel(HBox appPackPathBox) {
         appPackPathBox.getChildren().add(new Label(I18nUtil.t("app.view.left-tree.app-package")));
         appPackPathBox.getChildren().add(FXUtil.pre(new TextField(), node -> {
             node.setEditable(false);
@@ -296,23 +296,49 @@ public class HomeLeftTreeView extends HomeTreeView {
             });
             node.textProperty().addListener((observableValue, oldVal, newVal) -> Configuration.getInstance().setLastAppPackPath(newVal));
         }));
-        appPackPathBox.getChildren().add(FXUtil.pre(new Button(I18nUtil.t("app.view.left-tree.select")), node ->
-                node.setOnAction(e -> {
-                    FileChooser fileChooser = new FileChooser();
-                    fileChooser.setTitle(I18nUtil.t("app.view.left-tree.select-jar"));
-                    String lastAppPackPath = Configuration.getInstance().getLastAppPackPath();
-                    if (!StringUtil.isBlank(lastAppPackPath)) {
-                        File dir = FileUtil.getExistsDirOrFile(FileNameUtil.getDirPath(lastAppPackPath));
-                        fileChooser.setInitialDirectory(dir);
-                    }
-                    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(I18nUtil.t("app.view.left-tree.java-package"), "*.jar"));
-                    File file = fileChooser.showOpenDialog(stage);
-                    if (file == null) {
-                        return;
-                    }
-                    refreshAppTree(file);
-                })
-        ));
+    }
+
+    private void addSelectBtn(HBox appPackPathBox) {
+        appPackPathBox.getChildren().add(FXUtil.pre(new Button(I18nUtil.t("app.view.left-tree.select")), node -> {
+            node.setOnAction(e -> {
+                FileChooser fileChooser = new FileChooser();
+                fileChooser.setTitle(I18nUtil.t("app.view.left-tree.select-jar"));
+                String lastAppPackPath = Configuration.getInstance().getLastAppPackPath();
+                if (!StringUtil.isBlank(lastAppPackPath)) {
+                    File dir = FileUtil.getExistsDirOrFile(FileNameUtil.getDirPath(lastAppPackPath));
+                    fileChooser.setInitialDirectory(dir);
+                }
+                fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(I18nUtil.t("app.view.left-tree.java-package"), "*.jar"));
+                File file = fileChooser.showOpenDialog(stage);
+                if (file == null) {
+                    return;
+                }
+                refreshAppTree(file);
+            });
+            loadingFlagProperty().addListener((observableValue, oldVal, newVal) -> {
+                if (newVal) {
+                    UIUtil.runUI(() -> {
+                        node.setText(I18nUtil.t("app.view.left-tree.select-loading"));
+                        node.setDisable(true);
+                    });
+                } else {
+                    UIUtil.runUI(() -> {
+                        node.setText(I18nUtil.t("app.view.left-tree.select"));
+                        node.setDisable(false);
+                    });
+                }
+            });
+        }));
+    }
+
+    public Node build() {
+        HBox appPackPathBox = FXUtil.pre(new HBox(), node -> {
+            node.setAlignment(Pos.CENTER);
+            node.setPadding(new Insets(3, 8, 3, 8));
+            node.setSpacing(3);
+        });
+        addPackPathLabel(appPackPathBox);
+        addSelectBtn(appPackPathBox);
         buildAppTree();
         VBox.setVgrow(appTree, Priority.ALWAYS);
         return new VBox(appPackPathBox, appTree);

@@ -11,6 +11,8 @@ import cn.cpoet.patch.assistant.util.FileUtil;
 import cn.cpoet.patch.assistant.util.I18nUtil;
 import cn.cpoet.patch.assistant.view.content.ContentSupports;
 import cn.cpoet.patch.assistant.view.content.parser.ContentParser;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.ActionEvent;
 import javafx.scene.control.*;
 import javafx.scene.input.DragEvent;
@@ -35,12 +37,26 @@ public abstract class HomeTreeView {
     protected final HomeContext context;
     protected final AppTreeView appTree;
     protected final PatchTreeView patchTree;
+    /** 加载中标识 */
+    protected final BooleanProperty loadingFlag = new SimpleBooleanProperty(false);
 
     protected HomeTreeView(Stage stage, HomeContext context) {
         this.stage = stage;
         this.context = context;
         this.appTree = context.getAppTree();
         this.patchTree = context.getPatchTree();
+    }
+
+    public boolean isLoadingFlag() {
+        return loadingFlag.get();
+    }
+
+    public BooleanProperty loadingFlagProperty() {
+        return loadingFlag;
+    }
+
+    public void setLoadingFlag(boolean loadingFlag) {
+        this.loadingFlag.set(loadingFlag);
     }
 
     protected void selectedLink(TreeView<TreeNode> originTree, TreeView<TreeNode> targetTree) {

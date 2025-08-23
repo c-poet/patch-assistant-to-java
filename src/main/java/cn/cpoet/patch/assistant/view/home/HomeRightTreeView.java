@@ -145,14 +145,19 @@ public class HomeRightTreeView extends HomeTreeView {
     }
 
     private void refreshPatchTree(File file) {
+        loadingFlag.set(true);
         UIUtil.runNotUI(() -> {
-            PatchTreeInfo oldTreeInfo = patchTree.getTreeInfo();
-            if (oldTreeInfo != null && oldTreeInfo.getRootNode() != null) {
-                cleanPatchMappedNode(oldTreeInfo.getRootNode());
+            try {
+                PatchTreeInfo oldTreeInfo = patchTree.getTreeInfo();
+                if (oldTreeInfo != null && oldTreeInfo.getRootNode() != null) {
+                    cleanPatchMappedNode(oldTreeInfo.getRootNode());
+                }
+                PatchTreeInfo patchTreeInfo = PatchPackService.INSTANCE.getTreeNode(file);
+                patchTree.setTreeInfo(patchTreeInfo);
+                refreshPatchTree(PatchTreeView.REFRESH_FLAG_EMIT_EVENT | PatchTreeView.REFRESH_FLAG_BUILD_TREE_ITEM);
+            } finally {
+                loadingFlag.set(false);
             }
-            PatchTreeInfo patchTreeInfo = PatchPackService.INSTANCE.getTreeNode(file);
-            patchTree.setTreeInfo(patchTreeInfo);
-            refreshPatchTree(PatchTreeView.REFRESH_FLAG_EMIT_EVENT | PatchTreeView.REFRESH_FLAG_BUILD_TREE_ITEM);
         });
     }
 
@@ -231,7 +236,7 @@ public class HomeRightTreeView extends HomeTreeView {
     }
 
     private void onDragOver(DragEvent event) {
-        if (isDragFromTreeCell(event)) {
+        if (isDragFromTreeCell(event) || isLoadingFlag()) {
             return;
         }
         List<File> files = event.getDragboard().getFiles();
@@ -365,12 +370,7 @@ public class HomeRightTreeView extends HomeTreeView {
         return file;
     }
 
-    public Node build() {
-        HBox patchPackPathBox = FXUtil.pre(new HBox(), node -> {
-            node.setAlignment(Pos.CENTER);
-            node.setPadding(new Insets(3, 8, 3, 8));
-            node.setSpacing(3);
-        });
+    private void addPatchPathLabel(HBox patchPackPathBox) {
         patchPackPathBox.getChildren().add(new Label(I18nUtil.t("app.view.right-tree.patch-package")));
         patchPackPathBox.getChildren().add(FXUtil.pre(new TextField(), node -> {
             node.setEditable(false);
@@ -387,38 +387,81 @@ public class HomeRightTreeView extends HomeTreeView {
             });
             node.textProperty().addListener((observableValue, oldVal, newVal) -> Configuration.getInstance().setLastPatchPackPath(newVal));
         }));
-        patchPackPathBox.getChildren().add(FXUtil.pre(new Button(I18nUtil.t("app.view.right-tree.select")), node ->
-                node.setOnAction(e -> {
-                    FileChooser fileChooser = new FileChooser();
-                    fileChooser.setTitle(I18nUtil.t("app.view.right-tree.select-patch"));
-                    String lastPatchPackPath = Configuration.getInstance().getLastPatchPackPath();
-                    if (!StringUtil.isBlank(lastPatchPackPath)) {
-                        File dir = FileUtil.getExistsDirOrFile(FileNameUtil.getDirPath(lastPatchPackPath));
-                        fileChooser.setInitialDirectory(dir);
-                    }
-                    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(I18nUtil.t("app.view.right-tree.patch-pack")
-                            , "*" + FileExtConst.DOT_ZIP, "*" + FileExtConst.DOT_RAR));
-                    File file = fileChooser.showOpenDialog(stage);
-                    if (file != null) {
-                        refreshPatchTree(file);
-                    }
-                })
-        ));
-        patchPackPathBox.getChildren().add(FXUtil.pre(new Button(I18nUtil.t("app.view.right-tree.patch-directory")), node ->
-                node.setOnAction(e -> {
-                    DirectoryChooser directoryChooser = new DirectoryChooser();
-                    directoryChooser.setTitle(I18nUtil.t("app.view.right-tree.select-patch-directory"));
-                    String lastPatchPackPath = Configuration.getInstance().getLastPatchPackPath();
-                    if (!StringUtil.isBlank(lastPatchPackPath)) {
-                        File file = FileUtil.getExistsDirOrFile(lastPatchPackPath);
-                        directoryChooser.setInitialDirectory(file == null ? null : (file.isFile() ? file.getParentFile() : file));
-                    }
-                    File file = directoryChooser.showDialog(stage);
-                    if (file != null) {
-                        refreshPatchTree(file);
-                    }
-                })
-        ));
+    }
+
+    private void addSelectBtn(HBox patchPackPathBox) {
+        patchPackPathBox.getChildren().add(FXUtil.pre(new Button(I18nUtil.t("app.view.right-tree.select")), node -> {
+            node.setOnAction(e -> {
+                FileChooser fileChooser = new FileChooser();
+                fileChooser.setTitle(I18nUtil.t("app.view.right-tree.select-patch"));
+                String lastPatchPackPath = Configuration.getInstance().getLastPatchPackPath();
+                if (!StringUtil.isBlank(lastPatchPackPath)) {
+                    File dir = FileUtil.getExistsDirOrFile(FileNameUtil.getDirPath(lastPatchPackPath));
+                    fileChooser.setInitialDirectory(dir);
+                }
+                fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(I18nUtil.t("app.view.right-tree.patch-pack")
+                        , "*" + FileExtConst.DOT_ZIP, "*" + FileExtConst.DOT_RAR));
+                File file = fileChooser.showOpenDialog(stage);
+                if (file != null) {
+                    refreshPatchTree(file);
+                }
+            });
+            loadingFlagProperty().addListener((observableValue, oldVal, newVal) -> {
+                if (newVal) {
+                    UIUtil.runUI(() -> {
+                        node.setText(I18nUtil.t("app.view.right-tree.select-loading"));
+                        node.setDisable(true);
+                    });
+                } else {
+                    UIUtil.runUI(() -> {
+                        node.setText(I18nUtil.t("app.view.right-tree.select"));
+                        node.setDisable(false);
+                    });
+                }
+            });
+        }));
+    }
+
+    private void addSelectDirBtn(HBox patchPackPathBox) {
+        patchPackPathBox.getChildren().add(FXUtil.pre(new Button(I18nUtil.t("app.view.right-tree.patch-directory")), node -> {
+            node.setOnAction(e -> {
+                DirectoryChooser directoryChooser = new DirectoryChooser();
+                directoryChooser.setTitle(I18nUtil.t("app.view.right-tree.select-patch-directory"));
+                String lastPatchPackPath = Configuration.getInstance().getLastPatchPackPath();
+                if (!StringUtil.isBlank(lastPatchPackPath)) {
+                    File file = FileUtil.getExistsDirOrFile(lastPatchPackPath);
+                    directoryChooser.setInitialDirectory(file == null ? null : (file.isFile() ? file.getParentFile() : file));
+                }
+                File file = directoryChooser.showDialog(stage);
+                if (file != null) {
+                    refreshPatchTree(file);
+                }
+            });
+            loadingFlagProperty().addListener((observableValue, oldVal, newVal) -> {
+                if (newVal) {
+                    UIUtil.runUI(() -> {
+                        node.setText(I18nUtil.t("app.view.right-tree.select-loading"));
+                        node.setDisable(true);
+                    });
+                } else {
+                    UIUtil.runUI(() -> {
+                        node.setText(I18nUtil.t("app.view.right-tree.patch-directory"));
+                        node.setDisable(false);
+                    });
+                }
+            });
+        }));
+    }
+
+    public Node build() {
+        HBox patchPackPathBox = FXUtil.pre(new HBox(), node -> {
+            node.setAlignment(Pos.CENTER);
+            node.setPadding(new Insets(3, 8, 3, 8));
+            node.setSpacing(3);
+        });
+        addPatchPathLabel(patchPackPathBox);
+        addSelectBtn(patchPackPathBox);
+        addSelectDirBtn(patchPackPathBox);
         buildPatchTree();
         VBox.setVgrow(patchTree, Priority.ALWAYS);
         return new VBox(patchPackPathBox, patchTree);
