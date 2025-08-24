@@ -425,6 +425,22 @@ public class PatchPackService extends BasePackService {
         return patchRootInfo;
     }
 
+    private FileNode createReadmeNode(ProgressContext progressContext, TreeNode rootNode) {
+        progressContext.step("Create a readme file to : " + rootNode.getName());
+        FileNode readmeNode = rootNode instanceof CompressNode || TreeNodeUtil.isCompressNode(rootNode) ? new CompressNode() : new FileNode();
+        String readmeFileName = Configuration.getInstance().getPatch().getReadmeFile();
+        if (StringUtil.isBlank(readmeFileName)) {
+            readmeFileName = AppConst.README_FILE;
+        }
+        readmeNode.setName(readmeFileName);
+        readmeNode.setPath(TreeNodeUtil.isCompressNode(rootNode) ? readmeFileName : FileNameUtil.joinPath(rootNode.getPath(), readmeFileName));
+        readmeNode.setPatch(true);
+        readmeNode.setType(TreeNodeType.README);
+        readmeNode.setParent(rootNode);
+        rootNode.getAndInitChildren().add(readmeNode);
+        return readmeNode;
+    }
+
     /**
      * 保存补丁包
      *
@@ -438,10 +454,13 @@ public class PatchPackService extends BasePackService {
             PatchTreeInfo treeInfo = patchTree.getTreeInfo();
             PatchRootInfo patchRootInfo = treeInfo.getRootInfoByNode(rootNode);
             FileNode readmeNode = (FileNode) patchRootInfo.getReadmeNode();
-            FileNode oldReadmeNode = (FileNode) readmeNode.clone();
+            FileNode oldReadmeNode = readmeNode == null ? null : (FileNode) readmeNode.clone();
+            if (readmeNode == null) {
+                readmeNode = createReadmeNode(progressContext, rootNode);
+            }
             try {
                 progressContext.step("Update readme text to file");
-                File file = new File(readmeNode.getFile().getParentFile(), FileNameUtil.uniqueFileName(readmeNode.getName()));
+                File file = new File(AppContext.getInstance().getTempDir(), FileNameUtil.uniqueFileName(readmeNode.getName()));
                 byte[] bytes = text.getBytes();
                 FileUtil.writeFile(file, bytes);
                 readmeNode.setFile(file);
@@ -450,19 +469,33 @@ public class PatchPackService extends BasePackService {
                     cNode.setModifyTime(LocalDateTime.now());
                     cNode.setAccessTime(cNode.getModifyTime());
                     cNode.setMd5(HashUtil.md5(bytes));
+                    cNode.setSize(bytes.length);
                     updatePatchReadme(progressContext, (FileNode) rootNode);
                 }
                 progressContext.end(true);
+                patchRootInfo.setReadmeNode(readmeNode);
                 patchRootInfo.getPatchSign().setReadme(text);
                 treeInfo.updateReadmeText();
-                UIUtil.runUI(patchTree::refresh);
+                UIUtil.runUI(() -> {
+                    if (oldReadmeNode == null) {
+                        FileTreeItem fileTreeItem = new FileTreeItem();
+                        TreeNodeUtil.bindTreeNodeAndItem(patchRootInfo.getReadmeNode(), fileTreeItem);
+                        rootNode.getTreeItem().getChildren().add(fileTreeItem);
+                    }
+                    patchTree.refresh();
+                });
             } catch (Exception e) {
-                readmeNode.setFile(oldReadmeNode.getFile());
-                if (readmeNode instanceof CompressNode) {
-                    CompressNode cNode = (CompressNode) readmeNode;
-                    cNode.setMd5(oldReadmeNode.getMd5());
-                    cNode.setModifyTime(oldReadmeNode.getModifyTime());
-                    cNode.setAccessTime(((CompressNode) oldReadmeNode).getAccessTime());
+                if (oldReadmeNode == null) {
+                    rootNode.getChildren().remove(readmeNode);
+                } else {
+                    readmeNode.setFile(oldReadmeNode.getFile());
+                    if (readmeNode instanceof CompressNode) {
+                        CompressNode cNode = (CompressNode) readmeNode;
+                        cNode.setMd5(oldReadmeNode.getMd5());
+                        cNode.setSize(oldReadmeNode.getSize());
+                        cNode.setModifyTime(oldReadmeNode.getModifyTime());
+                        cNode.setAccessTime(((CompressNode) oldReadmeNode).getAccessTime());
+                    }
                 }
                 progressContext.step(ExceptionUtil.asString(e));
                 progressContext.end(false);
@@ -482,22 +515,27 @@ public class PatchPackService extends BasePackService {
             }
             rootNode = (FileNode) rootNode.getParent();
         }
-        File[] oldRootFiles = new File[rootNodes.size()];
+        FileNode[] oldRootNodes = new FileNode[rootNodes.size()];
         int i = 0;
         for (FileNode node : rootNodes) {
-            oldRootFiles[i++] = node.getFile();
+            oldRootNodes[i++] = (FileNode) node.clone();
         }
         try {
             for (FileNode fileNode : rootNodes) {
                 updatePatchPackWithZip(progressContext, fileNode);
+                byte[] bytes = fileNode.getBytes();
+                fileNode.setSize(bytes.length);
+                fileNode.setMd5(HashUtil.md5(bytes));
             }
             FileNode fileNode = rootNodes.getLast();
-            FileUtil.copyTo(fileNode.getFile(), oldRootFiles[oldRootFiles.length - 1]);
-            fileNode.setFile(oldRootFiles[oldRootFiles.length - 1]);
+            FileUtil.copyTo(fileNode.getFile(), oldRootNodes[oldRootNodes.length - 1].getFile());
+            fileNode.setFile(oldRootNodes[oldRootNodes.length - 1].getFile());
         } catch (Exception e) {
             i = 0;
             for (FileNode node : rootNodes) {
-                node.setFile(oldRootFiles[i++]);
+                node.setFile(oldRootNodes[i].getFile());
+                node.setMd5(oldRootNodes[i].getMd5());
+                node.setSize(oldRootNodes[i].getSize());
             }
             throw e;
         }
