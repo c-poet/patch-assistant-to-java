@@ -91,7 +91,7 @@ public class NodeMappedView {
                 String readmeText = ReadMeFileService.INSTANCE.delAllFilePath(patchRootInfo.getPatchSign().getReadme());
                 originMappedInfo = readmeText == null ? "" : readmeText;
             }
-            UIUtil.runUI(() -> textArea.setText(originMappedInfo + '\n' + text));
+            UIUtil.runUI(() -> textArea.setText(StringUtil.isBlank(originMappedInfo) ? text : (originMappedInfo + '\n' + text)));
         });
     }
 

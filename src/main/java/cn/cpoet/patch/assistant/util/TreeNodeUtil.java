@@ -142,7 +142,7 @@ public abstract class TreeNodeUtil {
     public static void countAndSetNodeType(TotalInfo totalInfo, TreeNode node, TreeNodeType type) {
         node.setType(type);
         if (!node.isDir()) {
-            totalInfo.incrTotal(type);
+            UIUtil.runUI(() -> totalInfo.incrTotal(type));
         }
         if (CollectionUtil.isNotEmpty(node.getChildren())) {
             node.getChildren().forEach(child -> countAndSetNodeType(totalInfo, child, type));
