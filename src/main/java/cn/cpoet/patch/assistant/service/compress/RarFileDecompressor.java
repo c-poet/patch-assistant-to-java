@@ -12,9 +12,9 @@ import java.io.InputStream;
 /**
  * @author CPoet
  */
-public class RarFileCompressor extends FileCompressor {
+public class RarFileDecompressor extends FileDecompressor {
 
-    public static final RarFileCompressor INSTANCE = new RarFileCompressor();
+    public static final RarFileDecompressor INSTANCE = new RarFileDecompressor();
 
     @Override
     public void decompress(InputStream in, UnCallback callback) {
@@ -41,7 +41,7 @@ public class RarFileCompressor extends FileCompressor {
         } catch (IOException e) {
             throw new AppException("The RAR conversion tool failed", e);
         }
-        LocalFileCompressor.INSTANCE.decompress(in, callback);
+        LocalFileDecompressor.INSTANCE.decompress(in, callback);
     }
 
     private byte[] readBytes(Archive archive, FileHeader fileHeader) throws IOException {

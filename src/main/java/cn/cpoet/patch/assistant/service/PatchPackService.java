@@ -3,16 +3,14 @@ package cn.cpoet.patch.assistant.service;
 import cn.cpoet.patch.assistant.constant.AppConst;
 import cn.cpoet.patch.assistant.constant.FileExtConst;
 import cn.cpoet.patch.assistant.control.tree.*;
-import cn.cpoet.patch.assistant.control.tree.node.FileNode;
-import cn.cpoet.patch.assistant.control.tree.node.MappedNode;
-import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
-import cn.cpoet.patch.assistant.control.tree.node.VirtualNode;
+import cn.cpoet.patch.assistant.control.tree.node.*;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.core.PatchConf;
 import cn.cpoet.patch.assistant.exception.AppException;
 import cn.cpoet.patch.assistant.model.PatchSign;
 import cn.cpoet.patch.assistant.model.ReadMePathInfo;
 import cn.cpoet.patch.assistant.util.*;
+import cn.cpoet.patch.assistant.view.progress.ProgressContext;
 
 import java.io.*;
 import java.time.LocalDateTime;
@@ -20,6 +18,8 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * 补丁包处理
@@ -53,6 +53,7 @@ public class PatchPackService extends BasePackService {
         }
         if (readmeNode != null) {
             readmeNode.setType(TreeNodeType.README);
+            rootInfo.setReadmeNode(readmeNode);
             byte[] bytes = readmeNode.getBytes();
             if (bytes != null && bytes.length > 0) {
                 rootInfo.getPatchSign().setReadme(new String(bytes));
@@ -420,5 +421,63 @@ public class PatchPackService extends BasePackService {
         PatchRootInfo patchRootInfo = new PatchRootInfo();
         patchRootInfo.setPatchSign(patchSign);
         return patchRootInfo;
+    }
+
+    /**
+     * 保存补丁包
+     *
+     * @param progressContext 进行条上下文
+     * @param rootNode        根节点信息
+     */
+    public void updatePatchReadme(ProgressContext progressContext, TreeNode rootNode) {
+        UIUtil.runNotUI(() -> {
+            try {
+                progressContext.step("Write in the patch package");
+                TreeNode compressNodeRoot = TreeNodeUtil.getCompressNodeRoot(rootNode);
+                if (compressNodeRoot instanceof FileNode) {
+                    updatePatchPackWithZip(progressContext, (FileNode) compressNodeRoot);
+                }
+                progressContext.step("Write the patch package successfully");
+                progressContext.end(true);
+            } catch (Exception e) {
+                progressContext.step(ExceptionUtil.asString(e));
+                progressContext.end(false);
+            }
+        });
+    }
+
+    private void updatePatchPackWithZip(ProgressContext progressContext, FileNode rootNode) {
+        progressContext.step("Writing to a zip file:" + rootNode.getName());
+        try (FileOutputStream out = new FileOutputStream(rootNode.getFile());
+             ZipOutputStream zout = new ZipOutputStream(out)) {
+            writePatchPackWithZip(progressContext, zout, rootNode);
+        } catch (Exception e) {
+            return;
+        }
+        TreeNode compressNodeRoot = TreeNodeUtil.getCompressNodeRoot(rootNode.getParent());
+        if (compressNodeRoot instanceof FileNode) {
+            updatePatchPackWithZip(progressContext, (FileNode) compressNodeRoot);
+        }
+    }
+
+    private void writePatchPackWithZip(ProgressContext progressContext, ZipOutputStream zout, FileNode rootNode) throws IOException {
+        List<TreeNode> children = rootNode.getChildren();
+        if (CollectionUtil.isEmpty(children)) {
+            return;
+        }
+        for (TreeNode child : children) {
+            CompressNode compressNode = (CompressNode) child;
+            ZipEntry zipEntry = new ZipEntry(child.isDir() ? FileNameUtil.perfectDirPath(child.getPath()) : child.getPath());
+            zipEntry.setLastModifiedTime(DateUtil.toFileTimeOrCur(compressNode.getModifyTime()));
+            zipEntry.setComment(compressNode.getComment());
+            zout.putNextEntry(zipEntry);
+            if (CollectionUtil.isNotEmpty(child.getChildren()) && !TreeNodeUtil.isCompressNode(child)) {
+                writePatchPackWithZip(progressContext, zout, compressNode);
+            }
+            if (!child.isDir()) {
+                progressContext.step("Write to the file:" + child.getName());
+                zout.write(child.getBytes());
+            }
+        }
     }
 }

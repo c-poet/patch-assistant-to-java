@@ -11,9 +11,9 @@ import java.util.zip.ZipInputStream;
 /**
  * @author CPoet
  */
-public class ZipFileCompressor extends FileCompressor {
+public class ZipFileDecompressor extends FileDecompressor {
 
-    public static final ZipFileCompressor INSTANCE = new ZipFileCompressor();
+    public static final ZipFileDecompressor INSTANCE = new ZipFileDecompressor();
 
     @Override
     public void decompress(InputStream in, UnCallback callback) {

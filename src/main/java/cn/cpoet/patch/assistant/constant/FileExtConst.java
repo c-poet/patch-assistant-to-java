@@ -57,4 +57,14 @@ public interface FileExtConst {
      * java文件
      */
     String DOT_JAVA = FileNameUtil.C_EXT_SEPARATOR + JAVA;
+
+    /**
+     * 文本
+     */
+    String TXT = "txt";
+
+    /**
+     * 文本
+     */
+    String DOT_TXT = FileNameUtil.C_EXT_SEPARATOR + TXT;
 }

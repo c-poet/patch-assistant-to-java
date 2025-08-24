@@ -71,4 +71,31 @@ public class ReadMeFileService {
         }
         return pathInfos;
     }
+
+    /**
+     * 删除所有文件路径信息
+     *
+     * @param readmeText 补丁说明内容
+     * @return 删除路径后的说明文件
+     */
+    public String delAllFilePath(String readmeText) {
+        if (StringUtil.isBlank(readmeText)) {
+            return readmeText;
+        }
+        StringBuilder sb = new StringBuilder();
+        try (StringReader reader = new StringReader(readmeText);
+             BufferedReader bufferedReader = new BufferedReader(reader)) {
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                if (!pattern.matcher(line).matches()) {
+                    if (!StringUtil.isEmpty(sb)) {
+                        sb.append('\n');
+                    }
+                    sb.append(line);
+                }
+            }
+        } catch (Exception ignored) {
+        }
+        return sb.toString();
+    }
 }

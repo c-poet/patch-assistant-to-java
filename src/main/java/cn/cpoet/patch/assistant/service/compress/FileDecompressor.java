@@ -8,7 +8,7 @@ import java.io.InputStream;
 /**
  * @author CPoet
  */
-public abstract class FileCompressor {
+public abstract class FileDecompressor {
 
     /**
      * 解压缩
@@ -35,20 +35,20 @@ public abstract class FileCompressor {
      * @param fileName 文件名
      * @return 压缩实例
      */
-    public static FileCompressor getInstance(String fileName) {
-        FileCompressor fileCompressor = doGetInstance(fileName);
-        if (fileCompressor == null) {
+    public static FileDecompressor getInstance(String fileName) {
+        FileDecompressor fileDecompressor = doGetInstance(fileName);
+        if (fileDecompressor == null) {
             throw new AppException("Unsupported compression type: " + fileName);
         }
-        return fileCompressor;
+        return fileDecompressor;
     }
 
-    private static FileCompressor doGetInstance(String fileName) {
+    private static FileDecompressor doGetInstance(String fileName) {
         if (fileName.endsWith(FileExtConst.DOT_JAR) || fileName.endsWith(FileExtConst.DOT_ZIP)) {
-            return ZipFileCompressor.INSTANCE;
+            return ZipFileDecompressor.INSTANCE;
         }
         if (fileName.endsWith(FileExtConst.DOT_RAR)) {
-            return RarFileCompressor.INSTANCE;
+            return RarFileDecompressor.INSTANCE;
         }
         return null;
     }

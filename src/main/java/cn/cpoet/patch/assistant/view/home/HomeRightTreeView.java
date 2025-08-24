@@ -10,7 +10,7 @@ import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.core.AppContext;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.service.PatchPackService;
-import cn.cpoet.patch.assistant.service.compress.FileCompressor;
+import cn.cpoet.patch.assistant.service.compress.FileDecompressor;
 import cn.cpoet.patch.assistant.util.*;
 import cn.cpoet.patch.assistant.view.content.ContentView;
 import cn.cpoet.patch.assistant.view.node_mapped.NodeMappedView;
@@ -73,7 +73,7 @@ public class HomeRightTreeView extends HomeTreeView {
 
     private void handleViewNodeMapped(ActionEvent event) {
         TreeNode rootNode = patchTree.getSelectionModel().getSelectedItem().getValue();
-        new NodeMappedView(appTree.getTreeInfo().getRootNode(), rootNode).showDialog(stage);
+        new NodeMappedView(appTree.getTreeInfo().getRootNode(), rootNode, patchTree).showDialog(stage);
     }
 
     private void buildPatchTreeContextMenu() {
@@ -240,7 +240,7 @@ public class HomeRightTreeView extends HomeTreeView {
             return;
         }
         List<File> files = event.getDragboard().getFiles();
-        if (files.size() == 1 && (files.get(0).isDirectory() || FileCompressor.isCompressFile(files.get(0).getName()))) {
+        if (files.size() == 1 && (files.get(0).isDirectory() || FileDecompressor.isCompressFile(files.get(0).getName()))) {
             event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
         }
         event.consume();

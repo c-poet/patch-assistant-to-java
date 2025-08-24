@@ -5,7 +5,7 @@ import cn.cpoet.patch.assistant.constant.JarInfoConst;
 import cn.cpoet.patch.assistant.control.tree.node.CompressNode;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.exception.AppException;
-import cn.cpoet.patch.assistant.service.compress.FileCompressor;
+import cn.cpoet.patch.assistant.service.compress.FileDecompressor;
 import cn.cpoet.patch.assistant.service.compress.CompressNodeFactory;
 import cn.cpoet.patch.assistant.util.CollectionUtil;
 import cn.cpoet.patch.assistant.util.FileNameUtil;
@@ -97,8 +97,8 @@ public abstract class BasePackService {
         List<TreeNode> innerClasses = new ArrayList<>();
         Map<String, TreeNode> treeNodeMap = new HashMap<>();
         AtomicReference<TreeNode> manifestNodeRef = new AtomicReference<>();
-        FileCompressor fileCompressor = FileCompressor.getInstance(rootNode.getName());
-        fileCompressor.decompress(in, (entry, bytes) -> {
+        FileDecompressor fileDecompressor = FileDecompressor.getInstance(rootNode.getName());
+        fileDecompressor.decompress(in, (entry, bytes) -> {
             CompressNode node = CompressNodeFactory.getInstance(entry).create(entry, bytes);
             node.setPatch(isPatch);
             if (!node.isDir()) {

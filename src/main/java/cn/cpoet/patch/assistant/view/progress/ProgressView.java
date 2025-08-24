@@ -3,6 +3,7 @@ package cn.cpoet.patch.assistant.view.progress;
 import cn.cpoet.patch.assistant.control.DialogPurePane;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.util.AlterUtil;
+import cn.cpoet.patch.assistant.util.I18nUtil;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.*;
@@ -45,7 +46,7 @@ public class ProgressView extends ProgressContext {
         dialog.initOwner(stage);
         dialog.initModality(Modality.WINDOW_MODAL);
         dialog.setResizable(true);
-        dialog.setTitle("正在执行: " + taskName);
+        dialog.setTitle(I18nUtil.t("app.view.progress.executing-title") + taskName);
         DialogPane dialogPane = new DialogPurePane();
         dialogPane.setContent(build());
         Configuration configuration = Configuration.getInstance();
@@ -57,7 +58,7 @@ public class ProgressView extends ProgressContext {
         consumer.accept(this);
         dialogPane.getScene().getWindow().setOnCloseRequest(e -> {
             if (!isEnd()) {
-                AlterUtil.error(stage, "【" + taskName + "】正在进行中，请耐心等待");
+                AlterUtil.error(stage, "【" + taskName + "】" + I18nUtil.t("app.view.progress.executing-tip"));
                 e.consume();
             }
         });

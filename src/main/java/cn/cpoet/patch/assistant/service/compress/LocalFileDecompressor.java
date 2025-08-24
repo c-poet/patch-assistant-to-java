@@ -13,9 +13,9 @@ import java.io.InputStream;
 /**
  * @author CPoet
  */
-public class LocalFileCompressor extends FileCompressor {
+public class LocalFileDecompressor extends FileDecompressor {
 
-    public static final LocalFileCompressor INSTANCE = new LocalFileCompressor();
+    public static final LocalFileDecompressor INSTANCE = new LocalFileDecompressor();
 
     @Override
     public void decompress(InputStream in, UnCallback callback) {
