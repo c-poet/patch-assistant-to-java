@@ -525,6 +525,7 @@ public class PatchPackService extends BasePackService {
             entry.setCreationTime(DateUtil.toFileTimeOrCur(cNode.getCreateTime()));
             entry.setLastAccessTime(DateUtil.toFileTimeOrCur(cNode.getAccessTime()));
             entry.setLastModifiedTime(DateUtil.toFileTimeOrCur(cNode.getModifyTime()));
+            entry.setTimeLocal(cNode.getModifyTime());
             entry.setExtra(cNode.getExtra());
             entry.setComment(cNode.getComment());
             zout.putNextEntry(entry);
