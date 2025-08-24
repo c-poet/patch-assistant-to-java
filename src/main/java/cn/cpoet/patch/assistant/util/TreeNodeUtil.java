@@ -3,7 +3,6 @@ package cn.cpoet.patch.assistant.util;
 import cn.cpoet.patch.assistant.control.tree.FileTreeItem;
 import cn.cpoet.patch.assistant.control.tree.TotalInfo;
 import cn.cpoet.patch.assistant.control.tree.TreeNodeType;
-import cn.cpoet.patch.assistant.control.tree.node.CompressNode;
 import cn.cpoet.patch.assistant.control.tree.node.MappedNode;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.control.tree.node.VirtualNode;
@@ -347,21 +346,5 @@ public abstract class TreeNodeUtil {
             node.setMd5(HashUtil.md5(data));
         }
         return data;
-    }
-
-    /**
-     * 获取压缩节点的根节点
-     *
-     * @param treeNode 节点信息
-     * @return 压缩节点根节点
-     */
-    public static TreeNode getCompressNodeRoot(TreeNode treeNode) {
-        while (treeNode != null && !FileDecompressor.isCompressFile(treeNode.getName())) {
-            if (!(treeNode instanceof CompressNode)) {
-                return null;
-            }
-            treeNode = treeNode.getParent();
-        }
-        return treeNode;
     }
 }

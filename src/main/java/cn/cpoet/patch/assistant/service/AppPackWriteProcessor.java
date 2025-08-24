@@ -73,13 +73,8 @@ public class AppPackWriteProcessor {
     private void transitCompleted(File file, File transitFile, boolean isOk) {
         if (isOk) {
             progressContext.step("Write to:" + file.getPath());
-            try (InputStream in = new FileInputStream(transitFile);
-                 OutputStream out = new FileOutputStream(file)) {
-                int len;
-                byte[] buf = new byte[1024];
-                while ((len = in.read(buf)) != -1) {
-                    out.write(buf, 0, len);
-                }
+            try {
+                FileUtil.copyTo(transitFile, file);
             } catch (Exception e) {
                 throw new AppException("Write file failed", e);
             } finally {

@@ -1,6 +1,7 @@
 package cn.cpoet.patch.assistant.control.tree.node;
 
 import cn.cpoet.patch.assistant.control.tree.TreeNodeType;
+import cn.cpoet.patch.assistant.exception.AppException;
 import cn.cpoet.patch.assistant.jdk.SortLinkedList;
 import cn.cpoet.patch.assistant.util.HashUtil;
 import cn.cpoet.patch.assistant.util.StringUtil;
@@ -14,7 +15,7 @@ import java.util.List;
  *
  * @author CPoet
  */
-public abstract class TreeNode {
+public abstract class TreeNode implements Cloneable {
     /**
      * 节点名称
      */
@@ -205,5 +206,15 @@ public abstract class TreeNode {
 
     public void setType(TreeNodeType type) {
         this.type = type;
+    }
+
+
+    @Override
+    public TreeNode clone() {
+        try {
+            return (TreeNode) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AppException(e);
+        }
     }
 }

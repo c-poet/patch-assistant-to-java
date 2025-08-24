@@ -321,4 +321,23 @@ public abstract class FileUtil {
         }
         return new String(FileUtil.readFile(file));
     }
+
+    /**
+     * 拷贝源文件到指定文件
+     *
+     * @param sourceFile 源文件
+     * @param targetFile 目标文件
+     */
+    public static void copyTo(File sourceFile, File targetFile) {
+        try (InputStream in = new FileInputStream(sourceFile);
+             OutputStream out = new FileOutputStream(targetFile)) {
+            int len;
+            byte[] buf = new byte[1024];
+            while ((len = in.read(buf)) != -1) {
+                out.write(buf, 0, len);
+            }
+        } catch (Exception e) {
+            throw new AppException("copy file failed", e);
+        }
+    }
 }

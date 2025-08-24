@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
+ * 注意：{@link com.github.junrar.Junrar}仅支持rar4的解压，并不支持压缩工作
+ *
  * @author CPoet
  */
 public class RarFileDecompressor extends FileDecompressor {

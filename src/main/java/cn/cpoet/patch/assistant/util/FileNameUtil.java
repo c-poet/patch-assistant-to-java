@@ -1,7 +1,5 @@
 package cn.cpoet.patch.assistant.util;
 
-import java.util.UUID;
-
 /**
  * 文件名工具
  *
@@ -122,6 +120,12 @@ public abstract class FileNameUtil {
         return path;
     }
 
+    /**
+     * 生成唯一文件名
+     *
+     * @param name 名称
+     * @return 唯一文件名
+     */
     public static String uniqueFileName(String name) {
         String fileName = getName(name) + "_" + UUIDUtil.random32();
         String fileExt = getExt(name);

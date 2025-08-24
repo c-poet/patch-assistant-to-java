@@ -5,7 +5,6 @@ import cn.cpoet.patch.assistant.constant.StyleConst;
 import cn.cpoet.patch.assistant.control.tree.AppTreeView;
 import cn.cpoet.patch.assistant.control.tree.PatchRootInfo;
 import cn.cpoet.patch.assistant.control.tree.PatchTreeInfo;
-import cn.cpoet.patch.assistant.control.tree.PatchTreeView;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.service.AppPackService;
@@ -108,20 +107,19 @@ public class HomeView extends HomeContext {
         return titledPane;
     }
 
-    private void updateReadmeText(TextArea readMeTextArea) {
-        PatchTreeInfo patchTreeInfo = patchTree.getTreeInfo();
-        readMeTextArea.setText(patchTreeInfo.getReadMeText());
+    private void addReadmeTextListener(TextArea textArea, PatchTreeInfo patchTreeInfo) {
+        if (patchTreeInfo != null) {
+            textArea.setText(patchTreeInfo.getReadmeText());
+            patchTreeInfo.readmeTextProperty().addListener((observableValue, oldVal, newVal)
+                    -> UIUtil.runUI(() -> textArea.setText(newVal)));
+        }
     }
 
     private Node buildBottomCentre() {
         TextArea readMeTextArea = new TextArea();
         readMeTextArea.setEditable(false);
-        patchTree.addEventHandler(PatchTreeView.PATCH_TREE_REFRESH, e -> updateReadmeText(readMeTextArea));
-        patchTree.addEventHandler(PatchTreeView.PATCH_MARK_ROOT_CHANGE, e -> updateReadmeText(readMeTextArea));
-        PatchTreeInfo patchTreeInfo = patchTree.getTreeInfo();
-        if (patchTreeInfo != null) {
-            readMeTextArea.setText(patchTreeInfo.getReadMeText());
-        }
+        addReadmeTextListener(readMeTextArea, patchTree.getTreeInfo());
+        patchTree.treeInfoProperty().addListener((observableValue, oldVal, newVal) -> addReadmeTextListener(readMeTextArea, newVal));
         TitledPane titledPane = new TitledPane(I18nUtil.t("app.view.home.patch-info"), readMeTextArea);
         titledPane.setCollapsible(false);
         return titledPane;

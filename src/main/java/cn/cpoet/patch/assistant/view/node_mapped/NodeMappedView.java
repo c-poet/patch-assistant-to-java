@@ -4,11 +4,8 @@ import cn.cpoet.patch.assistant.constant.AppConst;
 import cn.cpoet.patch.assistant.constant.FileExtConst;
 import cn.cpoet.patch.assistant.constant.SpringConst;
 import cn.cpoet.patch.assistant.control.tree.PatchRootInfo;
-import cn.cpoet.patch.assistant.control.tree.PatchTreeInfo;
 import cn.cpoet.patch.assistant.control.tree.PatchTreeView;
 import cn.cpoet.patch.assistant.control.tree.TreeNodeType;
-import cn.cpoet.patch.assistant.control.tree.node.CompressNode;
-import cn.cpoet.patch.assistant.control.tree.node.FileNode;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.service.PatchPackService;
@@ -251,36 +248,8 @@ public class NodeMappedView {
             return;
         }
         String text = textArea.getText();
-        PatchTreeInfo patchTreeInfo = patchTree.getTreeInfo();
-        PatchRootInfo patchRootInfo = patchTreeInfo.getRootInfoByNode(patchRootNode);
-        TreeNode readmeNode = patchRootInfo.getReadmeNode();
-        FileUtil.writeFile(((FileNode) readmeNode).getFile(), text.getBytes());
-        // 需要写入压缩包中
-        if (readmeNode instanceof CompressNode) {
-            new ProgressView(I18nUtil.t("app.view.node-mapped.update-task-name"))
-                    .showDialog(stage, progressContext -> PatchPackService.INSTANCE.updatePatchReadme(progressContext, patchRootNode));
-        }
-    }
-
-    private boolean isSupportUpdateReadme() {
-        PatchTreeInfo patchTreeInfo = patchTree.getTreeInfo();
-        PatchRootInfo patchRootInfo = patchTreeInfo.getRootInfoByNode(patchRootNode);
-        TreeNode readmeNode = patchRootInfo.getReadmeNode();
-        if (!(readmeNode instanceof CompressNode)) {
-            return true;
-        }
-        TreeNode rootNode = patchRootNode;
-        do {
-            rootNode = TreeNodeUtil.getCompressNodeRoot(rootNode);
-            if (rootNode == null) {
-                return true;
-            }
-            if (!rootNode.getName().endsWith(FileExtConst.DOT_ZIP)) {
-                return false;
-            }
-            rootNode = rootNode.getParent();
-        } while (rootNode != null);
-        return true;
+        new ProgressView(I18nUtil.t("app.view.node-mapped.update-task-name"))
+                .showDialog(stage, progressContext -> PatchPackService.INSTANCE.updatePatchReadme(progressContext, patchTree, patchRootNode, text));
     }
 
     private DialogPane createDialogPane(Stage stage) {
@@ -290,23 +259,18 @@ public class NodeMappedView {
         dialogPane.setPrefSize(configuration.getNodeMappedWidth(), configuration.getNodeMappedHeight());
         dialogPane.widthProperty().addListener((observableValue, oldVal, newVal) -> configuration.setNodeMappedWidth(newVal.doubleValue()));
         dialogPane.heightProperty().addListener((observableValue, oldVal, newVal) -> configuration.setNodeMappedHeight(newVal.doubleValue()));
-        ButtonType updateReadmeBT = null;
-        if (isSupportUpdateReadme()) {
-            updateReadmeBT = new ButtonType(I18nUtil.t("app.view.node-mapped.update"), ButtonBar.ButtonData.YES);
-            dialogPane.getButtonTypes().add(updateReadmeBT);
-        }
+        ButtonType updateReadmeBT = new ButtonType(I18nUtil.t("app.view.node-mapped.update"), ButtonBar.ButtonData.YES);
+        dialogPane.getButtonTypes().add(updateReadmeBT);
         ButtonType saveAsFileBT = new ButtonType(I18nUtil.t("app.view.node-mapped.save-as-file"), ButtonBar.ButtonData.APPLY);
         dialogPane.getButtonTypes().add(saveAsFileBT);
         ButtonType copyInfoBT = new ButtonType(I18nUtil.t("app.view.node-mapped.copy-info"), ButtonBar.ButtonData.OK_DONE);
         dialogPane.getButtonTypes().add(copyInfoBT);
         dialogPane.getButtonTypes().add(ButtonType.CANCEL);
-        if (updateReadmeBT != null) {
-            Button updateReadmeBtn = (Button) dialogPane.lookupButton(updateReadmeBT);
-            updateReadmeBtn.addEventFilter(ActionEvent.ACTION, e -> {
-                handleUpdateReadme(stage);
-                e.consume();
-            });
-        }
+        Button updateReadmeBtn = (Button) dialogPane.lookupButton(updateReadmeBT);
+        updateReadmeBtn.addEventFilter(ActionEvent.ACTION, e -> {
+            handleUpdateReadme(stage);
+            e.consume();
+        });
         dialogPane.lookupButton(saveAsFileBT).addEventFilter(ActionEvent.ACTION, e -> {
             handleSaveAsFile(stage);
             e.consume();
