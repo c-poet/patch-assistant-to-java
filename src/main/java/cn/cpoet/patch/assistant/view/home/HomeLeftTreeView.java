@@ -111,6 +111,13 @@ public class HomeLeftTreeView extends HomeTreeView {
         return newName;
     }
 
+    private void handleReload(ActionEvent event) {
+        FileNode rootNode = (FileNode) appTree.getTreeInfo().getRootNode();
+        if (rootNode.getFile().exists()) {
+            refreshAppTree(rootNode.getFile());
+        }
+    }
+
     private void buildAppTreeContextMenu() {
         ContextMenu contextMenu = new ContextMenu();
         MenuItem mkdirMenuItem = new MenuItem(I18nUtil.t("app.view.left-tree.mkdir"));
@@ -120,6 +127,10 @@ public class HomeLeftTreeView extends HomeTreeView {
         MenuItem renameMenuItem = new MenuItem(I18nUtil.t("app.view.left-tree.rename"));
         renameMenuItem.setOnAction(this::handleRename);
         contextMenu.getItems().add(renameMenuItem);
+
+        MenuItem reloadMenuItem = new MenuItem(I18nUtil.t("app.view.left-tree.reload"));
+        reloadMenuItem.setOnAction(this::handleReload);
+        contextMenu.getItems().add(reloadMenuItem);
 
         MenuItem manualDelMenuItem = new MenuItem(I18nUtil.t("app.view.left-tree.delete"));
         manualDelMenuItem.setOnAction(this::handleManualDel);
@@ -160,6 +171,7 @@ public class HomeLeftTreeView extends HomeTreeView {
                     mkdirMenuItem.setVisible(true);
                 }
                 renameMenuItem.setVisible(true);
+                reloadMenuItem.setVisible(TreeNodeType.ROOT.equals(node.getType()));
                 markDelMenuItem.setVisible(TreeNodeType.DEL.equals(node.getType()) || TreeNodeType.NONE.equals(node.getType()));
                 markDelMenuItem.setSelected(TreeNodeType.DEL.equals(node.getType()));
                 openInExplorerItem.setVisible(node instanceof FileNode && !(node instanceof CompressNode));
@@ -254,6 +266,9 @@ public class HomeLeftTreeView extends HomeTreeView {
             event.consume();
         } else if (KeyCode.ENTER.equals(event.getCode())) {
             handleEnterKey(event, appTree);
+        } else if (KeyCode.F5.equals(event.getCode())) {
+            handleReload(null);
+            event.consume();
         }
     }
 
