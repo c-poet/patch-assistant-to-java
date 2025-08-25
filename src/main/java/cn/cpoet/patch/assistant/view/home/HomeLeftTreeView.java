@@ -266,7 +266,7 @@ public class HomeLeftTreeView extends HomeTreeView {
             event.consume();
         } else if (KeyCode.ENTER.equals(event.getCode())) {
             handleEnterKey(event, appTree);
-        } else if (KeyCode.F5.equals(event.getCode())) {
+        } else if (KeyCode.F5.equals(event.getCode()) || (event.isControlDown() && KeyCode.R.equals(event.getCode()))) {
             handleReload(null);
             event.consume();
         }

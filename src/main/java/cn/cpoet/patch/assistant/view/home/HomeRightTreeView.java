@@ -76,8 +76,33 @@ public class HomeRightTreeView extends HomeTreeView {
         new NodeMappedView(appTree.getTreeInfo().getRootNode(), rootNode, patchTree).showDialog(stage);
     }
 
+    private void reloadPatchTree(TreeNode rootNode) {
+        File file = ((FileNode) rootNode).getFile();
+        if (file.exists()) {
+            refreshPatchTree(file);
+        }
+    }
+
+    private void handleReloadOrRefresh() {
+        if (patchTree.getSelectionModel().isEmpty()) {
+            reloadPatchTree(patchTree.getTreeInfo().getRootNode());
+            return;
+        }
+        TreeItem<TreeNode> selectedItem = patchTree.getSelectionModel().getSelectedItem();
+        TreeNode rootNode = TreeNodeUtil.getUnderRootNode(selectedItem.getValue());
+        if (TreeNodeType.ROOT.equals(rootNode.getType())) {
+            reloadPatchTree(rootNode);
+            return;
+        }
+        refreshPatchMappedNode(false, rootNode);
+    }
+
     private void buildPatchTreeContextMenu() {
         ContextMenu contextMenu = new ContextMenu();
+
+        MenuItem reloadOrRefreshMenuItem = new MenuItem(I18nUtil.t("app.view.right-tree.reload"));
+        reloadOrRefreshMenuItem.setOnAction(e -> handleReloadOrRefresh());
+        contextMenu.getItems().add(reloadOrRefreshMenuItem);
 
         MenuItem cancelMappedMenuItem = new MenuItem(I18nUtil.t("app.view.right-tree.cancel-binding"));
         cancelMappedMenuItem.setOnAction(this::handleCancelMapped);
@@ -119,6 +144,13 @@ public class HomeRightTreeView extends HomeTreeView {
                 return;
             }
             TreeNode selectedNode = selectedItem.getValue();
+            if (TreeNodeType.ROOT.equals(selectedNode.getType())) {
+                reloadOrRefreshMenuItem.setText(I18nUtil.t("app.view.right-tree.reload"));
+                reloadOrRefreshMenuItem.setVisible(true);
+            } else if (TreeNodeType.CUSTOM_ROOT.equals(selectedNode.getType())) {
+                reloadOrRefreshMenuItem.setText(I18nUtil.t("app.view.right-tree.refresh"));
+                reloadOrRefreshMenuItem.setVisible(true);
+            }
             cancelMappedMenuItem.setVisible(selectedNode.getMappedNode() != null);
             if (!TreeNodeType.ROOT.equals(selectedNode.getType())
                     && CollectionUtil.isNotEmpty(selectedNode.getChildren())
@@ -330,6 +362,9 @@ public class HomeRightTreeView extends HomeTreeView {
     private void onKeyReleased(KeyEvent event) {
         if (KeyCode.ENTER.equals(event.getCode())) {
             handleEnterKey(event, patchTree);
+        } else if (KeyCode.F5.equals(event.getCode()) || (event.isControlDown() && KeyCode.R.equals(event.getCode()))) {
+            handleReloadOrRefresh();
+            event.consume();
         }
     }
 

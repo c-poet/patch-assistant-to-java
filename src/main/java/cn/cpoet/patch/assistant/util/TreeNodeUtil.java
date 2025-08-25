@@ -323,6 +323,19 @@ public abstract class TreeNodeUtil {
     }
 
     /**
+     * 获取节点所属的根节点
+     *
+     * @param node 节点
+     * @return 根节点
+     */
+    public static TreeNode getUnderRootNode(TreeNode node) {
+        while (node != null && !TreeNodeType.ROOT.equals(node.getType()) && !TreeNodeType.CUSTOM_ROOT.equals(node.getType())) {
+            node = node.getParent();
+        }
+        return node;
+    }
+
+    /**
      * 判断是否是压缩文件节点
      *
      * @param treeNode 节点
