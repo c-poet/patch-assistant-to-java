@@ -460,17 +460,21 @@ public class PatchPackService extends BasePackService {
             }
             try {
                 progressContext.step("Update readme text to file");
-                File file = new File(AppContext.getInstance().getTempDir(), FileNameUtil.uniqueFileName(readmeNode.getName()));
                 byte[] bytes = text.getBytes();
-                FileUtil.writeFile(file, bytes);
-                readmeNode.setFile(file);
                 if (readmeNode instanceof CompressNode) {
+                    File file = new File(AppContext.getInstance().getTempDir(), FileNameUtil.uniqueFileName(readmeNode.getName()));
+                    FileUtil.writeFile(file, bytes);
+                    readmeNode.setFile(file);
                     CompressNode cNode = (CompressNode) readmeNode;
                     cNode.setModifyTime(LocalDateTime.now());
                     cNode.setAccessTime(cNode.getModifyTime());
                     cNode.setMd5(HashUtil.md5(bytes));
                     cNode.setSize(bytes.length);
                     updatePatchReadme(progressContext, (FileNode) rootNode);
+                } else {
+                    readmeNode.setMd5(HashUtil.md5(bytes));
+                    readmeNode.setSize(bytes.length);
+                    FileUtil.writeFile(readmeNode.getFile(), bytes);
                 }
                 progressContext.end(true);
                 patchRootInfo.setReadmeNode(readmeNode);
