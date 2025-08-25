@@ -5,8 +5,8 @@ import cn.cpoet.patch.assistant.constant.JarInfoConst;
 import cn.cpoet.patch.assistant.control.tree.node.CompressNode;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.exception.AppException;
-import cn.cpoet.patch.assistant.service.compress.FileDecompressor;
 import cn.cpoet.patch.assistant.service.compress.CompressNodeFactory;
+import cn.cpoet.patch.assistant.service.compress.FileDecompressor;
 import cn.cpoet.patch.assistant.util.CollectionUtil;
 import cn.cpoet.patch.assistant.util.FileNameUtil;
 import cn.cpoet.patch.assistant.util.StringUtil;
@@ -14,6 +14,7 @@ import cn.cpoet.patch.assistant.util.StringUtil;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
@@ -92,6 +93,43 @@ public abstract class BasePackService {
         }
     }
 
+    private TreeNode getOrCreateParentNode(TreeNode rootNode, Map<String, TreeNode> parentNodeMap, TreeNode node, boolean isPatch) {
+        if (node.isDir()) {
+            TreeNode treeNode = parentNodeMap.get(FileNameUtil.unPerfectDirPath(node.getPath()));
+            if (treeNode != null) {
+                treeNode.getParent().getChildren().remove(treeNode);
+                if (CollectionUtil.isNotEmpty(treeNode.getChildren())) {
+                    treeNode.getChildren().forEach(childNode -> {
+                        childNode.setParent(node);
+                        node.getAndInitChildren().add(childNode);
+                    });
+                }
+                return treeNode.getParent();
+            }
+        }
+        String parentPath = FileNameUtil.getDirPath(node.getPath());
+        if (StringUtil.isBlank(parentPath)) {
+            return rootNode;
+        }
+        TreeNode parentNode = parentNodeMap.get(parentPath);
+        if (parentNode != null) {
+            return parentNode;
+        }
+        CompressNode compressNode = new CompressNode();
+        compressNode.setName(FileNameUtil.getFileName(parentPath));
+        compressNode.setDir(true);
+        compressNode.setPatch(isPatch);
+        compressNode.setPath(parentPath);
+        compressNode.setCreateTime(LocalDateTime.now());
+        compressNode.setAccessTime(compressNode.getCreateTime());
+        compressNode.setModifyTime(compressNode.getCreateTime());
+        parentNode = getOrCreateParentNode(rootNode, parentNodeMap, compressNode, isPatch);
+        compressNode.setParent(parentNode);
+        parentNode.getAndInitChildren().add(compressNode);
+        parentNodeMap.put(parentPath, compressNode);
+        return compressNode;
+    }
+
     public void buildChildrenWithCompress(TreeNode rootNode, InputStream in, boolean isPatch) throws IOException {
         List<TreeNode> classes = new ArrayList<>();
         List<TreeNode> innerClasses = new ArrayList<>();
@@ -111,7 +149,7 @@ public abstract class BasePackService {
                     }
                 }
             }
-            TreeNode parentNode = treeNodeMap.getOrDefault(FileNameUtil.getDirPath(node.getPath()), rootNode);
+            TreeNode parentNode = getOrCreateParentNode(rootNode, treeNodeMap, node, isPatch);
             if (JarInfoConst.MANIFEST_PATH.equals(node.getName())) {
                 if (parentNode != rootNode) {
                     node.setParent(parentNode);

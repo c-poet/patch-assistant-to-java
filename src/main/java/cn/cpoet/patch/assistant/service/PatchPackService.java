@@ -146,27 +146,26 @@ public class PatchPackService extends BasePackService {
             appNodePath = FileNameUtil.joinPath(appNodePath, pathInfo.getSecondPath());
         }
         String[] paths = FileNameUtil.joinPath(appNodePath, pathInfo.getFilePath()).split(FileNameUtil.SEPARATOR);
-        doMatchMappedNodeWithReadme(totalInfo, pathInfo, paths, 0, appTreeInfo.getRootNode().getChildren(), patchNode);
+        doMatchMappedNodeChildrenWithReadme(totalInfo, pathInfo, paths, 0, appTreeInfo.getRootNode(), patchNode);
     }
 
-    private boolean doMatchMappedNodeWithReadme(TotalInfo totalInfo, ReadMePathInfo pathInfo, String[] paths, int index, List<TreeNode> appNodes, TreeNode patchNode) {
+    private boolean doMatchMappedNodeChildrenWithReadme(TotalInfo totalInfo, ReadMePathInfo pathInfo, String[] paths, int index, TreeNode appNode, TreeNode patchNode) {
         if (index >= paths.length) {
             return false;
         }
-        for (TreeNode appNode : appNodes) {
-            if (doMatchMappedNodeWithReadme(totalInfo, pathInfo, paths, index, appNode, patchNode)) {
-                return true;
+        List<TreeNode> children = appNode.getChildren();
+        if (CollectionUtil.isNotEmpty(children)) {
+            for (TreeNode child : children) {
+                if (doMatchMappedNodeWithReadme(totalInfo, pathInfo, paths, index, child, patchNode)) {
+                    return true;
+                }
             }
         }
-        LocalDateTime now = LocalDateTime.now();
-        StringBuilder sb = new StringBuilder(paths.length);
-        for (int i = 0; i < index; ++i) {
-            sb.append(paths[i]);
-        }
-        if (!ReadMePathInfo.TypeEnum.ADD.equals(pathInfo.getType())) {
+        if (!ReadMePathInfo.TypeEnum.ADD.equals(pathInfo.getType()) || !ReadMePathInfo.TypeEnum.NONE.equals(pathInfo.getType())) {
             return false;
         }
-        TreeNode parent = appNodes.get(0).getParent();
+        LocalDateTime now = LocalDateTime.now();
+        TreeNode parent = appNode;
         TreeNode newAppNode = null;
         while (index < paths.length) {
             if (index + 1 == paths.length) {
@@ -179,7 +178,7 @@ public class PatchPackService extends BasePackService {
                 newAppNode = virtualNode;
             }
             newAppNode.setParent(parent);
-            newAppNode.setPath(sb.append(paths[index]).toString());
+            newAppNode.setPath(parent.getName().endsWith(FileExtConst.JAR) ? FileNameUtil.SEPARATOR : FileNameUtil.joinPath(parent.getPath(), newAppNode.getName()));
             parent.getAndInitChildren().add(newAppNode);
             parent = newAppNode;
             ++index;
@@ -237,10 +236,10 @@ public class PatchPackService extends BasePackService {
             return true;
         }
         if (CollectionUtil.isNotEmpty(appNode.getChildren())) {
-            return doMatchMappedNodeWithReadme(totalInfo, pathInfo, paths, ++index, appNode.getChildren(), patchNode);
+            return doMatchMappedNodeChildrenWithReadme(totalInfo, pathInfo, paths, ++index, appNode, patchNode);
         }
         if (appNode.getName().endsWith(FileExtConst.DOT_JAR) && buildChildrenWithCompress(appNode, false)) {
-            return doMatchMappedNodeWithReadme(totalInfo, pathInfo, paths, ++index, appNode.getChildren(), patchNode);
+            return doMatchMappedNodeChildrenWithReadme(totalInfo, pathInfo, paths, ++index, appNode, patchNode);
         }
         return false;
     }
