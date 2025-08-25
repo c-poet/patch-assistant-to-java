@@ -1,6 +1,7 @@
 package cn.cpoet.patch.assistant.service;
 
 import cn.cpoet.patch.assistant.constant.AppConst;
+import cn.cpoet.patch.assistant.constant.CharsetConst;
 import cn.cpoet.patch.assistant.constant.FileExtConst;
 import cn.cpoet.patch.assistant.control.tree.*;
 import cn.cpoet.patch.assistant.control.tree.node.*;
@@ -57,7 +58,7 @@ public class PatchPackService extends BasePackService {
             rootInfo.setReadmeNode(readmeNode);
             byte[] bytes = readmeNode.getBytes();
             if (bytes != null && bytes.length > 0) {
-                rootInfo.getPatchSign().setReadme(new String(bytes));
+                rootInfo.getPatchSign().setReadme(new String(bytes, CharsetConst.UTF_8));
             }
             patchTreeInfo.updateReadmeText();
         }
