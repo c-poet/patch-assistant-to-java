@@ -2,6 +2,7 @@ package cn.cpoet.patch.assistant.view.home;
 
 import cn.cpoet.patch.assistant.constant.FileExtConst;
 import cn.cpoet.patch.assistant.constant.FocusTreeStatusConst;
+import cn.cpoet.patch.assistant.control.form.TextDynamicWidthField;
 import cn.cpoet.patch.assistant.control.tree.*;
 import cn.cpoet.patch.assistant.control.tree.node.CompressNode;
 import cn.cpoet.patch.assistant.control.tree.node.FileNode;
@@ -21,6 +22,7 @@ import javafx.scene.control.*;
 import javafx.scene.input.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -270,9 +272,16 @@ public class HomeLeftTreeView extends HomeTreeView {
             handleReload(null);
             event.consume();
         }
+        if (event.getText().matches("^[0-9A-Za-z]$")) {
+            fastSearchTriggerText.set(event.getText());
+            event.consume();
+        } else if (KeyCode.ESCAPE.equals(event.getCode())) {
+            fastSearchTriggerText.set(null);
+            event.consume();
+        }
     }
 
-    private void buildAppTree() {
+    private Node buildAppTree() {
         appTree.setCellFactory(treeView -> new EditFileTreeCell(context));
         buildAppTreeContextMenu();
         patchTree.addEventHandler(PatchTreeView.PATCH_TREE_REFRESH, e -> refreshAppTree(AppTreeView.REFRESH_FLAG_NONE));
@@ -292,6 +301,36 @@ public class HomeLeftTreeView extends HomeTreeView {
                 refreshAppTree(file);
             }
         });
+        StackPane stackPane = new StackPane();
+        stackPane.getChildren().add(appTree);
+        TextField fastSearchField = new TextDynamicWidthField();
+        fastSearchField.setVisible(false);
+        fastSearchTriggerText.addListener((observableValue, oldVal, newVal) -> {
+            if (StringUtil.isBlank(newVal)) {
+                fastSearchField.clear();
+                fastSearchField.setVisible(false);
+                appTree.requestFocus();
+            } else {
+                if (fastSearchField.isVisible()) {
+                    fastSearchField.appendText(newVal);
+                } else {
+                    fastSearchField.setText(newVal);
+                    fastSearchField.setVisible(true);
+                }
+            }
+        });
+        fastSearchField.setOnKeyReleased(e -> {
+            if (KeyCode.ESCAPE.equals(e.getCode())) {
+                fastSearchTriggerText.set(null);
+                e.consume();
+            }
+        });
+        fastSearchField.textProperty().addListener((observableValue, oldVal, newVal) -> {
+            System.out.println(newVal);
+        });
+        StackPane.setAlignment(fastSearchField, Pos.TOP_LEFT);
+        stackPane.getChildren().add(fastSearchField);
+        return stackPane;
     }
 
     private void addPackPathLabel(HBox appPackPathBox) {
@@ -354,8 +393,8 @@ public class HomeLeftTreeView extends HomeTreeView {
         });
         addPackPathLabel(appPackPathBox);
         addSelectBtn(appPackPathBox);
-        buildAppTree();
-        VBox.setVgrow(appTree, Priority.ALWAYS);
-        return new VBox(appPackPathBox, appTree);
+        Node appTreePane = buildAppTree();
+        VBox.setVgrow(appTreePane, Priority.ALWAYS);
+        return new VBox(appPackPathBox, appTreePane);
     }
 }
