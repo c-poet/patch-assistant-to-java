@@ -533,6 +533,7 @@ public class PatchPackService extends BasePackService {
         } catch (Exception e) {
             i = 0;
             for (FileNode node : rootNodes) {
+                node.setName(oldRootNodes[i].getName());
                 node.setFile(oldRootNodes[i].getFile());
                 node.setMd5(oldRootNodes[i].getMd5());
                 node.setSize(oldRootNodes[i].getSize());
@@ -542,13 +543,17 @@ public class PatchPackService extends BasePackService {
         progressContext.step("Write the patch package successfully");
     }
 
-    private void updatePatchPackWithZip(ProgressContext progressContext, FileNode zipRootNode) throws IOException {
-        progressContext.step("Writing to a zip file:" + zipRootNode.getName());
-        File file = new File(AppContext.getInstance().getTempDir(), FileNameUtil.uniqueFileName(zipRootNode.getName()));
+    private void updatePatchPackWithZip(ProgressContext progressContext, FileNode rootNode) throws IOException {
+        progressContext.step("Writing to a zip file:" + rootNode.getName());
+        if (!rootNode.getName().endsWith(FileExtConst.DOT_ZIP)) {
+            String name = FileNameUtil.getName(rootNode.getName()) + FileExtConst.DOT_ZIP;
+            rootNode.setName(name);
+        }
+        File file = new File(AppContext.getInstance().getTempDir(), FileNameUtil.uniqueFileName(rootNode.getName()));
         try (FileOutputStream out = new FileOutputStream(file);
              ZipOutputStream zout = new ZipOutputStream(out)) {
-            writePatchPackWithZip(progressContext, zout, zipRootNode);
-            zipRootNode.setFile(file);
+            writePatchPackWithZip(progressContext, zout, rootNode);
+            rootNode.setFile(file);
         }
     }
 
