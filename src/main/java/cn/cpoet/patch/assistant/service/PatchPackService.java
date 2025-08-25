@@ -161,7 +161,7 @@ public class PatchPackService extends BasePackService {
                 }
             }
         }
-        if (!ReadMePathInfo.TypeEnum.ADD.equals(pathInfo.getType()) || !ReadMePathInfo.TypeEnum.NONE.equals(pathInfo.getType())) {
+        if (!ReadMePathInfo.TypeEnum.ADD.equals(pathInfo.getType()) && !ReadMePathInfo.TypeEnum.NONE.equals(pathInfo.getType())) {
             return false;
         }
         LocalDateTime now = LocalDateTime.now();
