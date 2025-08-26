@@ -7,6 +7,7 @@ import cn.cpoet.patch.assistant.util.CollectionUtil;
 import cn.cpoet.patch.assistant.util.StringUtil;
 import javafx.geometry.Pos;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TreeItem;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
@@ -89,8 +90,7 @@ public class FastSearchControl {
             curResultIndex = searchResults.size() - 1;
         }
         TreeNode node = searchResults.get(curResultIndex--);
-        treeView.getSelectionModel().clearSelection();
-        treeView.getSelectionModel().select(node.getTreeItem());
+        selectItem(node);
         return true;
     }
 
@@ -102,9 +102,16 @@ public class FastSearchControl {
             curResultIndex = 0;
         }
         TreeNode node = searchResults.get(curResultIndex++);
-        treeView.getSelectionModel().clearSelection();
-        treeView.getSelectionModel().select(node.getTreeItem());
+        selectItem(node);
         return true;
+    }
+
+    private void selectItem(TreeNode node) {
+        TreeItem<TreeNode> treeItem = node.getTreeItem();
+        int index = treeView.getRow(treeItem);
+        treeView.scrollTo(index);
+        treeView.getSelectionModel().clearSelection();
+        treeView.getSelectionModel().select(index);
     }
 
     public boolean isSearch() {
