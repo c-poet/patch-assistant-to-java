@@ -120,6 +120,25 @@ public class HomeLeftTreeView extends HomeTreeView {
         }
     }
 
+    private void handleSelectAppPack() {
+        if (loadingFlag.get()) {
+            return;
+        }
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle(I18nUtil.t("app.view.left-tree.select-jar"));
+        String lastAppPackPath = Configuration.getInstance().getLastAppPackPath();
+        if (!StringUtil.isBlank(lastAppPackPath)) {
+            File dir = FileUtil.getExistsDirOrFile(FileNameUtil.getDirPath(lastAppPackPath));
+            fileChooser.setInitialDirectory(dir);
+        }
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(I18nUtil.t("app.view.left-tree.java-package"), "*.jar"));
+        File file = fileChooser.showOpenDialog(stage);
+        if (file == null) {
+            return;
+        }
+        refreshAppTree(file);
+    }
+
     private void buildAppTreeContextMenu() {
         ContextMenu contextMenu = new ContextMenu();
         MenuItem mkdirMenuItem = new MenuItem(I18nUtil.t("app.view.left-tree.mkdir"));
@@ -271,13 +290,17 @@ public class HomeLeftTreeView extends HomeTreeView {
         } else if (KeyCode.F5.equals(event.getCode()) || (event.isControlDown() && KeyCode.R.equals(event.getCode()))) {
             handleReload(null);
             event.consume();
-        }
-        if (event.getText().matches("^[0-9A-Za-z]$")) {
-            fastSearchTriggerText.set(event.getText());
+        } else if (event.isControlDown() && KeyCode.O.equals(event.getCode())) {
+            handleSelectAppPack();
             event.consume();
-        } else if (KeyCode.ESCAPE.equals(event.getCode())) {
-            fastSearchTriggerText.set(null);
-            event.consume();
+        } else {
+            if (event.getText().matches("^[0-9A-Za-z]$")) {
+                fastSearchTriggerText.set(event.getText());
+                event.consume();
+            } else if (KeyCode.ESCAPE.equals(event.getCode())) {
+                fastSearchTriggerText.set(null);
+                event.consume();
+            }
         }
     }
 
@@ -354,21 +377,7 @@ public class HomeLeftTreeView extends HomeTreeView {
 
     private void addSelectBtn(HBox appPackPathBox) {
         appPackPathBox.getChildren().add(FXUtil.pre(new Button(I18nUtil.t("app.view.left-tree.select")), node -> {
-            node.setOnAction(e -> {
-                FileChooser fileChooser = new FileChooser();
-                fileChooser.setTitle(I18nUtil.t("app.view.left-tree.select-jar"));
-                String lastAppPackPath = Configuration.getInstance().getLastAppPackPath();
-                if (!StringUtil.isBlank(lastAppPackPath)) {
-                    File dir = FileUtil.getExistsDirOrFile(FileNameUtil.getDirPath(lastAppPackPath));
-                    fileChooser.setInitialDirectory(dir);
-                }
-                fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(I18nUtil.t("app.view.left-tree.java-package"), "*.jar"));
-                File file = fileChooser.showOpenDialog(stage);
-                if (file == null) {
-                    return;
-                }
-                refreshAppTree(file);
-            });
+            node.setOnAction(e -> handleSelectAppPack());
             loadingFlagProperty().addListener((observableValue, oldVal, newVal) -> {
                 if (newVal) {
                     UIUtil.runUI(() -> {

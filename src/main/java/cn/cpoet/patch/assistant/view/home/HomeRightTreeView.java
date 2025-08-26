@@ -97,6 +97,25 @@ public class HomeRightTreeView extends HomeTreeView {
         refreshPatchMappedNode(false, rootNode);
     }
 
+    private void handleSelectPatchPack() {
+        if (loadingFlag.get()) {
+            return;
+        }
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle(I18nUtil.t("app.view.right-tree.select-patch"));
+        String lastPatchPackPath = Configuration.getInstance().getLastPatchPackPath();
+        if (!StringUtil.isBlank(lastPatchPackPath)) {
+            File dir = FileUtil.getExistsDirOrFile(FileNameUtil.getDirPath(lastPatchPackPath));
+            fileChooser.setInitialDirectory(dir);
+        }
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(I18nUtil.t("app.view.right-tree.patch-pack")
+                , "*" + FileExtConst.DOT_ZIP, "*" + FileExtConst.DOT_RAR));
+        File file = fileChooser.showOpenDialog(stage);
+        if (file != null) {
+            refreshPatchTree(file);
+        }
+    }
+
     private void buildPatchTreeContextMenu() {
         ContextMenu contextMenu = new ContextMenu();
 
@@ -365,6 +384,9 @@ public class HomeRightTreeView extends HomeTreeView {
         } else if (KeyCode.F5.equals(event.getCode()) || (event.isControlDown() && KeyCode.R.equals(event.getCode()))) {
             handleReloadOrRefresh();
             event.consume();
+        } else if (event.isControlDown() && KeyCode.O.equals(event.getCode())) {
+            handleSelectPatchPack();
+            event.consume();
         }
     }
 
@@ -426,21 +448,7 @@ public class HomeRightTreeView extends HomeTreeView {
 
     private void addSelectBtn(HBox patchPackPathBox) {
         patchPackPathBox.getChildren().add(FXUtil.pre(new Button(I18nUtil.t("app.view.right-tree.select")), node -> {
-            node.setOnAction(e -> {
-                FileChooser fileChooser = new FileChooser();
-                fileChooser.setTitle(I18nUtil.t("app.view.right-tree.select-patch"));
-                String lastPatchPackPath = Configuration.getInstance().getLastPatchPackPath();
-                if (!StringUtil.isBlank(lastPatchPackPath)) {
-                    File dir = FileUtil.getExistsDirOrFile(FileNameUtil.getDirPath(lastPatchPackPath));
-                    fileChooser.setInitialDirectory(dir);
-                }
-                fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(I18nUtil.t("app.view.right-tree.patch-pack")
-                        , "*" + FileExtConst.DOT_ZIP, "*" + FileExtConst.DOT_RAR));
-                File file = fileChooser.showOpenDialog(stage);
-                if (file != null) {
-                    refreshPatchTree(file);
-                }
-            });
+            node.setOnAction(e -> handleSelectPatchPack());
             loadingFlagProperty().addListener((observableValue, oldVal, newVal) -> {
                 if (newVal) {
                     UIUtil.runUI(() -> {
