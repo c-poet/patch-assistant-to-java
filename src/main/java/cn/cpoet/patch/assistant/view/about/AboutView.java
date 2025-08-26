@@ -16,6 +16,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
@@ -41,6 +42,11 @@ public class AboutView {
         Label titleLbl = new Label(I18nUtil.t("app.name", AppConst.APP_NAME) + " " + (applicationInfo == null ? "Beta" : applicationInfo.getVersion()));
         titleLbl.setStyle("-fx-font-weight: bold;-fx-font-size:20");
         vBox.getChildren().add(titleLbl);
+        if (applicationInfo != null) {
+            Label buildInfoLbl = new Label("Build #" + applicationInfo.getBuildTime() + " " + applicationInfo.getArtifactId());
+            buildInfoLbl.setTextFill(Color.web("#25324d"));
+            vBox.getChildren().add(buildInfoLbl);
+        }
         Label descLbl = new Label(I18nUtil.t("app.view.about.desc")
                 + "\n\n " + I18nUtil.t("app.view.about.author")
                 + AppConst.APP_AUTHOR_NAME + "\n " + I18nUtil.t("app.view.about.email") + AppConst.APP_AUTHOR_EMAIL);
