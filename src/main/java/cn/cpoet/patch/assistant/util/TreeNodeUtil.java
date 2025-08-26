@@ -360,4 +360,19 @@ public abstract class TreeNodeUtil {
         }
         return data;
     }
+
+    /**
+     * 根据父节点获取当前节点路径
+     *
+     * @param parentNode 父节点
+     * @param node       节点
+     * @return 节点路径
+     */
+    public static String getNodePathByParent(TreeNode parentNode, TreeNode node) {
+        if (parentNode.isDir()) {
+            return FileNameUtil.joinPath(parentNode.getPath(), node.getName());
+        }
+        parentNode = parentNode.getParent();
+        return isCompressNode(parentNode) ? FileNameUtil.SEPARATOR : FileNameUtil.joinPath(parentNode.getPath(), node.getName());
+    }
 }

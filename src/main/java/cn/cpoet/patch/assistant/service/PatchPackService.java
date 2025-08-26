@@ -178,7 +178,7 @@ public class PatchPackService extends BasePackService {
                 newAppNode = virtualNode;
             }
             newAppNode.setParent(parent);
-            newAppNode.setPath(parent.getName().endsWith(FileExtConst.JAR) ? FileNameUtil.SEPARATOR : FileNameUtil.joinPath(parent.getPath(), newAppNode.getName()));
+            newAppNode.setPath(TreeNodeUtil.getNodePathByParent(parent, newAppNode));
             parent.getAndInitChildren().add(newAppNode);
             parent = newAppNode;
             ++index;
@@ -209,7 +209,7 @@ public class PatchPackService extends BasePackService {
                     childAppNode = virtualNode;
                 }
                 childAppNode.setParent(appNode);
-                childAppNode.setPath(FileNameUtil.joinPath(appNode.getPath(), childAppNode.getName()));
+                childAppNode.setPath(TreeNodeUtil.getNodePathByParent(appNode, childPatchNode));
                 appNode.getAndInitChildren().add(childAppNode);
             }
             TreeNodeUtil.mappedNode(totalInfo, childAppNode, childPatchNode, TreeNodeType.ADD);
