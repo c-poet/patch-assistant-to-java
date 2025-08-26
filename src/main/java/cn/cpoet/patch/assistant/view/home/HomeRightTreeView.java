@@ -24,6 +24,7 @@ import javafx.scene.control.*;
 import javafx.scene.input.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
@@ -46,7 +47,7 @@ public class HomeRightTreeView extends HomeTreeView {
     private int nextRootIndex;
 
     public HomeRightTreeView(Stage stage, HomeContext context) {
-        super(stage, context);
+        super(stage, context, new FastSearchControl(context.patchTree));
     }
 
     private void handleMarkRoot() {
@@ -388,9 +389,10 @@ public class HomeRightTreeView extends HomeTreeView {
             handleSelectPatchPack();
             event.consume();
         }
+        fastSearchControl.onKeyReleased(event);
     }
 
-    private void buildPatchTree() {
+    private Node buildPatchTree() {
         patchTree.setCellFactory(v -> new FileTreeCell(context));
         buildPatchTreeContextMenu();
         appTree.addEventHandler(AppTreeView.APP_TREE_REFRESHING, e -> refreshPatchMappedNode(false));
@@ -409,6 +411,10 @@ public class HomeRightTreeView extends HomeTreeView {
                 refreshPatchTree(file);
             }
         });
+        StackPane stackPane = new StackPane();
+        stackPane.getChildren().add(patchTree);
+        fastSearchControl.fillNode(stackPane);
+        return stackPane;
     }
 
     private File getInitPatchFile() {
@@ -505,8 +511,8 @@ public class HomeRightTreeView extends HomeTreeView {
         addPatchPathLabel(patchPackPathBox);
         addSelectBtn(patchPackPathBox);
         addSelectDirBtn(patchPackPathBox);
-        buildPatchTree();
-        VBox.setVgrow(patchTree, Priority.ALWAYS);
-        return new VBox(patchPackPathBox, patchTree);
+        Node patchTreePane = buildPatchTree();
+        VBox.setVgrow(patchTreePane, Priority.ALWAYS);
+        return new VBox(patchPackPathBox, patchTreePane);
     }
 }

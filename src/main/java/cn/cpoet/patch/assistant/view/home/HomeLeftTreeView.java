@@ -2,7 +2,6 @@ package cn.cpoet.patch.assistant.view.home;
 
 import cn.cpoet.patch.assistant.constant.FileExtConst;
 import cn.cpoet.patch.assistant.constant.FocusTreeStatusConst;
-import cn.cpoet.patch.assistant.control.form.TextDynamicWidthField;
 import cn.cpoet.patch.assistant.control.tree.*;
 import cn.cpoet.patch.assistant.control.tree.node.CompressNode;
 import cn.cpoet.patch.assistant.control.tree.node.FileNode;
@@ -39,7 +38,7 @@ import java.util.stream.Collectors;
 public class HomeLeftTreeView extends HomeTreeView {
 
     public HomeLeftTreeView(Stage stage, HomeContext context) {
-        super(stage, context);
+        super(stage, context, new FastSearchControl(context.appTree));
     }
 
     private void handleManualDel(ActionEvent event) {
@@ -293,15 +292,8 @@ public class HomeLeftTreeView extends HomeTreeView {
         } else if (event.isControlDown() && KeyCode.O.equals(event.getCode())) {
             handleSelectAppPack();
             event.consume();
-        } else {
-            if (event.getText().matches("^[0-9A-Za-z]$")) {
-                fastSearchTriggerText.set(event.getText());
-                event.consume();
-            } else if (KeyCode.ESCAPE.equals(event.getCode())) {
-                fastSearchTriggerText.set(null);
-                event.consume();
-            }
         }
+        fastSearchControl.onKeyReleased(event);
     }
 
     private Node buildAppTree() {
@@ -326,33 +318,7 @@ public class HomeLeftTreeView extends HomeTreeView {
         });
         StackPane stackPane = new StackPane();
         stackPane.getChildren().add(appTree);
-        TextField fastSearchField = new TextDynamicWidthField();
-        fastSearchField.setVisible(false);
-        fastSearchTriggerText.addListener((observableValue, oldVal, newVal) -> {
-            if (StringUtil.isBlank(newVal)) {
-                fastSearchField.clear();
-                fastSearchField.setVisible(false);
-                appTree.requestFocus();
-            } else {
-                if (fastSearchField.isVisible()) {
-                    fastSearchField.appendText(newVal);
-                } else {
-                    fastSearchField.setText(newVal);
-                    fastSearchField.setVisible(true);
-                }
-            }
-        });
-        fastSearchField.setOnKeyReleased(e -> {
-            if (KeyCode.ESCAPE.equals(e.getCode())) {
-                fastSearchTriggerText.set(null);
-                e.consume();
-            }
-        });
-        fastSearchField.textProperty().addListener((observableValue, oldVal, newVal) -> {
-            System.out.println(newVal);
-        });
-        StackPane.setAlignment(fastSearchField, Pos.TOP_LEFT);
-        stackPane.getChildren().add(fastSearchField);
+        fastSearchControl.fillNode(stackPane);
         return stackPane;
     }
 

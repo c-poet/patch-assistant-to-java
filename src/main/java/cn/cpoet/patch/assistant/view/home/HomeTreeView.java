@@ -13,8 +13,6 @@ import cn.cpoet.patch.assistant.view.content.ContentSupports;
 import cn.cpoet.patch.assistant.view.content.parser.ContentParser;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
 import javafx.scene.control.*;
 import javafx.scene.input.DragEvent;
@@ -39,16 +37,17 @@ public abstract class HomeTreeView {
     protected final HomeContext context;
     protected final AppTreeView appTree;
     protected final PatchTreeView patchTree;
-    /** 快速搜索文本 */
-    protected final StringProperty fastSearchTriggerText = new SimpleStringProperty();
+    /** 快速搜索控件 */
+    protected final FastSearchControl fastSearchControl;
     /** 加载中标识 */
     protected final BooleanProperty loadingFlag = new SimpleBooleanProperty(false);
 
-    protected HomeTreeView(Stage stage, HomeContext context) {
+    protected HomeTreeView(Stage stage, HomeContext context, FastSearchControl fastSearchControl) {
         this.stage = stage;
         this.context = context;
         this.appTree = context.getAppTree();
         this.patchTree = context.getPatchTree();
+        this.fastSearchControl = fastSearchControl;
     }
 
     public boolean isLoadingFlag() {
