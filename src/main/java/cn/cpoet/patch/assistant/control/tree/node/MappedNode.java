@@ -19,6 +19,11 @@ public class MappedNode extends TreeNode {
     }
 
     @Override
+    public byte[] getBytes() {
+        return mappedNode.getBytes();
+    }
+
+    @Override
     public LocalDateTime getModifyTime() {
         return mappedNode.getModifyTime();
     }
