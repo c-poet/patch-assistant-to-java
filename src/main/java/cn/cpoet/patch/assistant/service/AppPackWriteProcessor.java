@@ -343,7 +343,7 @@ public class AppPackWriteProcessor {
         }
         if (!node.isDir() && node.getName().endsWith(FileExtConst.DOT_JAR)) {
             progressContext.step("Write:" + node.getName());
-            writeTreeNode2PackWithJar(zipOut, (CompressNode) node);
+            writeTreeNode2PackWithJar(zipOut, node);
             return;
         }
         if (node.getMappedNode() == null) {
@@ -369,8 +369,8 @@ public class AppPackWriteProcessor {
         }
     }
 
-    private void writeTreeNode2PackWithJar(ZipOutputStream zipOut, CompressNode node) throws IOException {
-        if (node.getChildren() == null || node.getChildren().isEmpty()) {
+    private void writeTreeNode2PackWithJar(ZipOutputStream zipOut, TreeNode node) throws IOException {
+        if (CollectionUtil.isEmpty(node.getChildren())) {
             zipOut.putNextEntry(getNewEntryWithZipEntry(node));
             zipOut.write(node.getBytes());
             return;
@@ -384,7 +384,7 @@ public class AppPackWriteProcessor {
         zipOut.write(bytes);
     }
 
-    private byte[] getBytesWithJarNode(CompressNode jarNode) throws IOException {
+    private byte[] getBytesWithJarNode(TreeNode jarNode) throws IOException {
         try (ByteArrayOutputStream out = new ByteArrayOutputStream();
              ZipOutputStream zipOut = new ZipOutputStream(out)) {
             for (TreeNode child : jarNode.getChildren()) {
