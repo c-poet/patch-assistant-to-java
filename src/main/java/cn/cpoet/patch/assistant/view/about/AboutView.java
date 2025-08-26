@@ -3,20 +3,15 @@ package cn.cpoet.patch.assistant.view.about;
 import cn.cpoet.patch.assistant.constant.AppConst;
 import cn.cpoet.patch.assistant.constant.IConConst;
 import cn.cpoet.patch.assistant.model.Application;
-import cn.cpoet.patch.assistant.util.FileUtil;
-import cn.cpoet.patch.assistant.util.I18nUtil;
-import cn.cpoet.patch.assistant.util.ImageUtil;
-import cn.cpoet.patch.assistant.util.XMLUtil;
+import cn.cpoet.patch.assistant.util.*;
 import javafx.scene.Node;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.DialogPane;
-import javafx.scene.control.Label;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
@@ -51,6 +46,20 @@ public class AboutView {
                 + "\n\n " + I18nUtil.t("app.view.about.author")
                 + AppConst.APP_AUTHOR_NAME + "\n " + I18nUtil.t("app.view.about.email") + AppConst.APP_AUTHOR_EMAIL);
         vBox.getChildren().add(descLbl);
+        HBox linkBox = new HBox();
+        Hyperlink authorMainPage = new Hyperlink(I18nUtil.t("app.view.about.author-main-page"));
+        linkBox.getChildren().add(authorMainPage);
+        authorMainPage.setFont(Font.font(14));
+        authorMainPage.setOnAction(e -> OSUtil.openUrl("https://www.cpoet.cn"));
+        Hyperlink helpUrl = new Hyperlink(I18nUtil.t("app.view.about.help-document"));
+        helpUrl.setFont(Font.font(14));
+        helpUrl.setOnAction(e -> OSUtil.openUrl("https://www.cpoet.cn/categories/projects/patch-assistant-to-java"));
+        linkBox.getChildren().add(helpUrl);
+        Hyperlink githubPage = new Hyperlink(I18nUtil.t("app.view.about.github-page"));
+        githubPage.setFont(Font.font(14));
+        githubPage.setOnAction(e -> OSUtil.openUrl("https://github.com/c-poet"));
+        linkBox.getChildren().add(githubPage);
+        vBox.getChildren().add(linkBox);
         hBox.getChildren().add(vBox);
         return hBox;
     }

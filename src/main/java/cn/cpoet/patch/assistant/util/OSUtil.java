@@ -2,7 +2,9 @@ package cn.cpoet.patch.assistant.util;
 
 import cn.cpoet.patch.assistant.exception.AppException;
 
+import java.awt.*;
 import java.io.*;
+import java.net.URI;
 
 /**
  * 系统工具
@@ -12,6 +14,19 @@ import java.io.*;
 public abstract class OSUtil {
 
     private OSUtil() {
+    }
+
+    /**
+     * 打开链接
+     *
+     * @param url 链接地址
+     */
+    public static void openUrl(String url) {
+        try {
+            Desktop.getDesktop().browse(new URI(url));
+        } catch (Exception e) {
+            throw new AppException("Open url failed", e);
+        }
     }
 
     /**
