@@ -5,6 +5,7 @@ import cn.cpoet.patch.assistant.control.tree.CustomTreeView;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.util.CollectionUtil;
 import cn.cpoet.patch.assistant.util.StringUtil;
+import cn.cpoet.patch.assistant.util.UIUtil;
 import javafx.geometry.Pos;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TreeItem;
@@ -16,22 +17,28 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author CPoet
  */
 public class FastSearchControl {
 
-    private int curResultIndex;
     private int firstSelectIndex;
     private final TextField textField;
-    private List<TreeNode> searchResults;
+    private final AtomicInteger version;
+    private final AtomicInteger curIndex;
     private final CustomTreeView<?> treeView;
+    private final AtomicReference<List<TreeNode>> searchResults;
 
     public FastSearchControl(CustomTreeView<?> treeView) {
         this.treeView = treeView;
         this.textField = new TextDynamicWidthField();
         this.textField.setVisible(false);
+        this.version = new AtomicInteger(0);
+        this.curIndex = new AtomicInteger(0);
+        this.searchResults = new AtomicReference<>(null);
         bindEvent();
     }
 
@@ -40,7 +47,6 @@ public class FastSearchControl {
         textField.textProperty().addListener((observableValue, oldVal, newVal) -> {
             if (StringUtil.isEmpty(newVal)) {
                 textField.setVisible(false);
-                clearSearch();
             } else {
                 if (!textField.isVisible()) {
                     firstSelectIndex = treeView.getSelectionModel().getSelectedIndex();
@@ -51,58 +57,86 @@ public class FastSearchControl {
         });
     }
 
-    private void search(String keyword) {
-        int targetIndex = 0;
-        int distance = 0;
-        List<TreeNode> searchResults = new ArrayList<>();
-        Queue<TreeNode> pendingQueue = new LinkedList<>();
-        pendingQueue.add(treeView.getTreeInfo().getRootNode());
-        while (!pendingQueue.isEmpty()) {
-            TreeNode node = pendingQueue.poll();
-            if (node.getName().contains(keyword)) {
-                searchResults.add(node);
-                int row = treeView.getRow(node.getTreeItem());
-                if (distance == 0 || Math.abs(firstSelectIndex - row) < distance) {
-                    distance = firstSelectIndex - row;
-                    targetIndex = searchResults.size() - 1;
-                }
-            }
-            if (node.getTreeItem().isExpanded()) {
-                pendingQueue.addAll(node.getChildren());
-            }
-        }
-        clearSearch();
-        this.curResultIndex = targetIndex;
-        this.searchResults = searchResults;
-        selectNext();
+    public void search(String keyword) {
+        int curVersion = version.incrementAndGet();
+        search(keyword, curVersion, firstSelectIndex);
     }
 
-    private void clearSearch() {
-        this.curResultIndex = 0;
-        this.searchResults = null;
+    private void search(String keyword, int curVersion, int firstSelectIndex) {
+        UIUtil.runNotUI(() -> {
+            int targetIndex = 0;
+            int distance = Integer.MAX_VALUE;
+            List<TreeNode> searchResults = new ArrayList<>();
+            Queue<TreeNode> pendingQueue = new LinkedList<>();
+            pendingQueue.add(treeView.getTreeInfo().getRootNode());
+            while (!pendingQueue.isEmpty()) {
+                TreeNode node = pendingQueue.poll();
+                if (node.getName().contains(keyword)) {
+                    searchResults.add(node);
+                    int curDistance = Math.abs(firstSelectIndex - treeView.getRow(node.getTreeItem()));
+                    if (curDistance < distance) {
+                        distance = curDistance;
+                        targetIndex = searchResults.size() - 1;
+                    }
+                }
+                if (node.getTreeItem().isExpanded()) {
+                    pendingQueue.addAll(node.getChildren());
+                }
+            }
+            updateSearchResult(searchResults, targetIndex, curVersion);
+        });
+    }
+
+    private void updateSearchResult(List<TreeNode> searchResults, int targetIndex, int curVersion) {
+        if (curVersion != version.get()) {
+            return;
+        }
+        synchronized (this) {
+            if (curVersion == version.get()) {
+                this.curIndex.set(targetIndex);
+                this.searchResults.set(searchResults);
+                selectNext();
+            }
+        }
     }
 
     public boolean selectPre() {
-        if (CollectionUtil.isEmpty(searchResults)) {
+        if (CollectionUtil.isEmpty(searchResults.get())) {
             return false;
         }
-        if (curResultIndex < 0) {
-            curResultIndex = searchResults.size() - 1;
+        synchronized (this) {
+            List<TreeNode> searchResults = this.searchResults.get();
+            if (CollectionUtil.isEmpty(searchResults)) {
+                return false;
+            }
+            TreeNode node = searchResults.get(curIndex.getAndUpdate(val -> {
+                if (--val < 0) {
+                    return searchResults.size() - 1;
+                }
+                return val;
+            }));
+            selectItem(node);
         }
-        TreeNode node = searchResults.get(curResultIndex--);
-        selectItem(node);
         return true;
     }
 
     public boolean selectNext() {
-        if (CollectionUtil.isEmpty(searchResults)) {
+        if (CollectionUtil.isEmpty(searchResults.get())) {
             return false;
         }
-        if (curResultIndex >= searchResults.size()) {
-            curResultIndex = 0;
+        synchronized (this) {
+            List<TreeNode> searchResults = this.searchResults.get();
+            if (CollectionUtil.isEmpty(searchResults)) {
+                return false;
+            }
+            TreeNode node = searchResults.get(curIndex.getAndUpdate(val -> {
+                if (++val >= searchResults.size()) {
+                    return 0;
+                }
+                return val;
+            }));
+            selectItem(node);
         }
-        TreeNode node = searchResults.get(curResultIndex++);
-        selectItem(node);
         return true;
     }
 
@@ -120,6 +154,11 @@ public class FastSearchControl {
 
     public void handleCancel() {
         textField.setText(null);
+        synchronized (this) {
+            this.searchResults.set(null);
+            this.curIndex.set(0);
+            this.version.set(0);
+        }
     }
 
     public void handleBackspace() {
