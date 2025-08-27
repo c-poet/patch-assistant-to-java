@@ -53,7 +53,7 @@ public class AboutView {
         authorMainPage.setOnAction(e -> OSUtil.openUrl("https://www.cpoet.cn"));
         Hyperlink helpUrl = new Hyperlink(I18nUtil.t("app.view.about.help-document"));
         helpUrl.setFont(Font.font(14));
-        helpUrl.setOnAction(e -> OSUtil.openUrl("https://www.cpoet.cn/categories/projects/patch-assistant-to-java"));
+        helpUrl.setOnAction(e -> OSUtil.openUrl("https://www.cpoet.cn/post/projects/patch-assistant-to-java/v1.3.0"));
         linkBox.getChildren().add(helpUrl);
         Hyperlink githubPage = new Hyperlink(I18nUtil.t("app.view.about.github-page"));
         githubPage.setFont(Font.font(14));
