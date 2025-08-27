@@ -73,8 +73,14 @@ public class FastSearchControl {
                 TreeNode node = pendingQueue.poll();
                 if (node.getName().contains(keyword)) {
                     searchResults.add(node);
-                    int curDistance = Math.abs(firstSelectIndex - treeView.getRow(node.getTreeItem()));
-                    if (curDistance < distance) {
+                    int curDistance = firstSelectIndex - treeView.getRow(node.getTreeItem());
+                    if (curDistance == 0) {
+                        distance = curDistance;
+                        targetIndex = searchResults.size() - 1;
+                    } else if (curDistance < 0 && distance > 0) {
+                        distance = curDistance;
+                        targetIndex = searchResults.size() - 1;
+                    } else if (!(curDistance > 0 && distance < 0) && Math.abs(curDistance) < Math.abs(distance)) {
                         distance = curDistance;
                         targetIndex = searchResults.size() - 1;
                     }
