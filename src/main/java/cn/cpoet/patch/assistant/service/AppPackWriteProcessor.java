@@ -307,6 +307,9 @@ public class AppPackWriteProcessor {
     private byte[] updatePatchSignContent(byte[] bytes) {
         PatchConf patchConf = Configuration.getInstance().getPatch();
         PatchTreeInfo patchTreeInfo = context.getPatchTree().getTreeInfo();
+        if (patchTreeInfo == null) {
+            return bytes;
+        }
         PatchUpSign patchUpSign = PatchUpSign.of(patchTreeInfo.getRootInfo().getPatchSign());
         TotalInfo totalInfo = context.getTotalInfo();
         patchUpSign.setAddTotal(totalInfo.getAddTotal());

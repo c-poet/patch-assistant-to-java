@@ -1,13 +1,12 @@
 package cn.cpoet.patch.assistant.control.tree;
 
-import cn.cpoet.patch.assistant.constant.AppConst;
 import cn.cpoet.patch.assistant.constant.IConConst;
 import cn.cpoet.patch.assistant.constant.StyleConst;
+import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.core.AppContext;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.util.*;
 import cn.cpoet.patch.assistant.view.home.HomeContext;
-import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import javafx.scene.control.Label;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
@@ -82,16 +81,21 @@ public class FileTreeCell extends TreeCell<TreeNode> {
 
     private void onDragOver(DragEvent event) {
         Object source = event.getGestureSource();
-        if (!(source instanceof FileTreeCell) || isEmpty()) {
+        if (isEmpty()) {
             return;
         }
-        FileTreeCellDragInfo dragInfo = DRAG_INFO_TL.get();
-        if (dragInfo == null
-                || dragInfo.isHasMappedNode()
-                || dragInfo.isHasReadmeNode()
-                || dragInfo.getOriginTree() == getTreeView()
-                || getTreeView() != appTree) {
-            return;
+        if (source != null) {
+            if (!(source instanceof FileTreeCell)) {
+                return;
+            }
+            FileTreeCellDragInfo dragInfo = DRAG_INFO_TL.get();
+            if (dragInfo == null
+                    || dragInfo.isHasMappedNode()
+                    || dragInfo.isHasReadmeNode()
+                    || dragInfo.getOriginTree() == getTreeView()
+                    || getTreeView() != appTree) {
+                return;
+            }
         }
         event.acceptTransferModes(TransferMode.COPY);
         event.consume();
@@ -99,16 +103,27 @@ public class FileTreeCell extends TreeCell<TreeNode> {
 
     private void onDragDropped(DragEvent event) {
         FileTreeCellDragInfo dragInfo = DRAG_INFO_TL.get();
-        if (dragInfo == null || appTree != getTreeView()) {
+        if (appTree != getTreeView()) {
             return;
         }
-        UIUtil.runNotUI(() -> {
-            new TreeNodeMatchProcessor(context.getTotalInfo(), getTreeItem().getValue(), dragInfo.getTreeNodes()).exec();
-            UIUtil.runUI(() -> {
-                appTree.refresh();
-                patchTree.refresh();
+        if (dragInfo == null) {
+            List<File> files = event.getDragboard().getFiles();
+            UIUtil.runNotUI(() -> {
+                new TreeNodeFileMatchProcessor(context.getTotalInfo(), getTreeItem().getValue(), files).exec();
+                UIUtil.runUI(() -> {
+                    appTree.refresh();
+                    patchTree.refresh();
+                });
             });
-        });
+        } else {
+            UIUtil.runNotUI(() -> {
+                new TreeNodeTreeMatchProcessor(context.getTotalInfo(), getTreeItem().getValue(), dragInfo.getTreeNodes()).exec();
+                UIUtil.runUI(() -> {
+                    appTree.refresh();
+                    patchTree.refresh();
+                });
+            });
+        }
         event.consume();
     }
 
@@ -210,9 +225,9 @@ public class FileTreeCell extends TreeCell<TreeNode> {
             if (node.isDir()) {
                 return;
             }
-            String sizeReadability = FileUtil.getSizeReadability(node.getSize());
+            String sizeReadability = FileUtil.getSizeReadability(node.getSizeOrInit());
             String dateTime = DateUtil.formatDateTime(node.getModifyTime());
-            Label fileDetailLbl = new Label("\t" + dateTime + "  " + sizeReadability + "  " + node.getMd5());
+            Label fileDetailLbl = new Label("\t" + dateTime + "  " + sizeReadability + "  " + node.getMd5OrInit());
             fileDetailLbl.setTextFill(Color.web(StyleConst.COLOR_GRAY_1));
             box.getChildren().add(fileDetailLbl);
         }
