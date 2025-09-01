@@ -118,81 +118,107 @@ public class HomeRightTreeView extends HomeTreeView {
     }
 
     private void buildPatchTreeContextMenu() {
-        ContextMenu contextMenu = new ContextMenu();
+        ContextMenu contextMenu = createContextMenu();
 
         MenuItem reloadOrRefreshMenuItem = new MenuItem(I18nUtil.t("app.view.right-tree.reload"));
         reloadOrRefreshMenuItem.setOnAction(e -> handleReloadOrRefresh());
         contextMenu.getItems().add(reloadOrRefreshMenuItem);
+        addMenuItemPreFunc(() -> {
+            TreeNode node = patchTree.getSingleSelectedNode();
+            if (node == null) {
+                reloadOrRefreshMenuItem.setVisible(false);
+                return;
+            }
+            if (TreeNodeType.ROOT.equals(node.getType())) {
+                reloadOrRefreshMenuItem.setText(I18nUtil.t("app.view.right-tree.reload"));
+                reloadOrRefreshMenuItem.setVisible(true);
+            } else if (TreeNodeType.CUSTOM_ROOT.equals(node.getType())) {
+                reloadOrRefreshMenuItem.setText(I18nUtil.t("app.view.right-tree.refresh"));
+                reloadOrRefreshMenuItem.setVisible(true);
+            } else {
+                reloadOrRefreshMenuItem.setVisible(false);
+            }
+        });
 
         MenuItem cancelMappedMenuItem = new MenuItem(I18nUtil.t("app.view.right-tree.cancel-binding"));
         cancelMappedMenuItem.setOnAction(this::handleCancelMapped);
         contextMenu.getItems().add(cancelMappedMenuItem);
+        addMenuItemPreFunc(() -> {
+            TreeNode node = patchTree.getSingleSelectedNode();
+            cancelMappedMenuItem.setVisible(node != null && node.getMappedNode() != null);
+        });
 
         RadioMenuItem markRootMenuItem = new RadioMenuItem(I18nUtil.t("app.view.right-tree.mark-root"));
         markRootMenuItem.setOnAction(e -> handleMarkRoot());
         contextMenu.getItems().add(markRootMenuItem);
+        addMenuItemPreFunc(() -> {
+            TreeNode node = patchTree.getSingleSelectedNode();
+            if (node != null
+                    && !TreeNodeType.ROOT.equals(node.getType())
+                    && CollectionUtil.isNotEmpty(node.getChildren())
+                    && (node.isDir() || TreeNodeUtil.isCompressNode(node))
+                    && TreeNodeUtil.isNotUnderCustomRoot(node)) {
+                markRootMenuItem.setVisible(true);
+                markRootMenuItem.setSelected(TreeNodeType.CUSTOM_ROOT.equals(node.getType()));
+            } else {
+                markRootMenuItem.setVisible(false);
+            }
+        });
 
         MenuItem saveFileMenuItem = new MenuItem(I18nUtil.t("app.view.right-tree.save-file"));
         saveFileMenuItem.setOnAction(e -> saveFile(patchTree));
         contextMenu.getItems().add(saveFileMenuItem);
+        addMenuItemPreFunc(() -> {
+            TreeNode node = patchTree.getSingleSelectedNode();
+            saveFileMenuItem.setVisible(node != null && !node.isDir());
+        });
 
         MenuItem saveSourceFileMenuItem = new MenuItem(I18nUtil.t("app.view.right-tree.save-source-file"));
         saveSourceFileMenuItem.setOnAction(e -> saveSourceFile(patchTree));
         contextMenu.getItems().add(saveSourceFileMenuItem);
+        addMenuItemPreFunc(() -> {
+            TreeNode node = patchTree.getSingleSelectedNode();
+            saveSourceFileMenuItem.setVisible(node != null && !node.isDir() && node.getName().endsWith(FileExtConst.DOT_CLASS));
+        });
 
         MenuItem viewPatchSign = new MenuItem(I18nUtil.t("app.view.right-tree.view-sign"));
         viewPatchSign.setOnAction(this::handleViewPatchSign);
         contextMenu.getItems().add(viewPatchSign);
+        addMenuItemPreFunc(() -> {
+            TreeNode node = patchTree.getSingleSelectedNode();
+            viewPatchSign.setVisible(node != null && (TreeNodeType.CUSTOM_ROOT.equals(node.getType()) || TreeNodeType.ROOT.equals(node.getType())));
+        });
 
         MenuItem viewNodeMappedItem = new MenuItem(I18nUtil.t("app.view.right-tree.view-node-mapped"));
         viewNodeMappedItem.setOnAction(this::handleViewNodeMapped);
         contextMenu.getItems().add(viewNodeMappedItem);
+        addMenuItemPreFunc(() -> {
+            TreeNode node = patchTree.getSingleSelectedNode();
+            if (node == null) {
+                viewNodeMappedItem.setVisible(false);
+            } else if (TreeNodeType.CUSTOM_ROOT.equals(node.getType())) {
+                viewNodeMappedItem.setVisible(appTree.getTreeInfo() != null);
+            } else if (TreeNodeType.ROOT.equals(node.getType())) {
+                viewNodeMappedItem.setVisible(appTree.getTreeInfo() != null
+                        && CollectionUtil.isEmpty(patchTree.getTreeInfo().getCustomRootInfoMap()));
+            } else {
+                viewNodeMappedItem.setVisible(false);
+            }
+        });
 
         MenuItem openInExplorerItem = new MenuItem(I18nUtil.t("app.view.right-tree.open-in-explorer"));
         openInExplorerItem.setOnAction(e -> handleOpenInExplorer(e, patchTree));
         contextMenu.getItems().add(openInExplorerItem);
+        addMenuItemPreFunc(() -> {
+            TreeNode node = patchTree.getSingleSelectedNode();
+            openInExplorerItem.setVisible(node instanceof FileNode && !(node instanceof CompressNode));
+        });
 
         RadioMenuItem focusPatchTreeItem = new RadioMenuItem(I18nUtil.t("app.view.right-tree.focus-patch-tree"));
         focusPatchTreeItem.setSelected((context.focusTreeStatus.get() & FocusTreeStatusConst.PATCH) == FocusTreeStatusConst.PATCH);
         focusPatchTreeItem.setOnAction(e -> context.focusTreeStatus.set(context.focusTreeStatus.get() != FocusTreeStatusConst.ALL ? FocusTreeStatusConst.ALL : FocusTreeStatusConst.PATCH));
         contextMenu.getItems().add(focusPatchTreeItem);
 
-        contextMenu.setOnShowing(e -> {
-            hideMenItem(contextMenu, item -> item == focusPatchTreeItem);
-            TreeItem<TreeNode> selectedItem = patchTree.getSelectionModel().getSelectedItem();
-            if (selectedItem == null) {
-                return;
-            }
-            TreeNode selectedNode = selectedItem.getValue();
-            if (TreeNodeType.ROOT.equals(selectedNode.getType())) {
-                reloadOrRefreshMenuItem.setText(I18nUtil.t("app.view.right-tree.reload"));
-                reloadOrRefreshMenuItem.setVisible(true);
-            } else if (TreeNodeType.CUSTOM_ROOT.equals(selectedNode.getType())) {
-                reloadOrRefreshMenuItem.setText(I18nUtil.t("app.view.right-tree.refresh"));
-                reloadOrRefreshMenuItem.setVisible(true);
-            }
-            cancelMappedMenuItem.setVisible(selectedNode.getMappedNode() != null);
-            if (!TreeNodeType.ROOT.equals(selectedNode.getType())
-                    && CollectionUtil.isNotEmpty(selectedNode.getChildren())
-                    && (selectedNode.isDir() || TreeNodeUtil.isCompressNode(selectedNode))
-                    && TreeNodeUtil.isNotUnderCustomRoot(selectedNode)) {
-                markRootMenuItem.setVisible(true);
-                markRootMenuItem.setSelected(TreeNodeType.CUSTOM_ROOT.equals(selectedNode.getType()));
-            }
-            if (!selectedNode.isDir()) {
-                saveFileMenuItem.setVisible(true);
-                saveSourceFileMenuItem.setVisible(selectedNode.getName().endsWith(FileExtConst.DOT_CLASS));
-            }
-            if (TreeNodeType.CUSTOM_ROOT.equals(selectedNode.getType())) {
-                viewPatchSign.setVisible(true);
-                viewNodeMappedItem.setVisible(appTree.getTreeInfo() != null);
-            } else if (TreeNodeType.ROOT.equals(selectedNode.getType())) {
-                viewPatchSign.setVisible(true);
-                viewNodeMappedItem.setVisible(appTree.getTreeInfo() != null
-                        && CollectionUtil.isEmpty(patchTree.getTreeInfo().getCustomRootInfoMap()));
-            }
-            openInExplorerItem.setVisible(selectedNode instanceof FileNode && !(selectedNode instanceof CompressNode));
-        });
         patchTree.setContextMenu(contextMenu);
     }
 

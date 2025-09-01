@@ -139,64 +139,79 @@ public class HomeLeftTreeView extends HomeTreeView {
     }
 
     private void buildAppTreeContextMenu() {
-        ContextMenu contextMenu = new ContextMenu();
+        ContextMenu contextMenu = createContextMenu();
         MenuItem mkdirMenuItem = new MenuItem(I18nUtil.t("app.view.left-tree.mkdir"));
         mkdirMenuItem.setOnAction(this::handleMkdir);
         contextMenu.getItems().add(mkdirMenuItem);
+        addMenuItemPreFunc(() -> {
+            TreeNode node = appTree.getSingleSelectedNode();
+            mkdirMenuItem.setVisible(node != null && node.isDir());
+        });
 
         MenuItem renameMenuItem = new MenuItem(I18nUtil.t("app.view.left-tree.rename"));
         renameMenuItem.setOnAction(this::handleRename);
         contextMenu.getItems().add(renameMenuItem);
+        addMenuItemPreFunc(() -> renameMenuItem.setVisible(appTree.isSingleSelectedNode()));
 
         MenuItem reloadMenuItem = new MenuItem(I18nUtil.t("app.view.left-tree.reload"));
         reloadMenuItem.setOnAction(this::handleReload);
         contextMenu.getItems().add(reloadMenuItem);
+        addMenuItemPreFunc(() -> {
+            TreeNode node = appTree.getSingleSelectedNode();
+            reloadMenuItem.setVisible(node != null && TreeNodeType.ROOT.equals(node.getType()));
+        });
 
         MenuItem manualDelMenuItem = new MenuItem(I18nUtil.t("app.view.left-tree.delete"));
         manualDelMenuItem.setOnAction(this::handleManualDel);
         contextMenu.getItems().add(manualDelMenuItem);
+        addMenuItemPreFunc(() -> {
+            ObservableList<TreeItem<TreeNode>> selectedItems = appTree.getSelectionModel().getSelectedItems();
+            boolean isNoneNode = CollectionUtil.isEmpty(selectedItems) || selectedItems.stream().anyMatch(item -> item.equals(appTree.getRoot()) || !item.getValue().getType().equals(TreeNodeType.NONE));
+            manualDelMenuItem.setVisible(!isNoneNode);
+        });
 
         RadioMenuItem markDelMenuItem = new RadioMenuItem(I18nUtil.t("app.view.left-tree.mark-delete"));
         markDelMenuItem.setOnAction(this::handleMarkDel);
         contextMenu.getItems().add(markDelMenuItem);
+        addMenuItemPreFunc(() -> {
+            TreeNode node = appTree.getSingleSelectedNode();
+            if (node != null) {
+                markDelMenuItem.setVisible(TreeNodeType.DEL.equals(node.getType()) || TreeNodeType.NONE.equals(node.getType()));
+                markDelMenuItem.setSelected(TreeNodeType.DEL.equals(node.getType()));
+            } else {
+                markDelMenuItem.setVisible(false);
+            }
+        });
 
         MenuItem saveFileMenuItem = new MenuItem(I18nUtil.t("app.view.left-tree.save-file"));
         saveFileMenuItem.setOnAction(e -> saveFile(appTree));
         contextMenu.getItems().add(saveFileMenuItem);
+        addMenuItemPreFunc(() -> {
+            TreeNode node = appTree.getSingleSelectedNode();
+            saveFileMenuItem.setVisible(node != null && !node.isDir());
+        });
 
         MenuItem saveSourceFileMenuItem = new MenuItem(I18nUtil.t("app.view.left-tree.save-source-file"));
         saveSourceFileMenuItem.setOnAction(e -> saveSourceFile(appTree));
         contextMenu.getItems().add(saveSourceFileMenuItem);
+        addMenuItemPreFunc(() -> {
+            TreeNode node = appTree.getSingleSelectedNode();
+            saveSourceFileMenuItem.setVisible(node != null && !node.isDir() && node.getName().endsWith(FileExtConst.DOT_CLASS));
+        });
 
         MenuItem openInExplorerItem = new MenuItem(I18nUtil.t("app.view.left-tree.open-in-explorer"));
         openInExplorerItem.setOnAction(e -> handleOpenInExplorer(e, appTree));
         contextMenu.getItems().add(openInExplorerItem);
+        addMenuItemPreFunc(() -> {
+            TreeNode node = appTree.getSingleSelectedNode();
+            openInExplorerItem.setVisible(node instanceof FileNode && !(node instanceof CompressNode));
+        });
 
         RadioMenuItem focusAppTreeItem = new RadioMenuItem(I18nUtil.t("app.view.left-tree.focus-app-tree"));
         focusAppTreeItem.setSelected((context.focusTreeStatus.get() & FocusTreeStatusConst.APP) == FocusTreeStatusConst.APP);
         focusAppTreeItem.setOnAction(e -> context.focusTreeStatus.set(context.focusTreeStatus.get() != FocusTreeStatusConst.ALL ? FocusTreeStatusConst.ALL : FocusTreeStatusConst.APP));
         contextMenu.getItems().add(focusAppTreeItem);
 
-        contextMenu.setOnShowing(e -> {
-            hideMenItem(contextMenu, item -> item == focusAppTreeItem);
-            ObservableList<TreeItem<TreeNode>> selectedItems = appTree.getSelectionModel().getSelectedItems();
-            boolean isNoneNode = CollectionUtil.isEmpty(selectedItems) || selectedItems.stream().anyMatch(item -> item.equals(appTree.getRoot()) || !item.getValue().getType().equals(TreeNodeType.NONE));
-            manualDelMenuItem.setVisible(!isNoneNode);
-            if (selectedItems.size() == 1 && selectedItems.get(0).getValue() != null) {
-                TreeNode node = selectedItems.get(0).getValue();
-                if (!node.isDir()) {
-                    saveFileMenuItem.setVisible(true);
-                    saveSourceFileMenuItem.setVisible(node.getName().endsWith(FileExtConst.DOT_CLASS));
-                } else {
-                    mkdirMenuItem.setVisible(true);
-                }
-                renameMenuItem.setVisible(true);
-                reloadMenuItem.setVisible(TreeNodeType.ROOT.equals(node.getType()));
-                markDelMenuItem.setVisible(TreeNodeType.DEL.equals(node.getType()) || TreeNodeType.NONE.equals(node.getType()));
-                markDelMenuItem.setSelected(TreeNodeType.DEL.equals(node.getType()));
-                openInExplorerItem.setVisible(node instanceof FileNode && !(node instanceof CompressNode));
-            }
-        });
         appTree.setContextMenu(contextMenu);
     }
 

@@ -5,6 +5,7 @@ import cn.cpoet.patch.assistant.control.tree.AppTreeView;
 import cn.cpoet.patch.assistant.control.tree.PatchTreeView;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.core.Configuration;
+import cn.cpoet.patch.assistant.jdk.SFunc;
 import cn.cpoet.patch.assistant.util.CollectionUtil;
 import cn.cpoet.patch.assistant.util.FileNameUtil;
 import cn.cpoet.patch.assistant.util.FileUtil;
@@ -21,7 +22,8 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
-import java.util.function.Predicate;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * @author CPoet
@@ -37,6 +39,8 @@ public abstract class HomeTreeView {
     protected final HomeContext context;
     protected final AppTreeView appTree;
     protected final PatchTreeView patchTree;
+    /** 右键菜单项前置操作列表 */
+    private List<SFunc> menuItemPreFuncList;
     /** 快速搜索控件 */
     protected final FastSearchControl fastSearchControl;
     /** 加载中标识 */
@@ -132,20 +136,6 @@ public abstract class HomeTreeView {
     }
 
     /**
-     * 隐藏菜单项
-     *
-     * @param menu   菜单
-     * @param filter 过滤器
-     */
-    protected void hideMenItem(ContextMenu menu, Predicate<MenuItem> filter) {
-        menu.getItems().forEach(item -> {
-            if (filter == null || !filter.test(item)) {
-                item.setVisible(false);
-            }
-        });
-    }
-
-    /**
      * 处理Enter事件
      *
      * @param event 事件
@@ -178,5 +168,25 @@ public abstract class HomeTreeView {
             }
         }
         event.consume();
+    }
+
+    protected void addMenuItemPreFunc(SFunc func) {
+        if (menuItemPreFuncList == null) {
+            menuItemPreFuncList = new LinkedList<>();
+        }
+        menuItemPreFuncList.add(func);
+    }
+
+    protected void invokeMenuItemPreFunc() {
+        if (CollectionUtil.isEmpty(menuItemPreFuncList)) {
+            return;
+        }
+        menuItemPreFuncList.forEach(SFunc::invoke);
+    }
+
+    protected ContextMenu createContextMenu() {
+        ContextMenu contextMenu = new ContextMenu();
+        contextMenu.setOnShowing(e -> invokeMenuItemPreFunc());
+        return contextMenu;
     }
 }
