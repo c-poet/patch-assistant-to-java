@@ -1,11 +1,12 @@
 package cn.cpoet.patch.assistant.view.home;
 
 import cn.cpoet.patch.assistant.constant.FileExtConst;
+import cn.cpoet.patch.assistant.control.menu.MenuItemClaim;
 import cn.cpoet.patch.assistant.control.tree.AppTreeView;
+import cn.cpoet.patch.assistant.control.tree.CustomTreeView;
 import cn.cpoet.patch.assistant.control.tree.PatchTreeView;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.core.Configuration;
-import cn.cpoet.patch.assistant.jdk.SFunc;
 import cn.cpoet.patch.assistant.util.CollectionUtil;
 import cn.cpoet.patch.assistant.util.FileNameUtil;
 import cn.cpoet.patch.assistant.util.FileUtil;
@@ -40,7 +41,7 @@ public abstract class HomeTreeView {
     protected final AppTreeView appTree;
     protected final PatchTreeView patchTree;
     /** 右键菜单项前置操作列表 */
-    private List<SFunc> menuItemPreFuncList;
+    private List<MenuItemClaim> menuItemClaims;
     /** 快速搜索控件 */
     protected final FastSearchControl fastSearchControl;
     /** 加载中标识 */
@@ -170,23 +171,26 @@ public abstract class HomeTreeView {
         event.consume();
     }
 
-    protected void addMenuItemPreFunc(SFunc func) {
-        if (menuItemPreFuncList == null) {
-            menuItemPreFuncList = new LinkedList<>();
+    protected void addContextMenuItemClaim(MenuItemClaim menuItemClaim) {
+        if (menuItemClaims == null) {
+            menuItemClaims = new LinkedList<>();
         }
-        menuItemPreFuncList.add(func);
+        menuItemClaims.add(menuItemClaim);
     }
 
-    protected void invokeMenuItemPreFunc() {
-        if (CollectionUtil.isEmpty(menuItemPreFuncList)) {
-            return;
-        }
-        menuItemPreFuncList.forEach(SFunc::invoke);
-    }
-
-    protected ContextMenu createContextMenu() {
+    protected void bindContextMenu(CustomTreeView<?> treeView) {
         ContextMenu contextMenu = new ContextMenu();
-        contextMenu.setOnShowing(e -> invokeMenuItemPreFunc());
-        return contextMenu;
+        treeView.setOnContextMenuRequested(e -> {
+            contextMenu.getItems().clear();
+            if (CollectionUtil.isEmpty(menuItemClaims)) {
+                return;
+            }
+            menuItemClaims.forEach(menuItemClaim -> {
+                if (menuItemClaim.isAccept()) {
+                    contextMenu.getItems().add(menuItemClaim.getItem());
+                }
+            });
+        });
+        treeView.setContextMenu(contextMenu);
     }
 }
