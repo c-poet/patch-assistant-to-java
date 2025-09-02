@@ -141,6 +141,7 @@ public class HomeLeftTreeView extends HomeTreeView {
 
     private void handleCloseApp() {
         appTree.setTreeInfo(null);
+        appTree.fireEvent(new Event(AppTreeView.APP_TREE_REFRESHING));
         appTree.setRoot(null);
         appTree.fireEvent(new Event(AppTreeView.APP_TREE_REFRESH));
     }
