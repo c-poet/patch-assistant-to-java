@@ -118,7 +118,25 @@ public class HomeRightTreeView extends HomeTreeView {
         }
     }
 
+    private void handleClosePatch() {
+        PatchTreeInfo treeInfo = patchTree.getTreeInfo();
+        if (treeInfo != null) {
+            cleanPatchMappedNode(treeInfo.getRootNode());
+        }
+        patchTree.setRoot(null);
+        patchTree.setTreeInfo(null);
+    }
+
     private void buildPatchTreeContextMenu() {
+        addContextMenuItemClaim(MenuItemClaim.create(() -> {
+            MenuItem closePatchMenuItem = new MenuItem(I18nUtil.t("app.view.right-tree.close-patch"));
+            closePatchMenuItem.setOnAction(e -> handleClosePatch());
+            return closePatchMenuItem;
+        }, menu -> {
+            TreeNode node = patchTree.getSingleSelectedNode();
+            return node != null && TreeNodeType.ROOT.equals(node.getType());
+        }));
+
         addContextMenuItemClaim(MenuItemClaim.create(() -> {
             MenuItem reloadOrRefreshMenuItem = new MenuItem(I18nUtil.t("app.view.right-tree.reload"));
             reloadOrRefreshMenuItem.setOnAction(e -> handleReloadOrRefresh());
