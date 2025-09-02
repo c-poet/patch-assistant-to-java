@@ -28,6 +28,7 @@ public abstract class CodeAreaFactory {
     protected static final String CODE_AREA_CSS = FileUtil.getResourceAndExternalForm("/css/code-area.css");
 
     public static final EventType<?> SHOW_MODE_CHANGE = new EventType<>("SHOW_MODE_CHANGE");
+    public static final EventType<?> EDIT_MODE_CHANGE = new EventType<>("EDIT_MODE_CHANGE");
     public static final EventType<CharsetChangeEvent> CHARSET_CHANGE = new EventType<>("CHARSET_CHANGE");
 
     /**
@@ -101,8 +102,12 @@ public abstract class CodeAreaFactory {
                 codeArea.fireEvent(new Event(SHOW_MODE_CHANGE));
             });
             contextMenu.getItems().add(diffModeItem);
-        }
-
+        }/* else {
+            RadioMenuItem editModeItem = new RadioMenuItem(I18nUtil.t("app.view.content.edit-mode"));
+            editModeItem.setSelected(false);
+            editModeItem.setOnAction(e -> codeArea.fireEvent(new Event(EDIT_MODE_CHANGE)));
+            contextMenu.getItems().add(editModeItem);
+        }*/
         contextMenu.setOnShowing(e -> {
             copyItem.setVisible(false);
             unSelectedItem.setVisible(false);

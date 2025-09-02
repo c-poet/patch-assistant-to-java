@@ -26,6 +26,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.fxmisc.flowless.VirtualizedScrollPane;
+import org.fxmisc.richtext.CodeArea;
 
 import java.awt.*;
 import java.io.File;
@@ -123,6 +124,10 @@ public class ContentView {
         });
     }
 
+    private void handleEditMode(CodeArea codeArea) {
+        // codeArea.setEditable(!codeArea.isEditable());
+    }
+
     private VirtualizedScrollPane<NodeCodeArea> crateCodeAreaPane(Consumer<NodeCodeArea> consumer) {
         NodeCodeArea codeArea = codeAreaFactory.create(isLoadDiffMode());
         codeArea.addEventHandler(CodeAreaFactory.CHARSET_CHANGE, event -> {
@@ -132,6 +137,10 @@ public class ContentView {
         codeArea.addEventHandler(CodeAreaFactory.SHOW_MODE_CHANGE, event -> {
             Node node = dynamicCodeAreaWithDiffModel();
             dialogPane.setContent(node);
+            event.consume();
+        });
+        codeArea.addEventHandler(CodeAreaFactory.EDIT_MODE_CHANGE, event -> {
+            handleEditMode(codeArea);
             event.consume();
         });
         consumer.accept(codeArea);
