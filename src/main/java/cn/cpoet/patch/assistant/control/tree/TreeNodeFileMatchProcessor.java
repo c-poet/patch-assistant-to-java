@@ -1,13 +1,12 @@
 package cn.cpoet.patch.assistant.control.tree;
 
 import cn.cpoet.patch.assistant.control.tree.node.FileDirectNode;
-import cn.cpoet.patch.assistant.control.tree.node.MappedNode;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
-import cn.cpoet.patch.assistant.control.tree.node.VirtualNode;
 import cn.cpoet.patch.assistant.service.PatchPackService;
-import cn.cpoet.patch.assistant.util.*;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -15,72 +14,34 @@ import java.util.List;
  *
  * @author CPoet
  */
-public class TreeNodeFileMatchProcessor extends TreeNodeMatchProcessor {
-
-    private final List<File> files;
+public class TreeNodeFileMatchProcessor extends TreeNodeMatchProcessor<File> {
 
     public TreeNodeFileMatchProcessor(TotalInfo totalInfo, TreeNode appNode, List<File> files) {
-        super(totalInfo, appNode);
-        this.files = files;
+        super(totalInfo, appNode, files);
     }
 
     @Override
-    public void exec() {
-        if (CollectionUtil.isEmpty(files)) {
-            return;
-        }
-        if (files.size() == 1 && files.get(0).isDirectory() && appNode.isDir()) {
-            matchWithDir(files.get(0), appNode);
-            return;
-        }
-        TreeNode tarAppNode = appNode.isDir() ? appNode : appNode.getParent();
-        files.forEach(file -> match(file, tarAppNode));
+    protected boolean isDirectory(File patchElement) {
+        return patchElement.isDirectory();
     }
 
-    private void matchWithDir(File file, TreeNode appNode) {
-        File[] files = file.listFiles();
-        if (files == null) {
-            return;
+    @Override
+    protected List<File> listChildren(File patchElement) {
+        if (patchElement.isFile()) {
+            return Collections.emptyList();
         }
-        for (File childFile : files) {
-            match(childFile, appNode);
-        }
+        File[] files = patchElement.listFiles();
+        return files == null ? Collections.emptyList() : Arrays.asList(files);
     }
 
-    private void match(File file, TreeNode appNode) {
-        if (CollectionUtil.isNotEmpty(appNode.getChildren())) {
-            for (TreeNode childNode : appNode.getChildren()) {
-                if (PatchPackService.INSTANCE.matchPatchName(childNode, file.getName())) {
-                    matchMapping(childNode, file);
-                    return;
-                }
-            }
-        }
-        createAppItem(file, appNode);
+    @Override
+    protected boolean isMatch(TreeNode appNode, File patchElement) {
+        return PatchPackService.INSTANCE.matchPatchName(appNode, patchElement.getName());
     }
 
-    private void matchMapping(TreeNode appNode, File file) {
-        if (appNode instanceof VirtualNode || appNode instanceof MappedNode) {
-            TreeNodeUtil.removeNodeChild(appNode);
-            createAppItem(file, appNode);
-            return;
-        }
-        FileDirectNode patchNode = createNode(file);
-        TreeNodeUtil.mappedNode(totalInfo, appNode, patchNode, TreeNodeType.MOD);
-        matchWithDir(file, appNode);
-    }
-
-    private void createAppItem(File file, TreeNode appNode) {
-        FileDirectNode patchNode = createNode(file);
-        TreeNode childNode = createAndGetAppNode(patchNode, appNode);
-        if (patchNode.isDir()) {
-            File[] files = file.listFiles();
-            if (files != null) {
-                for (File childFile : files) {
-                    match(childFile, childNode);
-                }
-            }
-        }
+    @Override
+    protected TreeNode getElementNode(File patchElement) {
+        return createNode(patchElement);
     }
 
     private FileDirectNode createNode(File file) {
