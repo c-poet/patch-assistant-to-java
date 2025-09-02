@@ -139,6 +139,12 @@ public class HomeLeftTreeView extends HomeTreeView {
         refreshAppTree(file);
     }
 
+    private void handleCloseApp() {
+        appTree.setTreeInfo(null);
+        appTree.setRoot(null);
+        appTree.fireEvent(new Event(AppTreeView.APP_TREE_REFRESH));
+    }
+
     private void buildAppTreeContextMenu() {
         addContextMenuItemClaim(MenuItemClaim.create(() -> {
             MenuItem mkdirMenuItem = new MenuItem(I18nUtil.t("app.view.left-tree.mkdir"));
@@ -212,6 +218,15 @@ public class HomeLeftTreeView extends HomeTreeView {
         }, menu -> {
             TreeNode node = appTree.getSingleSelectedNode();
             return node instanceof FileNode && !(node instanceof CompressNode);
+        }));
+
+        addContextMenuItemClaim(MenuItemClaim.create(() -> {
+            MenuItem closeAppMenuItem = new MenuItem(I18nUtil.t("app.view.left-tree.close-app-pack"));
+            closeAppMenuItem.setOnAction(e -> handleCloseApp());
+            return closeAppMenuItem;
+        }, menu -> {
+            TreeNode node = appTree.getSingleSelectedNode();
+            return node != null && TreeNodeType.ROOT.equals(node.getType());
         }));
 
         addContextMenuItemClaim(MenuItemClaim.create(() -> {
@@ -346,21 +361,22 @@ public class HomeLeftTreeView extends HomeTreeView {
         return stackPane;
     }
 
+    private void updatePackPathLabel(TextField textField) {
+        AppTreeInfo appTreeInfo = appTree.getTreeInfo();
+        if (appTreeInfo != null && appTreeInfo.getRootNode() != null) {
+            textField.setText(appTreeInfo.getRootNode().getPath());
+        } else {
+            textField.setText(null);
+        }
+    }
+
     private void addPackPathLabel(HBox appPackPathBox) {
         appPackPathBox.getChildren().add(new Label(I18nUtil.t("app.view.left-tree.app-package")));
         appPackPathBox.getChildren().add(FXUtil.pre(new TextField(), node -> {
             node.setEditable(false);
             HBox.setHgrow(node, Priority.ALWAYS);
-            AppTreeInfo appTreeInfo = appTree.getTreeInfo();
-            if (appTreeInfo != null && appTreeInfo.getRootNode() != null) {
-                node.setText(appTreeInfo.getRootNode().getPath());
-            }
-            appTree.addEventHandler(AppTreeView.APP_TREE_REFRESH, e -> {
-                AppTreeInfo treeInfo = appTree.getTreeInfo();
-                if (treeInfo != null && treeInfo.getRootNode() != null) {
-                    node.setText(treeInfo.getRootNode().getPath());
-                }
-            });
+            updatePackPathLabel(node);
+            appTree.addEventHandler(AppTreeView.APP_TREE_REFRESH, e -> updatePackPathLabel(node));
             node.textProperty().addListener((observableValue, oldVal, newVal) -> Configuration.getInstance().setLastAppPackPath(newVal));
         }));
     }

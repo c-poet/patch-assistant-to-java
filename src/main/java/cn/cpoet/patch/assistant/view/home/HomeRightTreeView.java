@@ -123,20 +123,12 @@ public class HomeRightTreeView extends HomeTreeView {
         if (treeInfo != null) {
             cleanPatchMappedNode(treeInfo.getRootNode());
         }
-        patchTree.setRoot(null);
         patchTree.setTreeInfo(null);
+        patchTree.setRoot(null);
+        patchTree.fireEvent(new Event(PatchTreeView.PATCH_TREE_REFRESH));
     }
 
     private void buildPatchTreeContextMenu() {
-        addContextMenuItemClaim(MenuItemClaim.create(() -> {
-            MenuItem closePatchMenuItem = new MenuItem(I18nUtil.t("app.view.right-tree.close-patch"));
-            closePatchMenuItem.setOnAction(e -> handleClosePatch());
-            return closePatchMenuItem;
-        }, menu -> {
-            TreeNode node = patchTree.getSingleSelectedNode();
-            return node != null && TreeNodeType.ROOT.equals(node.getType());
-        }));
-
         addContextMenuItemClaim(MenuItemClaim.create(() -> {
             MenuItem reloadOrRefreshMenuItem = new MenuItem(I18nUtil.t("app.view.right-tree.reload"));
             reloadOrRefreshMenuItem.setOnAction(e -> handleReloadOrRefresh());
@@ -232,6 +224,15 @@ public class HomeRightTreeView extends HomeTreeView {
         }, menu -> {
             TreeNode node = patchTree.getSingleSelectedNode();
             return node instanceof FileNode && !(node instanceof CompressNode);
+        }));
+
+        addContextMenuItemClaim(MenuItemClaim.create(() -> {
+            MenuItem closePatchMenuItem = new MenuItem(I18nUtil.t("app.view.right-tree.close-patch"));
+            closePatchMenuItem.setOnAction(e -> handleClosePatch());
+            return closePatchMenuItem;
+        }, menu -> {
+            TreeNode node = patchTree.getSingleSelectedNode();
+            return node != null && TreeNodeType.ROOT.equals(node.getType());
         }));
 
         addContextMenuItemClaim(MenuItemClaim.create(() -> {
@@ -481,21 +482,22 @@ public class HomeRightTreeView extends HomeTreeView {
         return file;
     }
 
+    private void updatePatchPathLabel(TextField textField) {
+        PatchTreeInfo patchTreeInfo = patchTree.getTreeInfo();
+        if (patchTreeInfo != null && patchTreeInfo.getRootNode() != null) {
+            textField.setText(patchTreeInfo.getRootNode().getPath());
+        } else {
+            textField.setText(null);
+        }
+    }
+
     private void addPatchPathLabel(HBox patchPackPathBox) {
         patchPackPathBox.getChildren().add(new Label(I18nUtil.t("app.view.right-tree.patch-package")));
         patchPackPathBox.getChildren().add(FXUtil.pre(new TextField(), node -> {
             node.setEditable(false);
             HBox.setHgrow(node, Priority.ALWAYS);
-            PatchTreeInfo patchTreeInfo = patchTree.getTreeInfo();
-            if (patchTreeInfo != null && patchTreeInfo.getRootNode() != null) {
-                node.setText(patchTreeInfo.getRootNode().getPath());
-            }
-            patchTree.addEventHandler(PatchTreeView.PATCH_TREE_REFRESH, e -> {
-                PatchTreeInfo treeInfo = patchTree.getTreeInfo();
-                if (treeInfo != null && treeInfo.getRootNode() != null) {
-                    node.setText(treeInfo.getRootNode().getPath());
-                }
-            });
+            updatePatchPathLabel(node);
+            patchTree.addEventHandler(PatchTreeView.PATCH_TREE_REFRESH, e -> updatePatchPathLabel(node));
             node.textProperty().addListener((observableValue, oldVal, newVal) -> Configuration.getInstance().setLastPatchPackPath(newVal));
         }));
     }
