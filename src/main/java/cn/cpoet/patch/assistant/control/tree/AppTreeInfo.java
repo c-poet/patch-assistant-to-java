@@ -51,8 +51,14 @@ public class AppTreeInfo extends TreeInfo {
             return null;
         }
         byte[] bytes = patchUpSignNode.getBytes();
-        return bytes == null ? null : JsonUtil.read(bytes, new TypeReference<>() {
-        });
+        if (bytes != null && bytes.length > 0) {
+            try {
+                JsonUtil.read(bytes, new TypeReference<>() {
+                });
+            } catch (Exception ignored) {
+            }
+        }
+        return null;
     }
 
     public Set<String> getAllPatchUpSignSha1() {

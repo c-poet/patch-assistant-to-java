@@ -327,13 +327,16 @@ public class AppPackWriteProcessor {
                 patchUpSign.setSigns(patchSigns);
             }
         }
-        if (bytes == null) {
-            return JsonUtil.writeAsBytes(Collections.singletonList(patchUpSign));
+        List<PatchUpSign> patchUpSigns = null;
+        if (bytes != null && bytes.length > 0) {
+            try {
+                patchUpSigns = JsonUtil.read(bytes, new TypeReference<>() {
+                });
+                patchUpSigns.add(0, patchUpSign);
+            } catch (Exception ignored) {
+            }
         }
-        List<PatchUpSign> patchUpSigns = JsonUtil.read(bytes, new TypeReference<>() {
-        });
-        patchUpSigns.add(0, patchUpSign);
-        return JsonUtil.writeAsBytes(patchUpSigns);
+        return patchUpSigns == null ? JsonUtil.writeAsBytes(Collections.singletonList(patchUpSign)) : JsonUtil.writeAsBytes(patchUpSigns);
     }
 
     private void writeTreeNode2Pack(ZipOutputStream zipOut, TreeNode node) throws IOException {
