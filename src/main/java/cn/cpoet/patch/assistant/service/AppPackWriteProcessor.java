@@ -301,7 +301,7 @@ public class AppPackWriteProcessor {
         if (isPatchSign) {
             bytes = updatePatchSignContent(bytes);
         }
-        zipOut.write(bytes);
+        zipOut.write(bytes == null ? new byte[0] : bytes);
     }
 
     private byte[] updatePatchSignContent(byte[] bytes) {

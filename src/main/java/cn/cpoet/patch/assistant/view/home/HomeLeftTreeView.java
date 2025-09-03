@@ -42,6 +42,12 @@ public class HomeLeftTreeView extends HomeTreeView {
         super(stage, context, new FastSearchControl(context.appTree));
     }
 
+    private boolean isAcceptManualDel() {
+        ObservableList<TreeItem<TreeNode>> selectedItems = appTree.getSelectionModel().getSelectedItems();
+        boolean isNoneNode = CollectionUtil.isEmpty(selectedItems) || selectedItems.stream().anyMatch(item -> item.equals(appTree.getRoot()) || !item.getValue().getType().equals(TreeNodeType.NONE));
+        return !isNoneNode;
+    }
+
     private void handleManualDel(ActionEvent event) {
         ButtonType buttonType = AlterUtil.confirm(stage, I18nUtil.t("app.view.left-tree.delete-confirm"), ButtonType.YES, ButtonType.NO);
         if (ButtonType.YES.equals(buttonType)) {
@@ -55,6 +61,9 @@ public class HomeLeftTreeView extends HomeTreeView {
             });
             appTree.getSelectionModel().clearSelection();
             patchTree.refresh();
+        }
+        if (event != null) {
+            event.consume();
         }
     }
 
@@ -139,6 +148,13 @@ public class HomeLeftTreeView extends HomeTreeView {
         refreshAppTree(file);
     }
 
+    protected void handleCancelMapped(ActionEvent event) {
+        TreeItem<TreeNode> selectedItem = appTree.getSelectionModel().getSelectedItem();
+        TreeNodeUtil.deepCleanMappedNode(context.totalInfo, selectedItem.getValue());
+        appTree.refresh();
+        patchTree.refresh();
+    }
+
     private void handleCloseApp() {
         appTree.setTreeInfo(null);
         appTree.fireEvent(new Event(AppTreeView.APP_TREE_REFRESHING));
@@ -172,14 +188,19 @@ public class HomeLeftTreeView extends HomeTreeView {
         }));
 
         addContextMenuItemClaim(MenuItemClaim.create(() -> {
+            MenuItem cancelMappedMenuItem = new MenuItem(I18nUtil.t("app.view.left-tree.cancel-binding"));
+            cancelMappedMenuItem.setOnAction(this::handleCancelMapped);
+            return cancelMappedMenuItem;
+        }, menu -> {
+            TreeNode node = appTree.getSingleSelectedNode();
+            return node != null && node.getMappedNode() != null;
+        }));
+
+        addContextMenuItemClaim(MenuItemClaim.create(() -> {
             MenuItem manualDelMenuItem = new MenuItem(I18nUtil.t("app.view.left-tree.delete"));
             manualDelMenuItem.setOnAction(this::handleManualDel);
             return manualDelMenuItem;
-        }, menu -> {
-            ObservableList<TreeItem<TreeNode>> selectedItems = appTree.getSelectionModel().getSelectedItems();
-            boolean isNoneNode = CollectionUtil.isEmpty(selectedItems) || selectedItems.stream().anyMatch(item -> item.equals(appTree.getRoot()) || !item.getValue().getType().equals(TreeNodeType.NONE));
-            return !isNoneNode;
-        }));
+        }, menu -> isAcceptManualDel()));
 
         addContextMenuItemClaim(MenuItemClaim.create(() -> {
             RadioMenuItem markDelMenuItem = new RadioMenuItem(I18nUtil.t("app.view.left-tree.mark-delete"));
@@ -313,9 +334,10 @@ public class HomeLeftTreeView extends HomeTreeView {
         }
     }
 
+
     private void onKeyReleased(KeyEvent event) {
         if (KeyCode.DELETE.equals(event.getCode())) {
-            if (!appTree.getSelectionModel().isEmpty()) {
+            if (isAcceptManualDel()) {
                 handleManualDel(null);
             }
             event.consume();

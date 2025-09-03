@@ -7,9 +7,11 @@ import cn.cpoet.patch.assistant.control.tree.node.MappedNode;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.control.tree.node.VirtualNode;
 import cn.cpoet.patch.assistant.service.compress.FileDecompressor;
+import javafx.scene.Node;
 import javafx.scene.control.TreeItem;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -61,7 +63,8 @@ public abstract class TreeNodeUtil {
             return;
         }
         if (CollectionUtil.isNotEmpty(node.getChildren())) {
-            node.getChildren().forEach(child -> deepCleanMappedNode(totalInfo, child, filter));
+            // 避免并发异常
+            new ArrayList<>(node.getChildren()).forEach(child -> deepCleanMappedNode(totalInfo, child, filter));
         }
         if (!node.isDir()) {
             TreeNodeType nodeType = node.getType();

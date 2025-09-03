@@ -81,7 +81,7 @@ public class FileTreeCell extends TreeCell<TreeNode> {
 
     private void onDragOver(DragEvent event) {
         Object source = event.getGestureSource();
-        if (isEmpty()) {
+        if (isEmpty() || TreeNodeType.ROOT.equals(getItem().getType())) {
             return;
         }
         if (source != null) {
@@ -103,7 +103,7 @@ public class FileTreeCell extends TreeCell<TreeNode> {
 
     private void onDragDropped(DragEvent event) {
         FileTreeCellDragInfo dragInfo = DRAG_INFO_TL.get();
-        if (appTree != getTreeView()) {
+        if (isEmpty() || TreeNodeType.ROOT.equals(getItem().getType()) || appTree != getTreeView()) {
             return;
         }
         if (dragInfo == null) {
