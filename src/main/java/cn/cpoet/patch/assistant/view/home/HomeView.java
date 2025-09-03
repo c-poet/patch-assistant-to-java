@@ -15,7 +15,6 @@ import cn.cpoet.patch.assistant.view.progress.ProgressView;
 import cn.cpoet.patch.assistant.view.search.SearchView;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
@@ -187,7 +186,7 @@ public class HomeView extends HomeContext {
         return false;
     }
 
-    private void handleSaveAppPack(ActionEvent event) {
+    private void handleSaveAppPack() {
         if (!totalInfo.isChangeNode()) {
             ButtonType buttonType = AlterUtil.warn(stage, I18nUtil.t("app.view.home.app-not-changed-tip"), ButtonType.YES, ButtonType.NO);
             if (ButtonType.NO.equals(buttonType)) {
@@ -243,7 +242,7 @@ public class HomeView extends HomeContext {
                     btn.setDisable(appTree.getRoot() == null);
                     appTree.addEventHandler(AppTreeView.APP_TREE_REFRESH, e -> btn.setDisable(appTree.getRoot() == null));
                     btn.setText(I18nUtil.t("app.view.home.save"));
-                    btn.setOnAction(this::handleSaveAppPack);
+                    btn.setOnAction(e -> handleSaveAppPack());
                 })
         );
         footerBox.setAlignment(Pos.CENTER);
@@ -263,8 +262,15 @@ public class HomeView extends HomeContext {
         rootPane.setCenter(buildCentre());
         rootPane.setBottom(buildFooter());
         rootPane.setOnKeyPressed(e -> {
-            if (e.isControlDown() && e.getCode() == KeyCode.F) {
-                showSearchView();
+            if (e.isControlDown()) {
+                if (e.getCode() == KeyCode.F) {
+                    showSearchView();
+                    e.consume();
+                }
+                if (e.getCode() == KeyCode.S) {
+                    handleSaveAppPack();
+                    e.consume();
+                }
             }
         });
         return rootPane;
