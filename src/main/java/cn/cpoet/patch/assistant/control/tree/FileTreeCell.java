@@ -109,7 +109,7 @@ public class FileTreeCell extends TreeCell<TreeNode> {
         if (dragInfo == null) {
             List<File> files = event.getDragboard().getFiles();
             UIUtil.runNotUI(() -> {
-                new TreeNodeFileMatchProcessor(context.getTotalInfo(), getTreeItem().getValue(), files).exec();
+                new TreeNodeFileMatchProcessor(context.getTotalInfo(), appTree.getTreeInfo(), getTreeItem().getValue(), files).exec();
                 UIUtil.runUI(() -> {
                     appTree.refresh();
                     patchTree.refresh();
@@ -117,7 +117,7 @@ public class FileTreeCell extends TreeCell<TreeNode> {
             });
         } else {
             UIUtil.runNotUI(() -> {
-                new TreeNodeTreeMatchProcessor(context.getTotalInfo(), getTreeItem().getValue(), dragInfo.getTreeNodes()).exec();
+                new TreeNodeTreeMatchProcessor(context.getTotalInfo(), appTree.getTreeInfo(), getTreeItem().getValue(), dragInfo.getTreeNodes()).exec();
                 UIUtil.runUI(() -> {
                     appTree.refresh();
                     patchTree.refresh();

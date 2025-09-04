@@ -41,6 +41,11 @@ public class PatchConf implements Cloneable {
      */
     private String unrarPath = "C:\\Program Files\\WinRAR";
 
+    /**
+     * 补丁文件比较
+     */
+    private Boolean patchFileDiff = Boolean.TRUE;
+
     public String getUsername() {
         return StringUtil.isBlank(username) ? EnvUtil.getUserName() : username;
     }
@@ -87,6 +92,14 @@ public class PatchConf implements Cloneable {
 
     public void setUnrarPath(String unrarPath) {
         this.unrarPath = unrarPath;
+    }
+
+    public Boolean getPatchFileDiff() {
+        return patchFileDiff;
+    }
+
+    public void setPatchFileDiff(Boolean patchFileDiff) {
+        this.patchFileDiff = patchFileDiff;
     }
 
     @Override

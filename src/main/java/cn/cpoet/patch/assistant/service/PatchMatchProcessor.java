@@ -1,6 +1,7 @@
 package cn.cpoet.patch.assistant.service;
 
 import cn.cpoet.patch.assistant.constant.FileExtConst;
+import cn.cpoet.patch.assistant.control.tree.AppTreeInfo;
 import cn.cpoet.patch.assistant.control.tree.TotalInfo;
 import cn.cpoet.patch.assistant.control.tree.TreeNodeType;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
@@ -25,6 +26,11 @@ public class PatchMatchProcessor {
     private final TotalInfo totalInfo;
 
     /**
+     * 应用信息
+     */
+    private final AppTreeInfo appTreeInfo;
+
+    /**
      * 路径匹配
      */
     private final boolean isWithPath;
@@ -44,8 +50,9 @@ public class PatchMatchProcessor {
      */
     private TreeNode patchRootNode;
 
-    public PatchMatchProcessor(TotalInfo totalInfo, boolean isWithPath, boolean isWithName) {
+    public PatchMatchProcessor(TotalInfo totalInfo, AppTreeInfo appTreeInfo, boolean isWithPath, boolean isWithName) {
         this.totalInfo = totalInfo;
+        this.appTreeInfo = appTreeInfo;
         this.isWithPath = isWithPath;
         this.isWithName = isWithName;
     }
@@ -120,6 +127,7 @@ public class PatchMatchProcessor {
             appNode.setChildren(oldChildren);
         }
         TreeNodeUtil.mappedNode(totalInfo, appNode, patchNode, TreeNodeType.MOD);
+        AppPackService.INSTANCE.createPatchDiffInfo(appTreeInfo, appNode, patchNode);
         PatchPackService.INSTANCE.mappedInnerClassNode(totalInfo, appNode, patchNode);
         return true;
     }
@@ -131,6 +139,7 @@ public class PatchMatchProcessor {
         TreeNode patchNode = nameMapping.remove(appNode.getName());
         if (patchNode != null) {
             TreeNodeUtil.mappedNode(totalInfo, appNode, patchNode, TreeNodeType.MOD);
+            AppPackService.INSTANCE.createPatchDiffInfo(appTreeInfo, appNode, patchNode);
             PatchPackService.INSTANCE.mappedInnerClassNode(totalInfo, appNode, patchNode);
             return true;
         }

@@ -12,8 +12,8 @@ import java.util.List;
  */
 public class TreeNodeTreeMatchProcessor extends TreeNodeMatchProcessor<TreeNode> {
 
-    public TreeNodeTreeMatchProcessor(TotalInfo totalInfo, TreeNode appNode, List<TreeNode> patchNodes) {
-        super(totalInfo, appNode, patchNodes);
+    public TreeNodeTreeMatchProcessor(TotalInfo totalInfo, AppTreeInfo appTreeInfo, TreeNode appNode, List<TreeNode> patchNodes) {
+        super(totalInfo, appTreeInfo, appNode, patchNodes);
     }
 
     @Override

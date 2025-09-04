@@ -3,6 +3,7 @@ package cn.cpoet.patch.assistant.control.tree;
 import cn.cpoet.patch.assistant.control.tree.node.MappedNode;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.control.tree.node.VirtualNode;
+import cn.cpoet.patch.assistant.service.AppPackService;
 import cn.cpoet.patch.assistant.util.CollectionUtil;
 import cn.cpoet.patch.assistant.util.FileNameUtil;
 import cn.cpoet.patch.assistant.util.TreeNodeUtil;
@@ -17,11 +18,13 @@ public abstract class TreeNodeMatchProcessor<E> {
 
     protected final TreeNode appNode;
     protected final TotalInfo totalInfo;
+    protected final AppTreeInfo appTreeInfo;
     protected final List<E> patchElements;
 
-    public TreeNodeMatchProcessor(TotalInfo totalInfo, TreeNode appNode, List<E> patchElements) {
+    public TreeNodeMatchProcessor(TotalInfo totalInfo, AppTreeInfo appTreeInfo, TreeNode appNode, List<E> patchElements) {
         this.totalInfo = totalInfo;
         this.appNode = appNode;
+        this.appTreeInfo = appTreeInfo;
         this.patchElements = patchElements;
     }
 
@@ -73,6 +76,7 @@ public abstract class TreeNodeMatchProcessor<E> {
         }
         TreeNode patchNode = getElementNode(patchElement);
         TreeNodeUtil.mappedNode(totalInfo, appNode, patchNode, TreeNodeType.MOD);
+        AppPackService.INSTANCE.createPatchDiffInfo(appTreeInfo, appNode, patchNode);
         matchWithDir(patchElement, appNode);
     }
 

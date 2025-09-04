@@ -249,7 +249,7 @@ public class PatchPackService extends BasePackService {
         boolean isWithPath = Boolean.TRUE.equals(patch.getPathMatch());
         boolean isWithName = Boolean.TRUE.equals(patch.getFileNameMatch());
         if (isWithPath || isWithName) {
-            PatchMatchProcessor processor = new PatchMatchProcessor(totalInfo, isWithPath, isWithName);
+            PatchMatchProcessor processor = new PatchMatchProcessor(totalInfo, appTreeInfo, isWithPath, isWithName);
             processor.setAppRootNode(appTreeInfo.getRootNode());
             Map<TreeNode, PatchRootInfo> customRootInfoMap = patchTreeInfo.getCustomRootInfoMap();
             if (CollectionUtil.isNotEmpty(customRootInfoMap)) {

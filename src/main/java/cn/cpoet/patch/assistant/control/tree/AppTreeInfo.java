@@ -7,6 +7,8 @@ import cn.cpoet.patch.assistant.util.CollectionUtil;
 import cn.cpoet.patch.assistant.util.JsonUtil;
 import cn.cpoet.patch.assistant.util.StringUtil;
 import com.fasterxml.jackson.core.type.TypeReference;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -30,6 +32,11 @@ public class AppTreeInfo extends TreeInfo {
      */
     private TreeNode patchUpSignNode;
 
+    /**
+     * 补丁比较信息
+     */
+    private final StringProperty patchDiffInfo = new SimpleStringProperty();
+
     public AppPackSign getAppPackSign() {
         return appPackSign;
     }
@@ -44,6 +51,27 @@ public class AppTreeInfo extends TreeInfo {
 
     public void setPatchUpSignNode(TreeNode patchUpSignNode) {
         this.patchUpSignNode = patchUpSignNode;
+    }
+
+    public String getPatchDiffInfo() {
+        return patchDiffInfo.get();
+    }
+
+    public StringProperty patchDiffInfoProperty() {
+        return patchDiffInfo;
+    }
+
+    public void setPatchDiffInfo(String patchDiffInfo) {
+        this.patchDiffInfo.set(patchDiffInfo);
+    }
+
+    public void appendPatchDiffInfo(String patchDiffInfo) {
+        String s = this.patchDiffInfo.get();
+        if (StringUtil.isBlank(s)) {
+            this.patchDiffInfo.set(patchDiffInfo);
+        } else {
+            this.patchDiffInfo.set(s + '\n' + patchDiffInfo);
+        }
     }
 
     public List<PatchUpSign> listPatchUpSign() {

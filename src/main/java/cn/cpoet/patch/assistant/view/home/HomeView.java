@@ -2,6 +2,7 @@ package cn.cpoet.patch.assistant.view.home;
 
 import cn.cpoet.patch.assistant.constant.IConConst;
 import cn.cpoet.patch.assistant.constant.StyleConst;
+import cn.cpoet.patch.assistant.control.tree.AppTreeInfo;
 import cn.cpoet.patch.assistant.control.tree.AppTreeView;
 import cn.cpoet.patch.assistant.control.tree.PatchRootInfo;
 import cn.cpoet.patch.assistant.control.tree.PatchTreeInfo;
@@ -106,18 +107,51 @@ public class HomeView extends HomeContext {
         return titledPane;
     }
 
+    private void updatePatchInfo(TextArea textArea) {
+        UIUtil.runUI(() -> {
+            AppTreeInfo appTreeInfo = appTree.getTreeInfo();
+            PatchTreeInfo patchTreeInfo = patchTree.getTreeInfo();
+            if (appTreeInfo != null && patchTreeInfo != null) {
+                String patchDiffInfo = appTreeInfo.getPatchDiffInfo();
+                String readmeText = patchTreeInfo.getReadmeText();
+                if (StringUtil.isBlank(patchDiffInfo)) {
+                    textArea.setText(StringUtil.isBlank(readmeText) ? null : I18nUtil.t("app.view.home.patch-info.readme") + '\n' + readmeText);
+                } else if (StringUtil.isBlank(readmeText)) {
+                    textArea.setText(StringUtil.isBlank(patchDiffInfo) ? null : I18nUtil.t("app.view.home.patch-info.warn") + '\n' + patchDiffInfo);
+                } else {
+                    textArea.setText(I18nUtil.t("app.view.home.patch-info.warn") + '\n' + patchDiffInfo + "\n\n"
+                            + I18nUtil.t("app.view.home.patch-info.readme") + '\n' + readmeText);
+                }
+            } else if (appTreeInfo != null) {
+                String patchDiffInfo = appTreeInfo.getPatchDiffInfo();
+                textArea.setText(StringUtil.isBlank(patchDiffInfo) ? null : I18nUtil.t("app.view.home.patch-info.warn") + '\n' + patchDiffInfo);
+            } else {
+                String readmeText = patchTreeInfo.getReadmeText();
+                textArea.setText(StringUtil.isBlank(readmeText) ? null : I18nUtil.t("app.view.home.patch-info.readme") + '\n' + readmeText);
+            }
+        });
+    }
+
     private void addReadmeTextListener(TextArea textArea, PatchTreeInfo patchTreeInfo) {
         if (patchTreeInfo != null) {
-            textArea.setText(patchTreeInfo.getReadmeText());
-            patchTreeInfo.readmeTextProperty().addListener((observableValue, oldVal, newVal)
-                    -> UIUtil.runUI(() -> textArea.setText(newVal)));
+            updatePatchInfo(textArea);
+            patchTreeInfo.readmeTextProperty().addListener((observableValue, oldVal, newVal) -> updatePatchInfo(textArea));
+        }
+    }
+
+    private void addPatchDiffInfoListener(TextArea textArea, AppTreeInfo appTreeInfo) {
+        if (appTreeInfo != null) {
+            updatePatchInfo(textArea);
+            appTreeInfo.patchDiffInfoProperty().addListener((observableValue, oldVal, newVal) -> updatePatchInfo(textArea));
         }
     }
 
     private Node buildBottomCentre() {
         TextArea readMeTextArea = new TextArea();
         readMeTextArea.setEditable(false);
+        addPatchDiffInfoListener(readMeTextArea, appTree.getTreeInfo());
         addReadmeTextListener(readMeTextArea, patchTree.getTreeInfo());
+        appTree.treeInfoProperty().addListener((observableValue, oldVal, newVal) -> addPatchDiffInfoListener(readMeTextArea, newVal));
         patchTree.treeInfoProperty().addListener((observableValue, oldVal, newVal) -> addReadmeTextListener(readMeTextArea, newVal));
         TitledPane titledPane = new TitledPane(I18nUtil.t("app.view.home.patch-info"), readMeTextArea);
         titledPane.setCollapsible(false);

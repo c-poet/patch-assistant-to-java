@@ -220,9 +220,15 @@ public class ConfigView {
             });
         })), box -> box.setAlignment(Pos.CENTER)));
 
-        patchConfigBox.getChildren().add(FXUtil.pre(new RadioButton(I18nUtil.t("app.view.config.write-patch-sign")), node -> {
+        patchConfigBox.getChildren().add(FXUtil.pre(new HBox(FXUtil.pre(FXUtil.pre(new RadioButton(I18nUtil.t("app.view.config.patch-file-diff")), node -> {
+            node.setSelected(Boolean.TRUE.equals(patch.getPatchFileDiff()));
+            node.setOnAction(e -> patch.setPatchFileDiff(!Boolean.TRUE.equals(patch.getPatchFileDiff())));
+        })), FXUtil.pre(new RadioButton(I18nUtil.t("app.view.config.write-patch-sign")), node -> {
             node.setSelected(Boolean.TRUE.equals(patch.getWritePatchSign()));
             node.setOnAction(e -> patch.setWritePatchSign(!Boolean.TRUE.equals(patch.getWritePatchSign())));
+        })), box -> {
+            box.setAlignment(Pos.CENTER_LEFT);
+            box.setSpacing(10);
         }));
 
         patchConfigBox.getChildren().add(FXUtil.pre(new HBox(new Label(I18nUtil.t("app.view.config.unrar-path")), FXUtil.pre(new TextField(), node -> {

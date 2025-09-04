@@ -6,15 +6,20 @@ import cn.cpoet.patch.assistant.control.tree.AppTreeInfo;
 import cn.cpoet.patch.assistant.control.tree.TreeNodeType;
 import cn.cpoet.patch.assistant.control.tree.node.FileNode;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
+import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.exception.AppException;
 import cn.cpoet.patch.assistant.model.AppPackSign;
 import cn.cpoet.patch.assistant.util.CollectionUtil;
+import cn.cpoet.patch.assistant.util.DateUtil;
 import cn.cpoet.patch.assistant.util.HashUtil;
+import cn.cpoet.patch.assistant.util.I18nUtil;
 import cn.cpoet.patch.assistant.view.home.HomeContext;
 import cn.cpoet.patch.assistant.view.progress.ProgressContext;
 
 import java.io.*;
+import java.time.LocalDateTime;
 import java.util.Iterator;
+import java.util.Objects;
 
 /**
  * 应用包处理
@@ -100,5 +105,29 @@ public class AppPackService extends BasePackService {
      */
     public void savePack(HomeContext context, ProgressContext progressContext, File file, boolean isDockerImage) {
         new AppPackWriteProcessor(context, progressContext, isDockerImage).exec(file);
+    }
+
+    /**
+     * 创建补丁比较信息
+     *
+     * @param appTreeInfo 应用信息
+     * @param appNode     应用节点
+     * @param patchNode   补丁节点
+     */
+    public void createPatchDiffInfo(AppTreeInfo appTreeInfo, TreeNode appNode, TreeNode patchNode) {
+        if (!Boolean.TRUE.equals(Configuration.getInstance().getPatch().getPatchFileDiff())) {
+            return;
+        }
+        String appMd5 = appNode.getMd5OrInit();
+        String patchMd5 = patchNode.getMd5OrInit();
+        if (Objects.equals(appMd5, patchMd5)) {
+            appTreeInfo.appendPatchDiffInfo(I18nUtil.tr("app.service.app-pack.diff-file-tip.hash", appNode.getPath(), patchNode.getPath()));
+            return;
+        }
+        LocalDateTime appModifyTime = appNode.getModifyTime();
+        LocalDateTime patchModifyTime = patchNode.getModifyTime();
+        if (appModifyTime != null && patchModifyTime != null && !appModifyTime.isBefore(patchModifyTime)) {
+            appTreeInfo.appendPatchDiffInfo(I18nUtil.tr("app.service.app-pack.diff-file-tip.time", appNode.getPath(), DateUtil.formatDateTime(appModifyTime), patchNode.getPath(), DateUtil.formatDateTime(patchModifyTime)));
+        }
     }
 }
