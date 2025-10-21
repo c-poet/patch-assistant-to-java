@@ -1,5 +1,7 @@
 package cn.cpoet.patch.assistant.service.compress;
 
+import java.io.InputStream;
+
 /**
  * 解压回调
  *
@@ -11,7 +13,7 @@ public interface UnCallback {
      * 回调方法
      *
      * @param entry 文件信息
-     * @param bytes 数据（目录时为Null值）
+     * @param in    文件输入流（目录时为Null值）
      */
-    void invoke(Object entry, byte[] bytes);
+    void invoke(Object entry, InputStream in);
 }

@@ -136,8 +136,8 @@ public abstract class BasePackService {
         Map<String, TreeNode> treeNodeMap = new HashMap<>();
         AtomicReference<TreeNode> manifestNodeRef = new AtomicReference<>();
         FileDecompressor fileDecompressor = FileDecompressor.getInstance(rootNode.getName());
-        fileDecompressor.decompress(in, (entry, bytes) -> {
-            CompressNode node = CompressNodeFactory.getInstance(entry).create(entry, bytes);
+        fileDecompressor.decompress(in, (entry, zin) -> {
+            CompressNode node = CompressNodeFactory.getInstance(entry).create(entry, zin);
             node.setPatch(isPatch);
             if (!node.isDir()) {
                 if (node.getName().endsWith(FileExtConst.DOT_CLASS)) {

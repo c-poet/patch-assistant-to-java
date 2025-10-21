@@ -20,8 +20,7 @@ public class ZipFileDecompressor extends FileDecompressor {
         try (ZipInputStream zin = new ZipInputStream(in, CharsetConst.GBK)) {
             ZipEntry entry;
             while ((entry = zin.getNextEntry()) != null) {
-                byte[] bytes = zin.readAllBytes();
-                callback.invoke(entry, bytes);
+                callback.invoke(entry, zin);
             }
         } catch (IOException e) {
             throw new AppException("Decompress the zip file failed", e);

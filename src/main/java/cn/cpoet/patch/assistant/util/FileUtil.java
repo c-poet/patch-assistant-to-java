@@ -24,6 +24,34 @@ public abstract class FileUtil {
     private FileUtil() {
     }
 
+
+    /**
+     * 读取输入流内容
+     *
+     * @param in       输入流
+     * @param callback 回调
+     * @throws IOException IO异常
+     */
+    public static void readBuf(InputStream in, InBufCallback callback) throws IOException {
+        readBuf(in, 1024, callback);
+    }
+
+    /**
+     * 读取输入流内容
+     *
+     * @param in       输入流
+     * @param size     指定缓冲区大小
+     * @param callback 回调
+     * @throws IOException IO异常
+     */
+    public static void readBuf(InputStream in, int size, InBufCallback callback) throws IOException {
+        int len;
+        byte[] buf = new byte[size];
+        while ((len = in.read(buf)) != 0) {
+            callback.call(len, buf);
+        }
+    }
+
     /**
      * 获取可读性大小值
      *
@@ -331,13 +359,14 @@ public abstract class FileUtil {
     public static void copyTo(File sourceFile, File targetFile) {
         try (InputStream in = new FileInputStream(sourceFile);
              OutputStream out = new FileOutputStream(targetFile)) {
-            int len;
-            byte[] buf = new byte[1024];
-            while ((len = in.read(buf)) != -1) {
-                out.write(buf, 0, len);
-            }
+            readBuf(in, (len, buf) -> out.write(buf, 0, len));
         } catch (Exception e) {
             throw new AppException("copy file failed", e);
         }
+    }
+
+    @FunctionalInterface
+    public interface InBufCallback {
+        void call(int len, byte[] buf) throws IOException;
     }
 }

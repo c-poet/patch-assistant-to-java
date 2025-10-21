@@ -9,6 +9,7 @@ import cn.cpoet.patch.assistant.core.AppContext;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.core.PatchConf;
 import cn.cpoet.patch.assistant.exception.AppException;
+import cn.cpoet.patch.assistant.model.HashInfo;
 import cn.cpoet.patch.assistant.model.PatchSign;
 import cn.cpoet.patch.assistant.model.ReadMePathInfo;
 import cn.cpoet.patch.assistant.util.*;
@@ -386,17 +387,17 @@ public class PatchPackService extends BasePackService {
     }
 
     private void doGetTreeNodeWithCompress(PatchSign patchSign, File file, TreeNode rootNode) {
-        byte[] bytes;
         try (InputStream in = new FileInputStream(file)) {
-            bytes = in.readAllBytes();
+            HashInfo hashInfo = HashUtil.getHashInfo(in);
+            rootNode.setSize(hashInfo.getLength());
+            patchSign.setMd5(hashInfo.getMd5());
+            rootNode.setMd5(hashInfo.getMd5());
+            patchSign.setSha1(hashInfo.getSha1());
+            in.reset();
+            doGetTreeNodeWithCompress(in, rootNode);
         } catch (IOException ex) {
-            throw new AppException("读取补丁压缩包内容失败", ex);
+            throw new AppException("Failed to read the contents of the patch package", ex);
         }
-        rootNode.setSize(bytes.length);
-        patchSign.setMd5(HashUtil.md5(bytes));
-        rootNode.setMd5(patchSign.getMd5());
-        patchSign.setSha1(HashUtil.sha1(bytes));
-        doGetTreeNodeWithCompress(new ByteArrayInputStream(bytes), rootNode);
     }
 
     private void doGetTreeNodeWithCompress(InputStream in, TreeNode rootNode) {

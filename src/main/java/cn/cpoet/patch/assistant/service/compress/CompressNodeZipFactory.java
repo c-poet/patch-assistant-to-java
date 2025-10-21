@@ -4,6 +4,7 @@ import cn.cpoet.patch.assistant.control.tree.node.CompressNode;
 import cn.cpoet.patch.assistant.util.DateUtil;
 import cn.cpoet.patch.assistant.util.FileNameUtil;
 
+import java.io.InputStream;
 import java.util.zip.ZipEntry;
 
 /**
@@ -14,7 +15,7 @@ public class CompressNodeZipFactory extends CompressNodeFactory<ZipEntry> {
     public static final CompressNodeZipFactory INSTANCE = new CompressNodeZipFactory();
 
     @Override
-    public CompressNode create(ZipEntry entry, byte[] bytes) {
+    public CompressNode create(ZipEntry entry, InputStream in) {
         CompressNode node = new CompressNode();
         node.setName(FileNameUtil.getFileName(entry.getName()));
         node.setPath(entry.getName());
@@ -26,7 +27,7 @@ public class CompressNodeZipFactory extends CompressNodeFactory<ZipEntry> {
         if (!entry.isDirectory()) {
             node.setSize(entry.getSize());
             node.setCrc(entry.getCrc());
-            createNodeFileAndHash(node, bytes);
+            creteNodeFile(node, in);
         }
         return node;
     }

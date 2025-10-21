@@ -9,6 +9,7 @@ import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.exception.AppException;
 import cn.cpoet.patch.assistant.model.AppPackSign;
+import cn.cpoet.patch.assistant.model.HashInfo;
 import cn.cpoet.patch.assistant.util.CollectionUtil;
 import cn.cpoet.patch.assistant.util.DateUtil;
 import cn.cpoet.patch.assistant.util.HashUtil;
@@ -44,19 +45,19 @@ public class AppPackService extends BasePackService {
         rootNode.setFile(file);
         rootNode.setType(TreeNodeType.ROOT);
         treeInfo.setRootNode(rootNode);
-        byte[] bytes;
-        try (InputStream in = new FileInputStream(file);) {
-            bytes = in.readAllBytes();
+        try (InputStream in = new FileInputStream(file)) {
+            HashInfo hashInfo = HashUtil.getHashInfo(in);
+            rootNode.setSize(hashInfo.getLength());
+            AppPackSign appPackSign = new AppPackSign();
+            appPackSign.setMd5(hashInfo.getMd5());
+            appPackSign.setSha1(hashInfo.getSha1());
+            treeInfo.setAppPackSign(appPackSign);
+            rootNode.setMd5(hashInfo.getMd5());
+            in.reset();
+            getTreeNode(in, rootNode);
         } catch (IOException ex) {
-            throw new AppException("读取应用包内容失败", ex);
+            throw new AppException("Failed to read the contents of the app package", ex);
         }
-        rootNode.setSize(bytes.length);
-        AppPackSign appPackSign = new AppPackSign();
-        appPackSign.setMd5(HashUtil.md5(bytes));
-        rootNode.setMd5(appPackSign.getMd5());
-        appPackSign.setSha1(HashUtil.sha1(bytes));
-        treeInfo.setAppPackSign(appPackSign);
-        getTreeNode(new ByteArrayInputStream(bytes), rootNode);
         TreeNode patchUpSignNode = removePatchUpSignNode(rootNode);
         treeInfo.setPatchUpSignNode(patchUpSignNode);
         return treeInfo;
