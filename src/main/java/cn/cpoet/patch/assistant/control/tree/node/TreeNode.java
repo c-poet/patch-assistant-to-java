@@ -8,7 +8,6 @@ import cn.cpoet.patch.assistant.exception.AppException;
 import cn.cpoet.patch.assistant.util.StringUtil;
 import javafx.scene.control.TreeItem;
 
-import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.List;
 
