@@ -160,7 +160,10 @@ public class AppContext {
     public void destroy() {
         this.syncConf2File();
         if (globalTempDir != null && globalTempDir.exists()) {
-            FileTempUtil.deleteAllTempFile(globalTempDir);
+            try {
+                FileTempUtil.deleteAllTempFile(globalTempDir);
+            } catch (Exception ignored) {
+            }
         }
     }
 
