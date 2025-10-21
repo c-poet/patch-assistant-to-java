@@ -7,7 +7,6 @@ import cn.cpoet.patch.assistant.control.tree.*;
 import cn.cpoet.patch.assistant.control.tree.node.CompressNode;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.core.Configuration;
-import cn.cpoet.patch.assistant.core.DockerConf;
 import cn.cpoet.patch.assistant.core.PatchConf;
 import cn.cpoet.patch.assistant.exception.AppException;
 import cn.cpoet.patch.assistant.model.AppPackSign;
@@ -17,11 +16,8 @@ import cn.cpoet.patch.assistant.util.*;
 import cn.cpoet.patch.assistant.view.home.HomeContext;
 import cn.cpoet.patch.assistant.view.progress.ProgressContext;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.jcraft.jsch.Session;
-import com.jcraft.jsch.SftpProgressMonitor;
 
 import java.io.*;
-import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Date;
@@ -40,13 +36,11 @@ import java.util.zip.ZipOutputStream;
 public class AppPackWriteProcessor {
 
     private final HomeContext context;
-    private final boolean isDockerImage;
     private final ProgressContext progressContext;
 
-    public AppPackWriteProcessor(HomeContext context, ProgressContext progressContext, boolean isDockerImage) {
+    public AppPackWriteProcessor(HomeContext context, ProgressContext progressContext) {
         this.context = context;
         this.progressContext = progressContext;
-        this.isDockerImage = isDockerImage;
     }
 
     private File createTransitFile(File file) {
@@ -59,14 +53,6 @@ public class AppPackWriteProcessor {
 
     public void exec(File file) {
         File transitFile = createTransitFile(file);
-        if (isDockerImage) {
-            String dockerfile = FileUtil.readFileAsString(AppConst.DOCKERFILE_FILE_NAME);
-            if (StringUtil.isBlank(dockerfile)) {
-                throw new AppException("Dockerfile template file cannot be empty");
-            }
-            createDockerTask(file, transitFile, dockerfile);
-            return;
-        }
         createTask(file, transitFile);
     }
 
@@ -87,22 +73,6 @@ public class AppPackWriteProcessor {
         }
     }
 
-    private void createDockerTask(File file, File transitFile, String dockerfile) {
-        UIUtil.runNotUI(() -> {
-            progressContext.step("Start write to Docker image pack");
-            try {
-                writeDocker(transitFile, dockerfile);
-                progressContext.step("Write to Docker image pack finish");
-                transitCompleted(file, transitFile, true);
-                progressContext.end(true);
-            } catch (Exception e) {
-                progressContext.step(ExceptionUtil.asString(e));
-                transitCompleted(file, transitFile, false);
-                progressContext.end(false);
-            }
-        });
-    }
-
     private void createTask(File file, File transitFile) {
         UIUtil.runNotUI(() -> {
             progressContext.step("Start write to JAR pack");
@@ -117,137 +87,6 @@ public class AppPackWriteProcessor {
                 progressContext.end(false);
             }
         });
-    }
-
-    private void writeDocker(File file, String dockerfile) {
-        byte[] bytes;
-        TreeNode rootNode = context.getAppTree().getTreeInfo().getRootNode();
-        try (ByteArrayOutputStream out = new ByteArrayOutputStream();
-             ZipOutputStream zipOut = new ZipOutputStream(out)) {
-            doWrite(rootNode, zipOut);
-            bytes = out.toByteArray();
-        } catch (Exception e) {
-            throw new AppException("Generate Application pack fail", e);
-        }
-        dockerfile = TemplateUtil.render(dockerfile, Collections.singletonMap("jarName", rootNode.getName()));
-        DockerConf docker = Configuration.getInstance().getDocker();
-        if (DockerConf.TYPE_REMOTE.equals(docker.getType())) {
-            writeDockerWithRemote(docker, file, rootNode, bytes, dockerfile);
-            return;
-        }
-        writeDockerWithLocal(docker, file, rootNode, bytes, dockerfile);
-    }
-
-    private void writeDockerWithRemote(DockerConf docker, File file, TreeNode rootNode, byte[] bytes, String dockerfile) {
-        progressContext.step("Check Docker server info");
-        String host = docker.getHost();
-        String username = docker.getUsername();
-        String password = docker.getPassword();
-        if (StringUtil.isBlank(host) || StringUtil.isBlank(username) || StringUtil.isBlank(password)) {
-            throw new AppException("Docker server info error");
-        }
-        progressContext.step("SSH-connect: " + docker.getHost());
-        Session session = null;
-        try {
-            password = EncryptUtil.decryptWithRsaSys(password);
-            session = SSHUtil.createSession(host, docker.getPort(), username, password);
-            progressContext.step("The SSH connection is successful");
-            OutputStream progressOut = progressContext.createOutputStream();
-            String command = StringUtil.isBlank(docker.getCommand()) ? DockerConf.DEFAULT_COMMAND : docker.getCommand();
-            String workPath = StringUtil.isBlank(docker.getWorkPath()) ? DockerConf.DEFAULT_WORK_PATH : docker.getWorkPath();
-            progressContext.step("Upload the Dockerfile");
-            SSHUtil.uploadFile(session, progressOut, createSftpProgressMonitor(true), workPath, AppConst.DOCKERFILE_FILE_NAME, dockerfile.getBytes());
-            progressContext.step("Upload the app package:" + rootNode.getName());
-            SSHUtil.uploadFile(session, progressOut, createSftpProgressMonitor(true), workPath, rootNode.getName(), bytes);
-            progressContext.step("Generate a Docker image");
-            int status = SSHUtil.execCmd(session, progressOut, command + " build -t demo:1.0.0 " + workPath);
-            if (status != 0) {
-                throw new AppException("Failed to generate a Docker image");
-            }
-            progressContext.step("Export a Docker image");
-            status = SSHUtil.execCmd(session, progressOut, command + " save -o " + workPath + "/demo.tar demo:1.0.0");
-            if (status != 0) {
-                throw new AppException("Failed to export a Docker image");
-            }
-            progressContext.step("Download the Docker image");
-            SSHUtil.downloadFile(session, progressOut, createSftpProgressMonitor(false), workPath + "/demo.tar", file);
-        } finally {
-            progressContext.step("Close the SSH connection");
-            SSHUtil.closeSession(session);
-        }
-    }
-
-    private void writeDockerWithLocal(DockerConf docker, File file, TreeNode rootNode, byte[] bytes, String dockerfile) {
-        String localCommand = StringUtil.isBlank(docker.getLocalCommand()) ? DockerConf.DEFAULT_COMMAND : docker.getLocalCommand();
-        String localWorkPath = StringUtil.isBlank(docker.getLocalWorkPath()) ? DockerConf.DEFAULT_WORK_PATH : docker.getLocalWorkPath();
-        progressContext.step("Write Dockerfile to:" + localWorkPath);
-        FileUtil.writeFile(localWorkPath, AppConst.DOCKERFILE_FILE_NAME, dockerfile.getBytes());
-        progressContext.step("Write Application Pack to: " + localWorkPath);
-        FileUtil.writeFile(localWorkPath, rootNode.getName(), bytes);
-        progressContext.step("Generate Docker image");
-        OutputStream progressOut = progressContext.createOutputStream();
-        int status = OSUtil.execCommand(localCommand + " build -t demo:1.0.0 .", localWorkPath, progressOut);
-        if (status != 0) {
-            throw new AppException("Generate Docker image fail");
-        }
-        progressContext.step("Export Docker image");
-        status = OSUtil.execCommand(localCommand + " save -o demo.tar demo:1.0.0", localWorkPath, progressOut);
-        if (status != 0) {
-            throw new AppException("Export Docker image fail");
-        }
-        progressContext.step("Move Docker image");
-        String sourcePath = FileNameUtil.joinPath(localWorkPath, "demo.tar");
-        FileUtil.moveFile(sourcePath, file, StandardCopyOption.REPLACE_EXISTING);
-    }
-
-    private SftpProgressMonitor createSftpProgressMonitor(boolean isUpload) {
-        return new SftpProgressMonitor() {
-
-            long opCount;
-            private String src;
-            private String desc;
-
-            @Override
-            public void init(int op, String src, String dest, long max) {
-                this.opCount = 0;
-                this.src = src;
-                this.desc = dest;
-                String message = isUpload ? "Upload " : "Download ";
-                if (!StringUtil.isBlank(src)) {
-                    message += src + " -> ";
-                }
-                if (!StringUtil.isBlank(dest)) {
-                    message += dest;
-                }
-                if (max > 0) {
-                    message += " Size:" + FileUtil.getSizeReadability(max);
-                }
-                progressContext.step(message);
-            }
-
-            @Override
-            public boolean count(long count) {
-                if (opCount == 0) {
-                    progressContext.step((isUpload ? "Uploaded " : "Downloaded ") + FileUtil.getSizeReadability(opCount += count));
-                } else {
-                    progressContext.overwrite((isUpload ? "Uploaded " : "Downloaded ") + FileUtil.getSizeReadability(opCount += count));
-                }
-                return true;
-
-            }
-
-            @Override
-            public void end() {
-                String message = isUpload ? "Upload " : "Download ";
-                if (!StringUtil.isBlank(src)) {
-                    message += src + " -> ";
-                }
-                if (!StringUtil.isBlank(desc)) {
-                    message += desc;
-                }
-                progressContext.step(message + " finish");
-            }
-        };
     }
 
     private void write(File file) {

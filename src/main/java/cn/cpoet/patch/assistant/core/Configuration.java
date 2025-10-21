@@ -102,12 +102,6 @@ public class Configuration {
     private Boolean isSelectedLinked;
 
     /**
-     * Docker镜像模式
-     */
-    @JacksonXmlProperty
-    private Boolean isDockerImage;
-
-    /**
      * 仅看变化的文件
      */
     @JacksonXmlProperty
@@ -153,11 +147,6 @@ public class Configuration {
      * 常规配置
      */
     private GeneraConf genera = new GeneraConf();
-
-    /**
-     * Docker配置
-     */
-    private DockerConf docker = new DockerConf();
 
     /**
      * 内容查看页面配置
@@ -301,14 +290,6 @@ public class Configuration {
         this.isSelectedLinked = isSelectedLinked;
     }
 
-    public Boolean getIsDockerImage() {
-        return isDockerImage;
-    }
-
-    public void setIsDockerImage(Boolean isDockerImage) {
-        this.isDockerImage = isDockerImage;
-    }
-
     public Boolean getIsOnlyChanges() {
         return isOnlyChanges;
     }
@@ -371,14 +352,6 @@ public class Configuration {
 
     public void setGenera(GeneraConf genera) {
         this.genera = genera;
-    }
-
-    public DockerConf getDocker() {
-        return docker;
-    }
-
-    public void setDocker(DockerConf docker) {
-        this.docker = docker;
     }
 
     public ContentConf getContent() {

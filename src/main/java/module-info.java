@@ -8,9 +8,6 @@ module cn.cpoet.patch.assistant {
     requires reactfx;
     requires org.fxmisc.flowless;
     requires io.github.javadiffutils;
-    requires com.jcraft.jsch;
-    requires junrar;
-    requires org.slf4j.nop;
 
     exports cn.cpoet.patch.assistant;
 

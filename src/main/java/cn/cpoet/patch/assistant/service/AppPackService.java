@@ -101,10 +101,9 @@ public class AppPackService extends BasePackService {
      * @param context         上下文
      * @param progressContext 进度上下文
      * @param file            文件名
-     * @param isDockerImage   是否Docker镜像
      */
-    public void savePack(HomeContext context, ProgressContext progressContext, File file, boolean isDockerImage) {
-        new AppPackWriteProcessor(context, progressContext, isDockerImage).exec(file);
+    public void savePack(HomeContext context, ProgressContext progressContext, File file) {
+        new AppPackWriteProcessor(context, progressContext).exec(file);
     }
 
     /**

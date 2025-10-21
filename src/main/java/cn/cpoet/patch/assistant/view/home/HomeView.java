@@ -76,11 +76,6 @@ public class HomeView extends HomeContext {
         });
         headerBox.getChildren().add(onlyChanges);
 
-        CheckBox checkDockerImage = new CheckBox(I18nUtil.t("app.view.home.docker-image"));
-        checkDockerImage.setSelected(Boolean.TRUE.equals(configuration.getIsDockerImage()));
-        checkDockerImage.setOnAction(e -> configuration.setIsDockerImage(!Boolean.TRUE.equals(configuration.getIsDockerImage())));
-        headerBox.getChildren().add(checkDockerImage);
-
         headerBox.getChildren().add(FXUtil.pre(new Region(), node -> HBox.setHgrow(node, Priority.ALWAYS)));
 
         Button searchBtn = new Button();
@@ -236,29 +231,22 @@ public class HomeView extends HomeContext {
         }
         // 判断是否Docker模式
         Configuration configuration = Configuration.getInstance();
-        boolean isDockerImage = Boolean.TRUE.equals(configuration.getIsDockerImage());
         FileChooser fileChooser = new FileChooser();
         String lastSavePackPath = configuration.getLastSavePackPath();
         if (!StringUtil.isBlank(lastSavePackPath)) {
             fileChooser.setInitialDirectory(FileUtil.getExistsDirOrFile(lastSavePackPath));
         }
         String fileName = appTree.getTreeInfo().getRootNode().getName();
-        if (isDockerImage) {
-            fileChooser.setTitle(I18nUtil.t("app.view.home.save-docker-image"));
-            fileChooser.setInitialFileName(FileNameUtil.getName(fileName) + ".tar");
-            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(I18nUtil.t("app.view.home.docker-image"), "*.tar"));
-        } else {
-            fileChooser.setTitle(I18nUtil.t("app.view.home.save-jar"));
-            fileChooser.setInitialFileName(fileName);
-            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(I18nUtil.t("app.view.home.java-package"), "*.jar"));
-        }
+        fileChooser.setTitle(I18nUtil.t("app.view.home.save-jar"));
+        fileChooser.setInitialFileName(fileName);
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(I18nUtil.t("app.view.home.java-package"), "*.jar"));
         File file = fileChooser.showSaveDialog(stage);
         if (file == null) {
             return;
         }
         configuration.setLastSavePackPath(file.getParent());
         new ProgressView(fileChooser.getTitle()).showDialog(stage, (progressContext)
-                -> AppPackService.INSTANCE.savePack(this, progressContext, file, isDockerImage));
+                -> AppPackService.INSTANCE.savePack(this, progressContext, file));
     }
 
     private Node buildFooter() {

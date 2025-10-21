@@ -4,16 +4,13 @@ import cn.cpoet.patch.assistant.constant.I18NEnum;
 import cn.cpoet.patch.assistant.constant.ThemeEnum;
 import cn.cpoet.patch.assistant.control.form.IntegerField;
 import cn.cpoet.patch.assistant.core.*;
-import cn.cpoet.patch.assistant.util.EncryptUtil;
 import cn.cpoet.patch.assistant.util.FXUtil;
 import cn.cpoet.patch.assistant.util.I18nUtil;
-import cn.cpoet.patch.assistant.util.StringUtil;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
@@ -29,158 +26,12 @@ public class ConfigView {
     private final PatchConf patch;
     private final SearchConf search;
     private final GeneraConf genera;
-    private final DockerConf docker;
 
     public ConfigView() {
         Configuration configuration = Configuration.getInstance();
         patch = configuration.getPatch().clone();
         genera = configuration.getGenera().clone();
-        docker = configuration.getDocker().clone();
         search = configuration.getSearch().clone();
-    }
-
-    private Node buildDockerLocalConfig() {
-        VBox box = new VBox();
-        box.setSpacing(5);
-        HBox commandConfig = new HBox(FXUtil.pre(new Label(), node -> {
-            node.setText(I18nUtil.t("app.view.config.command"));
-        }), FXUtil.pre(new TextField(), node -> {
-            HBox.setHgrow(node, Priority.ALWAYS);
-            node.setText(docker.getLocalCommand());
-            node.textProperty().addListener((e, oldVal, newVal) -> {
-                docker.setLocalCommand(newVal);
-            });
-        }));
-        commandConfig.setAlignment(Pos.CENTER_LEFT);
-        box.getChildren().add(commandConfig);
-        HBox workPathConfig = new HBox(FXUtil.pre(new Label(), node -> {
-            node.setText(I18nUtil.t("app.view.config.directory"));
-        }), FXUtil.pre(new TextField(), node -> {
-            HBox.setHgrow(node, Priority.ALWAYS);
-            node.setText(docker.getLocalWorkPath());
-            node.textProperty().addListener((e, oldVal, newVal) -> {
-                docker.setLocalWorkPath(newVal);
-            });
-        }));
-        workPathConfig.setAlignment(Pos.CENTER_LEFT);
-        box.getChildren().add(workPathConfig);
-        return box;
-    }
-
-    private Node buildDockerRemoteConfig() {
-        VBox box = new VBox();
-        box.setSpacing(5);
-        HBox hostConfig = new HBox(FXUtil.pre(new Label(), node -> {
-            node.setText(I18nUtil.t("app.view.config.address"));
-        }), FXUtil.pre(new TextField(), node -> {
-            HBox.setHgrow(node, Priority.ALWAYS);
-            node.setText(docker.getHost());
-            node.textProperty().addListener((e, oldVal, newVal) -> {
-                docker.setHost(newVal);
-            });
-        }), FXUtil.pre(new Label(), node -> {
-            node.setText(" : ");
-        }), FXUtil.pre(new IntegerField(), node -> {
-            node.setNumber(docker.getPort());
-            node.textProperty().addListener((e, oldVal, newVal) -> {
-                docker.setPort(node.getNumber());
-            });
-        }));
-        hostConfig.setAlignment(Pos.CENTER_LEFT);
-        box.getChildren().add(hostConfig);
-
-        HBox usernameConfig = new HBox(FXUtil.pre(new Label(), node -> {
-            node.setText(I18nUtil.t("app.view.config.username"));
-        }), FXUtil.pre(new TextField(), node -> {
-            HBox.setHgrow(node, Priority.ALWAYS);
-            node.setText(docker.getUsername());
-            node.textProperty().addListener((e, oldVal, newVal) -> {
-                docker.setUsername(newVal);
-            });
-        }));
-        usernameConfig.setAlignment(Pos.CENTER_LEFT);
-        box.getChildren().add(usernameConfig);
-        HBox passwordConfig = new HBox(FXUtil.pre(new Label(), node -> {
-            node.setText(I18nUtil.t("app.view.config.password"));
-        }), FXUtil.pre(new PasswordField(), node -> {
-            HBox.setHgrow(node, Priority.ALWAYS);
-            if (!StringUtil.isBlank(docker.getPassword())) {
-                String pass = EncryptUtil.decryptWithRsaSys(docker.getPassword());
-                node.setText(pass);
-            }
-            node.textProperty().addListener((e, oldVal, newVal) -> {
-                if (StringUtil.isBlank(newVal)) {
-                    docker.setPassword(null);
-                } else {
-                    String s = EncryptUtil.encryptWithRsaSys(newVal);
-                    docker.setPassword(s);
-                }
-            });
-        }));
-        passwordConfig.setAlignment(Pos.CENTER_LEFT);
-        box.getChildren().add(passwordConfig);
-        HBox commandConfig = new HBox(FXUtil.pre(new Label(), node -> {
-            node.setText(I18nUtil.t("app.view.config.command"));
-        }), FXUtil.pre(new TextField(), node -> {
-            HBox.setHgrow(node, Priority.ALWAYS);
-            node.setText(docker.getCommand());
-            node.textProperty().addListener((e, oldVal, newVal) -> {
-                docker.setCommand(newVal);
-            });
-        }));
-        commandConfig.setAlignment(Pos.CENTER_LEFT);
-        box.getChildren().add(commandConfig);
-        HBox workPathConfig = new HBox(FXUtil.pre(new Label(), node -> {
-            node.setText(I18nUtil.t("app.view.config.directory"));
-        }), FXUtil.pre(new TextField(), node -> {
-            HBox.setHgrow(node, Priority.ALWAYS);
-            node.setText(docker.getWorkPath());
-            node.textProperty().addListener((e, oldVal, newVal) -> {
-                docker.setWorkPath(newVal);
-            });
-        }));
-        workPathConfig.setAlignment(Pos.CENTER_LEFT);
-        box.getChildren().add(workPathConfig);
-        return box;
-    }
-
-    private Node buildDockerConfig() {
-        TitledPane dockerConfigPane = new TitledPane();
-        dockerConfigPane.setCollapsible(false);
-        dockerConfigPane.setText(I18nUtil.t("app.view.config.docker-config"));
-        VBox dockerConfigBox = new VBox();
-        dockerConfigBox.setSpacing(10);
-
-        ToggleGroup toggleGroup = new ToggleGroup();
-        RadioButton localRadioBtn = new RadioButton(I18nUtil.t("app.view.config.docker-local"));
-        localRadioBtn.setSelected(!DockerConf.TYPE_REMOTE.equals(docker.getType()));
-        localRadioBtn.setToggleGroup(toggleGroup);
-        RadioButton remoteRadioBtn = new RadioButton(I18nUtil.t("app.view.config.docker-remote"));
-        remoteRadioBtn.setSelected(!localRadioBtn.isSelected());
-        remoteRadioBtn.setToggleGroup(toggleGroup);
-        localRadioBtn.setOnAction(e -> {
-            docker.setType(DockerConf.TYPE_LOCAL);
-            swapDockerConfig(dockerConfigBox);
-        });
-        remoteRadioBtn.setOnAction(e -> {
-            docker.setType(DockerConf.TYPE_REMOTE);
-            swapDockerConfig(dockerConfigBox);
-        });
-        dockerConfigBox.getChildren().add(FXUtil.pre(new HBox(localRadioBtn, remoteRadioBtn), node -> {
-            node.setSpacing(10);
-        }));
-        dockerConfigPane.setContent(dockerConfigBox);
-        swapDockerConfig(dockerConfigBox);
-        return dockerConfigPane;
-    }
-
-    private void swapDockerConfig(Pane pane) {
-        Node node = DockerConf.TYPE_REMOTE.equals(docker.getType()) ? buildDockerRemoteConfig() : buildDockerLocalConfig();
-        if (pane.getChildren().size() > 1) {
-            pane.getChildren().set(1, node);
-        } else {
-            pane.getChildren().add(1, node);
-        }
     }
 
     private Node buildPatchConfig() {
@@ -296,7 +147,6 @@ public class ConfigView {
         configBox.getChildren().add(buildGeneraConfig());
         configBox.getChildren().add(buildSearchConfig());
         configBox.getChildren().add(buildPatchConfig());
-        configBox.getChildren().add(buildDockerConfig());
         ScrollPane scrollPane = new ScrollPane(configBox);
         scrollPane.setPadding(Insets.EMPTY);
         scrollPane.setFitToWidth(true);
@@ -323,7 +173,6 @@ public class ConfigView {
             AppContext appContext = AppContext.getInstance();
             ThemeEnum theme = appContext.curTheme();
             configuration.setGenera(genera);
-            configuration.setDocker(docker);
             configuration.setSearch(search);
             configuration.setPatch(patch);
             appContext.syncConf2File();

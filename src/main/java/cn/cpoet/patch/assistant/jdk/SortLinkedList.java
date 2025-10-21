@@ -18,19 +18,20 @@ public class SortLinkedList<T> extends LinkedList<T> {
 
     @Override
     public boolean add(T t) {
-        addAndIndex(t);
-        return true;
+        // addAndIndex(t);
+        // return true;
+        return super.add(t);
     }
 
-    public int addAndIndex(T t) {
-        int i = 0;
-        for (T item : this) {
-            if (comparator.compare(t, item) < 0) {
-                break;
-            }
-            ++i;
-        }
-        super.add(i, t);
-        return i;
-    }
+    // public int addAndIndex(T t) {
+    //     int i = 0;
+    //     for (T item : this) {
+    //         if (comparator.compare(t, item) < 0) {
+    //             break;
+    //         }
+    //         ++i;
+    //     }
+    //     super.add(i, t);
+    //     return i;
+    // }
 }

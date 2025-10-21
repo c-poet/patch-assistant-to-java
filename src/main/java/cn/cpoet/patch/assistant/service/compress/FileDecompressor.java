@@ -47,9 +47,6 @@ public abstract class FileDecompressor {
         if (fileName.endsWith(FileExtConst.DOT_JAR) || fileName.endsWith(FileExtConst.DOT_ZIP)) {
             return ZipFileDecompressor.INSTANCE;
         }
-        if (fileName.endsWith(FileExtConst.DOT_RAR)) {
-            return RarFileDecompressor.INSTANCE;
-        }
         return null;
     }
 }

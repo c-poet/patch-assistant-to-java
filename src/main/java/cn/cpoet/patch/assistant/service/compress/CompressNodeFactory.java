@@ -6,7 +6,6 @@ import cn.cpoet.patch.assistant.exception.AppException;
 import cn.cpoet.patch.assistant.util.FileNameUtil;
 import cn.cpoet.patch.assistant.util.FileUtil;
 import cn.cpoet.patch.assistant.util.HashUtil;
-import com.github.junrar.rarfile.FileHeader;
 
 import java.io.File;
 import java.util.zip.ZipEntry;
@@ -45,9 +44,6 @@ public abstract class CompressNodeFactory<E> {
 
     @SuppressWarnings("unchecked")
     public static <E> CompressNodeFactory<E> getInstance(Class<?> entryClass) {
-        if (FileHeader.class.isAssignableFrom(entryClass)) {
-            return (CompressNodeFactory<E>) CompressNodeRarFactory.INSTANCE;
-        }
         if (ZipEntry.class.isAssignableFrom(entryClass)) {
             return (CompressNodeFactory<E>) CompressNodeZipFactory.INSTANCE;
         }
