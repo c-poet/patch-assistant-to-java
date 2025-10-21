@@ -52,16 +52,6 @@ public interface AppConst {
     String STYLE_FILE_NAME = "/css/theme.css";
 
     /**
-     * 暗黑主题样式
-     */
-    String STYLE_DARK_FILE_NAME = "/css/theme-dark.css";
-
-    /**
-     * Dockerfile模板文件名
-     */
-    String DOCKERFILE_FILE_NAME = "Dockerfile";
-
-    /**
      * 说明文件
      */
     String README_FILE = "README.txt";

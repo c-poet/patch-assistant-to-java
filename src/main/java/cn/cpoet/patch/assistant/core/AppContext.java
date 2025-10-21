@@ -50,8 +50,8 @@ public class AppContext {
     public void initTheme(Scene scene) {
         if (mainScene == null) {
             mainScene = scene;
-            updateTheme();
             scene.getStylesheets().add(FileUtil.getResourceAndExternalForm(AppConst.STYLE_FILE_NAME));
+            updateTheme();
         }
     }
 
@@ -71,9 +71,11 @@ public class AppContext {
     public void updateTheme() {
         if (mainScene != null) {
             if (ThemeEnum.DARK.equals(curTheme())) {
-                mainScene.getStylesheets().add(FileUtil.getResourceAndExternalForm(AppConst.STYLE_DARK_FILE_NAME));
+                mainScene.getRoot().getStyleClass().remove("light-theme");
+                mainScene.getRoot().getStyleClass().add("dark-theme");
             } else {
-                mainScene.getStylesheets().remove(FileUtil.getResourceAndExternalForm(AppConst.STYLE_DARK_FILE_NAME));
+                mainScene.getRoot().getStyleClass().remove("dark-theme");
+                mainScene.getRoot().getStyleClass().add("light-theme");
             }
         }
     }

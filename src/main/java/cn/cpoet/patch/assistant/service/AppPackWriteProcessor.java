@@ -32,6 +32,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 /**
@@ -134,6 +135,7 @@ public class AppPackWriteProcessor {
     private void writePatchSign(ZipOutputStream zipOut, TreeNode patchUpSignNode, boolean isPatchSign) throws IOException {
         if (patchUpSignNode instanceof CompressNode) {
             ZipEntry zipEntry = getNewEntryWithZipEntry(patchUpSignNode);
+            zipEntry.setLastModifiedTime(DateUtil.toFileTimeOrCur(null));
             writePatchSign(zipOut, zipEntry, isPatchSign, TreeNodeUtil.readNodeBytes(patchUpSignNode));
             return;
         }
@@ -281,12 +283,6 @@ public class AppPackWriteProcessor {
         return entry;
     }
 
-    /**
-     * 更新Crc32值
-     *
-     * @param entry    压缩实体
-     * @param consumer 消费者
-     */
     private void updateCrc32(ZipEntry entry, Consumer<InputBufConsumer> consumer) {
         CRC32 crc32 = new CRC32();
         consumer.accept(((len, buf) -> crc32.update(buf, 0, len)));
