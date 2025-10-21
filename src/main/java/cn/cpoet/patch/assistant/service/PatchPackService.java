@@ -16,6 +16,7 @@ import cn.cpoet.patch.assistant.util.*;
 import cn.cpoet.patch.assistant.view.progress.ProgressContext;
 
 import java.io.*;
+import java.security.MessageDigest;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
@@ -57,8 +58,8 @@ public class PatchPackService extends BasePackService {
         if (readmeNode != null) {
             readmeNode.setType(TreeNodeType.README);
             rootInfo.setReadmeNode(readmeNode);
-            byte[] bytes = readmeNode.getBytes();
-            if (bytes != null && bytes.length > 0) {
+            byte[] bytes = TreeNodeUtil.readNodeBytes(readmeNode);
+            if (bytes.length > 0) {
                 rootInfo.getPatchSign().setReadme(new String(bytes, CharsetConst.UTF_8));
             }
             patchTreeInfo.updateReadmeText();
@@ -387,13 +388,12 @@ public class PatchPackService extends BasePackService {
     }
 
     private void doGetTreeNodeWithCompress(PatchSign patchSign, File file, TreeNode rootNode) {
+        HashInfo hashInfo = FileUtil.getHashInfo(file);
+        rootNode.setSize(hashInfo.getLength());
+        patchSign.setMd5(hashInfo.getMd5());
+        rootNode.setMd5(hashInfo.getMd5());
+        patchSign.setSha1(hashInfo.getSha1());
         try (InputStream in = new FileInputStream(file)) {
-            HashInfo hashInfo = HashUtil.getHashInfo(in);
-            rootNode.setSize(hashInfo.getLength());
-            patchSign.setMd5(hashInfo.getMd5());
-            rootNode.setMd5(hashInfo.getMd5());
-            patchSign.setSha1(hashInfo.getSha1());
-            in.reset();
             doGetTreeNodeWithCompress(in, rootNode);
         } catch (IOException ex) {
             throw new AppException("Failed to read the contents of the patch package", ex);
@@ -418,8 +418,10 @@ public class PatchPackService extends BasePackService {
         PatchSign patchSign = new PatchSign();
         patchSign.setName(treeNode.getName());
         if (!treeNode.isDir()) {
+            MessageDigest sha1Digest = HashUtil.createSha1Digest();
+            treeNode.consumeBytes(((len, buf) -> sha1Digest.update(buf, 0, len)));
             patchSign.setMd5(treeNode.getMd5());
-            patchSign.setSha1(HashUtil.sha1(treeNode.getBytes()));
+            patchSign.setSha1(HashUtil.toHexStr(sha1Digest));
         }
         PatchRootInfo patchRootInfo = new PatchRootInfo();
         patchRootInfo.setPatchSign(patchSign);
@@ -528,9 +530,9 @@ public class PatchPackService extends BasePackService {
         try {
             for (FileNode fileNode : rootNodes) {
                 updatePatchPackWithZip(progressContext, fileNode);
-                byte[] bytes = fileNode.getBytes();
-                fileNode.setSize(bytes.length);
-                fileNode.setMd5(HashUtil.md5(bytes));
+                // 重新计算文件大小和md5值
+                fileNode.consumeBytes(((len, buf) -> {
+                }));
             }
             FileNode fileNode = rootNodes.getLast();
             FileUtil.copyTo(fileNode.getFile(), oldRootNodes[oldRootNodes.length - 1].getFile());
@@ -579,7 +581,7 @@ public class PatchPackService extends BasePackService {
             zout.putNextEntry(entry);
             if (!child.isDir()) {
                 progressContext.step("Write to the file:" + child.getName());
-                zout.write(child.getBytes());
+                child.consumeBytes(((len, buf) -> zout.write(buf, 0, len)));
             }
             if (CollectionUtil.isNotEmpty(child.getChildren()) && !TreeNodeUtil.isCompressNode(child)) {
                 writePatchPackWithZip(progressContext, zout, cNode);

@@ -1,5 +1,6 @@
 package cn.cpoet.patch.assistant.view.home;
 
+import cn.cpoet.patch.assistant.common.InputBufConsumer;
 import cn.cpoet.patch.assistant.constant.FileExtConst;
 import cn.cpoet.patch.assistant.control.menu.MenuItemClaim;
 import cn.cpoet.patch.assistant.control.tree.AppTreeView;
@@ -7,10 +8,8 @@ import cn.cpoet.patch.assistant.control.tree.CustomTreeView;
 import cn.cpoet.patch.assistant.control.tree.PatchTreeView;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.core.Configuration;
-import cn.cpoet.patch.assistant.util.CollectionUtil;
-import cn.cpoet.patch.assistant.util.FileNameUtil;
-import cn.cpoet.patch.assistant.util.FileUtil;
-import cn.cpoet.patch.assistant.util.I18nUtil;
+import cn.cpoet.patch.assistant.exception.AppException;
+import cn.cpoet.patch.assistant.util.*;
 import cn.cpoet.patch.assistant.view.content.ContentSupports;
 import cn.cpoet.patch.assistant.view.content.parser.ContentParser;
 import javafx.beans.property.BooleanProperty;
@@ -25,6 +24,7 @@ import javafx.stage.Stage;
 import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * @author CPoet
@@ -95,7 +95,7 @@ public abstract class HomeTreeView {
         }
     }
 
-    protected void doSaveFile(TreeNode node, byte[] content, String ext) {
+    protected void doSaveFile(TreeNode node, Consumer<InputBufConsumer> consumer, String ext) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle(I18nUtil.t("app.view.tree.save-file"));
         String name = FileNameUtil.getName(FileNameUtil.getFileName(node.getName()));
@@ -109,7 +109,7 @@ public abstract class HomeTreeView {
         if (file == null) {
             return;
         }
-        FileUtil.writeFile(file, content);
+        FileUtil.writeFile(file, consumer);
     }
 
     protected void saveFile(TreeView<TreeNode> treeView) {
@@ -118,7 +118,7 @@ public abstract class HomeTreeView {
             return;
         }
         TreeNode node = selectedItem.getValue();
-        doSaveFile(node, node.getBytes(), FileNameUtil.getExt(node.getName()));
+        doSaveFile(node, node::consumeBytes, FileNameUtil.getExt(node.getName()));
     }
 
     protected void saveSourceFile(TreeView<TreeNode> treeView) {
@@ -129,7 +129,14 @@ public abstract class HomeTreeView {
         TreeNode node = selectedItem.getValue();
         ContentParser parser = ContentSupports.getContentParser(node);
         String content = parser.parse(node);
-        doSaveFile(node, content.getBytes(), FileExtConst.JAVA);
+        doSaveFile(node, consumer -> {
+            try {
+                byte[] bytes = StringUtil.isEmpty(content) ? new byte[0] : content.getBytes();
+                consumer.accept(bytes.length, bytes);
+            } catch (Exception e) {
+                throw new AppException("Writing to the source file failed", e);
+            }
+        }, FileExtConst.JAVA);
     }
 
     protected boolean isDragFromTreeCell(DragEvent event) {

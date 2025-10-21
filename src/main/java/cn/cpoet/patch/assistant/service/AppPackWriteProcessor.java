@@ -1,11 +1,13 @@
 package cn.cpoet.patch.assistant.service;
 
+import cn.cpoet.patch.assistant.common.InputBufConsumer;
 import cn.cpoet.patch.assistant.constant.AppConst;
 import cn.cpoet.patch.assistant.constant.FileExtConst;
 import cn.cpoet.patch.assistant.constant.JarInfoConst;
 import cn.cpoet.patch.assistant.control.tree.*;
 import cn.cpoet.patch.assistant.control.tree.node.CompressNode;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
+import cn.cpoet.patch.assistant.core.AppContext;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.core.PatchConf;
 import cn.cpoet.patch.assistant.exception.AppException;
@@ -17,12 +19,16 @@ import cn.cpoet.patch.assistant.view.home.HomeContext;
 import cn.cpoet.patch.assistant.view.progress.ProgressContext;
 import com.fasterxml.jackson.core.type.TypeReference;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
@@ -128,11 +134,11 @@ public class AppPackWriteProcessor {
     private void writePatchSign(ZipOutputStream zipOut, TreeNode patchUpSignNode, boolean isPatchSign) throws IOException {
         if (patchUpSignNode instanceof CompressNode) {
             ZipEntry zipEntry = getNewEntryWithZipEntry(patchUpSignNode);
-            writePatchSign(zipOut, zipEntry, isPatchSign, patchUpSignNode.getBytes());
+            writePatchSign(zipOut, zipEntry, isPatchSign, TreeNodeUtil.readNodeBytes(patchUpSignNode));
             return;
         }
         ZipEntry zipEntry = new ZipEntry(JarInfoConst.META_INFO_DIR + AppConst.PATCH_UP_SIGN);
-        writePatchSign(zipOut, zipEntry, isPatchSign, patchUpSignNode == null ? null : patchUpSignNode.getBytes());
+        writePatchSign(zipOut, zipEntry, isPatchSign, patchUpSignNode == null ? null : TreeNodeUtil.readNodeBytes(patchUpSignNode));
     }
 
     private void writePatchSign(ZipOutputStream zipOut, ZipEntry zipEntry, boolean isPatchSign, byte[] bytes) throws IOException {
@@ -194,7 +200,7 @@ public class AppPackWriteProcessor {
             zipOut.putNextEntry(getNewEntryWithZipEntry(node));
             if (!node.isDir()) {
                 progressContext.step("Write:" + node.getName());
-                zipOut.write(node.getBytes());
+                node.consumeBytes(((len, buf) -> zipOut.write(buf, 0, len)));
             }
         } else {
             TreeNode mappedNode = node.getMappedNode();
@@ -203,7 +209,7 @@ public class AppPackWriteProcessor {
             zipOut.putNextEntry(zipEntry);
             if (!zipEntry.isDirectory()) {
                 progressContext.step("Write:" + node.getName());
-                zipOut.write(mappedNode.getBytes());
+                mappedNode.consumeBytes(((len, buf) -> zipOut.write(buf, 0, len)));
             }
         }
         if (CollectionUtil.isNotEmpty(node.getChildren())) {
@@ -216,26 +222,37 @@ public class AppPackWriteProcessor {
     private void writeTreeNode2PackWithJar(ZipOutputStream zipOut, TreeNode node) throws IOException {
         if (CollectionUtil.isEmpty(node.getChildren())) {
             zipOut.putNextEntry(getNewEntryWithZipEntry(node));
-            zipOut.write(node.getBytes());
+            node.consumeBytes(((len, buf) -> zipOut.write(buf, 0, len)));
             return;
         }
-        byte[] bytes = getBytesWithJarNode(node);
-        ZipEntry zipEntry = getNewEntryWithZipEntry(node);
-        zipEntry.setSize(bytes.length);
-        updateCrc32(zipEntry, bytes);
-        zipEntry.setTimeLocal(LocalDateTime.now());
-        zipOut.putNextEntry(zipEntry);
-        zipOut.write(bytes);
+        File file = getTempFileWithJarNode(node);
+        try {
+            ZipEntry zipEntry = getNewEntryWithZipEntry(node);
+            int[] size = new int[]{0};
+            CRC32 crc32 = new CRC32();
+            FileUtil.readBuf(file, ((len, buf) -> {
+                size[0] += len;
+                crc32.update(buf, 0, len);
+            }));
+            zipEntry.setSize(size[0]);
+            zipEntry.setCrc(crc32.getValue());
+            zipEntry.setTimeLocal(LocalDateTime.now());
+            zipOut.putNextEntry(zipEntry);
+            FileUtil.readBuf(file, ((len, buf) -> zipOut.write(buf, 0, len)));
+        } finally {
+            FileTempUtil.deleteTempFile(file);
+        }
     }
 
-    private byte[] getBytesWithJarNode(TreeNode jarNode) throws IOException {
-        try (ByteArrayOutputStream out = new ByteArrayOutputStream();
+    private File getTempFileWithJarNode(TreeNode jarNode) throws IOException {
+        File file = new File(AppContext.getInstance().getTempDir(), FileNameUtil.uniqueFileName(jarNode.getName()));
+        try (OutputStream out = new FileOutputStream(file);
              ZipOutputStream zipOut = new ZipOutputStream(out)) {
             for (TreeNode child : jarNode.getChildren()) {
                 writeTreeNode2Pack(zipOut, child);
             }
             zipOut.finish();
-            return out.toByteArray();
+            return file;
         }
     }
 
@@ -259,7 +276,7 @@ public class AppPackWriteProcessor {
             entry.setExtra(cNode.getExtra());
         }
         if (entry.getMethod() == ZipEntry.STORED && entry.getCrc() < 0) {
-            updateCrc32(entry, node.getBytes());
+            updateCrc32(entry, node::consumeBytes);
         }
         return entry;
     }
@@ -267,12 +284,12 @@ public class AppPackWriteProcessor {
     /**
      * 更新Crc32值
      *
-     * @param entry 压缩实体
-     * @param bytes 数据
+     * @param entry    压缩实体
+     * @param consumer 消费者
      */
-    private void updateCrc32(ZipEntry entry, byte[] bytes) {
+    private void updateCrc32(ZipEntry entry, Consumer<InputBufConsumer> consumer) {
         CRC32 crc32 = new CRC32();
-        crc32.update(bytes);
+        consumer.accept(((len, buf) -> crc32.update(buf, 0, len)));
         entry.setCrc(crc32.getValue());
     }
 }

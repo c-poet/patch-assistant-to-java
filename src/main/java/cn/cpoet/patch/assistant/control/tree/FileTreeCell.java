@@ -69,7 +69,7 @@ public class FileTreeCell extends TreeCell<TreeNode> {
                 return file;
             }
             File file = new File(tempDir, FileNameUtil.uniqueFileName(patchNode.getName()));
-            FileUtil.writeFile(file, patchNode.getBytes());
+            FileUtil.writeFile(file, patchNode::consumeBytes);
             updateCellDragInfo(dragInfo, patchNode, file);
             return file;
         }).collect(Collectors.toList());
@@ -170,7 +170,7 @@ public class FileTreeCell extends TreeCell<TreeNode> {
                 continue;
             }
             File file = new File(parent, childNode.getName());
-            FileUtil.writeFile(file, childNode.getBytes());
+            FileUtil.writeFile(file, childNode::consumeBytes);
             updateCellDragInfo(dragInfo, childNode, file);
             if (CollectionUtil.isNotEmpty(childNode.getChildren())) {
                 deepWriteFile2Path(parent, childNode, dragInfo);

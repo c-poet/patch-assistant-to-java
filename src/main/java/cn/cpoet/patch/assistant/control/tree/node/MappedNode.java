@@ -1,5 +1,7 @@
 package cn.cpoet.patch.assistant.control.tree.node;
 
+import cn.cpoet.patch.assistant.common.InputBufConsumer;
+
 import java.time.LocalDateTime;
 
 /**
@@ -19,8 +21,8 @@ public class MappedNode extends TreeNode {
     }
 
     @Override
-    public byte[] getBytes() {
-        return mappedNode.getBytes();
+    public void consumeBytes(InputBufConsumer consumer) {
+        mappedNode.consumeBytes(consumer);
     }
 
     @Override

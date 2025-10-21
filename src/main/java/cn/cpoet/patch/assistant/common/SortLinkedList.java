@@ -1,4 +1,4 @@
-package cn.cpoet.patch.assistant.jdk;
+package cn.cpoet.patch.assistant.common;
 
 import java.util.Comparator;
 import java.util.LinkedList;

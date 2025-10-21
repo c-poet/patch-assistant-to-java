@@ -1,8 +1,10 @@
 package cn.cpoet.patch.assistant.util;
 
+import cn.cpoet.patch.assistant.common.InputBufConsumer;
 import cn.cpoet.patch.assistant.constant.AppConst;
 import cn.cpoet.patch.assistant.constant.OSExplorerConst;
 import cn.cpoet.patch.assistant.exception.AppException;
+import cn.cpoet.patch.assistant.model.HashInfo;
 
 import java.io.*;
 import java.net.URL;
@@ -11,6 +13,7 @@ import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.function.Consumer;
 
 /**
  * 文件工具
@@ -24,16 +27,31 @@ public abstract class FileUtil {
     private FileUtil() {
     }
 
+    public static HashInfo getHashInfo(File file) {
+        try (InputStream in = new FileInputStream(file)) {
+            return HashUtil.getHashInfo(in);
+        } catch (IOException e) {
+            throw new AppException("Failed to generate file hash info", e);
+        }
+    }
+
+    public static void readBuf(File file, InputBufConsumer consumer) {
+        try (InputStream in = new FileInputStream(file)) {
+            readBuf(in, consumer);
+        } catch (IOException e) {
+            throw new AppException("Failed to read the file", e);
+        }
+    }
 
     /**
      * 读取输入流内容
      *
      * @param in       输入流
-     * @param callback 回调
+     * @param consumer 消费者
      * @throws IOException IO异常
      */
-    public static void readBuf(InputStream in, InBufCallback callback) throws IOException {
-        readBuf(in, 1024, callback);
+    public static void readBuf(InputStream in, InputBufConsumer consumer) throws IOException {
+        readBuf(in, 1024, consumer);
     }
 
     /**
@@ -41,14 +59,14 @@ public abstract class FileUtil {
      *
      * @param in       输入流
      * @param size     指定缓冲区大小
-     * @param callback 回调
+     * @param consumer 消费者
      * @throws IOException IO异常
      */
-    public static void readBuf(InputStream in, int size, InBufCallback callback) throws IOException {
+    public static void readBuf(InputStream in, int size, InputBufConsumer consumer) throws IOException {
         int len;
         byte[] buf = new byte[size];
-        while ((len = in.read(buf)) != 0) {
-            callback.call(len, buf);
+        while ((len = in.read(buf)) != -1) {
+            consumer.accept(len, buf);
         }
     }
 
@@ -154,6 +172,20 @@ public abstract class FileUtil {
     public static File getExistsDirOrFile(String path) {
         File file = new File(path);
         return file.exists() ? file : null;
+    }
+
+    /**
+     * 写入文件
+     *
+     * @param file     文件
+     * @param consumer 消费者
+     */
+    public static void writeFile(File file, Consumer<InputBufConsumer> consumer) {
+        try (OutputStream out = new FileOutputStream(file)) {
+            consumer.accept(((len, buf) -> out.write(buf, 0, len)));
+        } catch (IOException e) {
+            throw new AppException("Failed to write to the file", e);
+        }
     }
 
     /**
@@ -363,10 +395,5 @@ public abstract class FileUtil {
         } catch (Exception e) {
             throw new AppException("copy file failed", e);
         }
-    }
-
-    @FunctionalInterface
-    public interface InBufCallback {
-        void call(int len, byte[] buf) throws IOException;
     }
 }

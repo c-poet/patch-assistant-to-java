@@ -1,14 +1,14 @@
 package cn.cpoet.patch.assistant.view.content;
 
-import cn.cpoet.patch.assistant.constant.AppConst;
 import cn.cpoet.patch.assistant.control.DialogPurePane;
 import cn.cpoet.patch.assistant.control.tree.TreeNodeType;
 import cn.cpoet.patch.assistant.control.tree.node.FileNode;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
+import cn.cpoet.patch.assistant.core.AppContext;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.core.ContentConf;
 import cn.cpoet.patch.assistant.exception.AppException;
-import cn.cpoet.patch.assistant.util.FileTempUtil;
+import cn.cpoet.patch.assistant.util.FileUtil;
 import cn.cpoet.patch.assistant.util.TextDiffUtil;
 import cn.cpoet.patch.assistant.view.content.facotry.CharsetChangeEvent;
 import cn.cpoet.patch.assistant.view.content.facotry.CodeAreaFactory;
@@ -152,7 +152,9 @@ public class ContentView {
         if (tarNode instanceof FileNode) {
             file = ((FileNode) tarNode).getFile();
         } else {
-            file = FileTempUtil.writeFile2TempDir(AppConst.APP_NAME, tarNode.getName(), tarNode.getBytes());
+            File tempDir = AppContext.getInstance().getTempDir();
+            file = new File(tempDir, tarNode.getName());
+            FileUtil.writeFile(new File(tempDir, tarNode.getName()), tarNode::consumeBytes);
         }
         Desktop desktop = Desktop.getDesktop();
         try {

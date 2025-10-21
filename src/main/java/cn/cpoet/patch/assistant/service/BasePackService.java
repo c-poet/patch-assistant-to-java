@@ -4,14 +4,12 @@ import cn.cpoet.patch.assistant.constant.FileExtConst;
 import cn.cpoet.patch.assistant.constant.JarInfoConst;
 import cn.cpoet.patch.assistant.control.tree.node.CompressNode;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
-import cn.cpoet.patch.assistant.exception.AppException;
 import cn.cpoet.patch.assistant.service.compress.CompressNodeFactory;
 import cn.cpoet.patch.assistant.service.compress.FileDecompressor;
 import cn.cpoet.patch.assistant.util.CollectionUtil;
 import cn.cpoet.patch.assistant.util.FileNameUtil;
 import cn.cpoet.patch.assistant.util.StringUtil;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
@@ -85,12 +83,8 @@ public abstract class BasePackService {
         if (rootNode.getChildren() != null) {
             return false;
         }
-        try (ByteArrayInputStream in = new ByteArrayInputStream(rootNode.getBytes())) {
-            buildChildrenWithCompress(rootNode, in, isPatch);
-            return true;
-        } catch (IOException ex) {
-            throw new AppException("Failed to read compressed file", ex);
-        }
+        rootNode.consumeInputStream(in -> buildChildrenWithCompress(rootNode, in, isPatch));
+        return true;
     }
 
     private TreeNode getOrCreateParentNode(TreeNode rootNode, Map<String, TreeNode> parentNodeMap, TreeNode node, boolean isPatch) {

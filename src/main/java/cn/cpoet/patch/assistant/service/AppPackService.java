@@ -10,10 +10,7 @@ import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.exception.AppException;
 import cn.cpoet.patch.assistant.model.AppPackSign;
 import cn.cpoet.patch.assistant.model.HashInfo;
-import cn.cpoet.patch.assistant.util.CollectionUtil;
-import cn.cpoet.patch.assistant.util.DateUtil;
-import cn.cpoet.patch.assistant.util.HashUtil;
-import cn.cpoet.patch.assistant.util.I18nUtil;
+import cn.cpoet.patch.assistant.util.*;
 import cn.cpoet.patch.assistant.view.home.HomeContext;
 import cn.cpoet.patch.assistant.view.progress.ProgressContext;
 
@@ -45,22 +42,21 @@ public class AppPackService extends BasePackService {
         rootNode.setFile(file);
         rootNode.setType(TreeNodeType.ROOT);
         treeInfo.setRootNode(rootNode);
+        HashInfo hashInfo = FileUtil.getHashInfo(file);
+        rootNode.setSize(hashInfo.getLength());
+        rootNode.setMd5(hashInfo.getMd5());
+        AppPackSign appPackSign = new AppPackSign();
+        appPackSign.setMd5(hashInfo.getMd5());
+        appPackSign.setSha1(hashInfo.getSha1());
+        treeInfo.setAppPackSign(appPackSign);
         try (InputStream in = new FileInputStream(file)) {
-            HashInfo hashInfo = HashUtil.getHashInfo(in);
-            rootNode.setSize(hashInfo.getLength());
-            AppPackSign appPackSign = new AppPackSign();
-            appPackSign.setMd5(hashInfo.getMd5());
-            appPackSign.setSha1(hashInfo.getSha1());
-            treeInfo.setAppPackSign(appPackSign);
-            rootNode.setMd5(hashInfo.getMd5());
-            in.reset();
             getTreeNode(in, rootNode);
+            TreeNode patchUpSignNode = removePatchUpSignNode(rootNode);
+            treeInfo.setPatchUpSignNode(patchUpSignNode);
+            return treeInfo;
         } catch (IOException ex) {
             throw new AppException("Failed to read the contents of the app package", ex);
         }
-        TreeNode patchUpSignNode = removePatchUpSignNode(rootNode);
-        treeInfo.setPatchUpSignNode(patchUpSignNode);
-        return treeInfo;
     }
 
     private void getTreeNode(InputStream in, TreeNode rootNode) {

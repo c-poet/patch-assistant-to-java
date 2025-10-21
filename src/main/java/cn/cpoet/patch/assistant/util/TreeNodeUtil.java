@@ -1,16 +1,19 @@
 package cn.cpoet.patch.assistant.util;
 
+import cn.cpoet.patch.assistant.common.InputBufConsumer;
 import cn.cpoet.patch.assistant.control.tree.FileTreeItem;
 import cn.cpoet.patch.assistant.control.tree.TotalInfo;
 import cn.cpoet.patch.assistant.control.tree.TreeNodeType;
 import cn.cpoet.patch.assistant.control.tree.node.MappedNode;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.control.tree.node.VirtualNode;
+import cn.cpoet.patch.assistant.exception.AppException;
 import cn.cpoet.patch.assistant.service.compress.FileDecompressor;
-import javafx.scene.Node;
 import javafx.scene.control.TreeItem;
 
-import java.io.File;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
@@ -351,17 +354,38 @@ public abstract class TreeNodeUtil {
     /**
      * 读取节点相关的文件内容并设置hash值
      *
-     * @param node 节点
-     * @param file 文件
-     * @return 节点内容
+     * @param node     节点
+     * @param consumer 消费者
      */
-    public static byte[] readNodeFile(TreeNode node, File file) {
-        byte[] data = FileUtil.readFile(file);
-        node.setSize(data.length);
-        if (node.getMd5() == null) {
-            node.setMd5(HashUtil.md5(data));
+    public static void readNodeFile(TreeNode node, InputBufConsumer consumer) {
+        int[] size = new int[]{0};
+        MessageDigest md5Digest = StringUtil.isEmpty(node.getMd5()) ? HashUtil.createMd5Digest() : null;
+        node.consumeInputStream(in -> FileUtil.readBuf(in, ((len, buf) -> {
+            if (md5Digest != null) {
+                md5Digest.update(buf, 0, len);
+            }
+            size[0] += len;
+            consumer.accept(len, buf);
+        })));
+        node.setSize(size[0]);
+        if (md5Digest != null) {
+            node.setMd5(HashUtil.toHexStr(md5Digest));
         }
-        return data;
+    }
+
+    /**
+     * 读取节点所有内容
+     *
+     * @param node 节点
+     * @return 读取的内容
+     */
+    public static byte[] readNodeBytes(TreeNode node) {
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            node.consumeBytes(((len, buf) -> out.write(buf, 0, len)));
+            return out.toByteArray();
+        } catch (IOException e) {
+            throw new AppException("Failed to read node contents", e);
+        }
     }
 
     /**

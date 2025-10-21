@@ -1,12 +1,14 @@
 package cn.cpoet.patch.assistant.control.tree.node;
 
+import cn.cpoet.patch.assistant.common.InputBufConsumer;
+import cn.cpoet.patch.assistant.common.InputStreamConsumer;
+import cn.cpoet.patch.assistant.common.SortLinkedList;
 import cn.cpoet.patch.assistant.control.tree.TreeNodeType;
 import cn.cpoet.patch.assistant.exception.AppException;
-import cn.cpoet.patch.assistant.jdk.SortLinkedList;
-import cn.cpoet.patch.assistant.util.HashUtil;
 import cn.cpoet.patch.assistant.util.StringUtil;
 import javafx.scene.control.TreeItem;
 
+import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -139,12 +141,14 @@ public abstract class TreeNode implements Cloneable {
     }
 
     /**
-     * 获取当前节点对应的数据
+     * 读取当前节点的数据
      *
-     * @return 节点对应的数据，不能为Null
+     * @param consumer 消费者
      */
-    public byte[] getBytes() {
-        return new byte[0];
+    public void consumeBytes(InputBufConsumer consumer) {
+    }
+
+    public void consumeInputStream(InputStreamConsumer consumer) {
     }
 
     public String getMd5() {
@@ -155,11 +159,9 @@ public abstract class TreeNode implements Cloneable {
         if (!StringUtil.isEmpty(md5)) {
             return md5;
         }
-        byte[] bytes = getBytes();
-        if (!StringUtil.isEmpty(md5)) {
-            return md5;
-        }
-        return (md5 = HashUtil.md5(bytes));
+        consumeBytes(((len, buf) -> {
+        }));
+        return md5;
     }
 
     public void setMd5(String md5) {
@@ -171,7 +173,12 @@ public abstract class TreeNode implements Cloneable {
     }
 
     public long getSizeOrInit() {
-        return size != -1 ? size : (size = getBytes().length);
+        if (size != -1) {
+            return size;
+        }
+        consumeBytes(((len, buf) -> {
+        }));
+        return size;
     }
 
     public void setSize(long size) {

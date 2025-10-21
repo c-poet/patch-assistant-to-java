@@ -6,6 +6,7 @@ import cn.cpoet.patch.assistant.model.PatchUpSign;
 import cn.cpoet.patch.assistant.util.CollectionUtil;
 import cn.cpoet.patch.assistant.util.JsonUtil;
 import cn.cpoet.patch.assistant.util.StringUtil;
+import cn.cpoet.patch.assistant.util.TreeNodeUtil;
 import com.fasterxml.jackson.core.type.TypeReference;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -78,8 +79,8 @@ public class AppTreeInfo extends TreeInfo {
         if (patchUpSignNode == null) {
             return null;
         }
-        byte[] bytes = patchUpSignNode.getBytes();
-        if (bytes != null && bytes.length > 0) {
+        byte[] bytes = TreeNodeUtil.readNodeBytes(patchUpSignNode);
+        if (bytes.length > 0) {
             try {
                 JsonUtil.read(bytes, new TypeReference<>() {
                 });
