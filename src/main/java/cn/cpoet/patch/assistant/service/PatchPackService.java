@@ -477,6 +477,9 @@ public class PatchPackService extends BasePackService {
                 } else {
                     readmeNode.setMd5(HashUtil.md5(bytes));
                     readmeNode.setSize(bytes.length);
+                    if (readmeNode.getFile() == null) {
+                        readmeNode.setFile(new File(readmeNode.getPath()));
+                    }
                     FileUtil.writeFile(readmeNode.getFile(), bytes);
                 }
                 progressContext.end(true);
