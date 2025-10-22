@@ -7,6 +7,7 @@ import cn.cpoet.patch.assistant.util.FileTempUtil;
 import cn.cpoet.patch.assistant.util.FileUtil;
 import cn.cpoet.patch.assistant.util.XMLUtil;
 import javafx.scene.Scene;
+import org.kordamp.bootstrapfx.BootstrapFX;
 
 import java.io.File;
 import java.io.InputStream;
@@ -50,8 +51,8 @@ public class AppContext {
     public void initTheme(Scene scene) {
         if (mainScene == null) {
             mainScene = scene;
-            scene.getStylesheets().add(FileUtil.getResourceAndExternalForm(AppConst.STYLE_FILE_NAME));
             updateTheme();
+            scene.getStylesheets().add(FileUtil.getResourceAndExternalForm(AppConst.STYLE_FILE_NAME));
         }
     }
 
@@ -71,11 +72,9 @@ public class AppContext {
     public void updateTheme() {
         if (mainScene != null) {
             if (ThemeEnum.DARK.equals(curTheme())) {
-                mainScene.getRoot().getStyleClass().remove("light-theme");
-                mainScene.getRoot().getStyleClass().add("dark-theme");
+                mainScene.getStylesheets().add(FileUtil.getResourceAndExternalForm(AppConst.STYLE_DARK_FILE_NAME));
             } else {
-                mainScene.getRoot().getStyleClass().remove("dark-theme");
-                mainScene.getRoot().getStyleClass().add("light-theme");
+                mainScene.getStylesheets().remove(FileUtil.getResourceAndExternalForm(AppConst.STYLE_DARK_FILE_NAME));
             }
         }
     }
