@@ -7,7 +7,6 @@ import cn.cpoet.patch.assistant.util.FileTempUtil;
 import cn.cpoet.patch.assistant.util.FileUtil;
 import cn.cpoet.patch.assistant.util.XMLUtil;
 import javafx.scene.Scene;
-import org.kordamp.bootstrapfx.BootstrapFX;
 
 import java.io.File;
 import java.io.InputStream;
