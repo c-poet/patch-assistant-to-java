@@ -111,7 +111,7 @@ public class HomeRightTreeView extends HomeTreeView {
             fileChooser.setInitialDirectory(dir);
         }
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(I18nUtil.t("app.view.right-tree.patch-pack")
-                , "*" + FileExtConst.DOT_ZIP, "*" + FileExtConst.DOT_RAR));
+                , "*" + FileExtConst.DOT_ZIP));
         File file = fileChooser.showOpenDialog(stage);
         if (file != null) {
             refreshPatchTree(file);

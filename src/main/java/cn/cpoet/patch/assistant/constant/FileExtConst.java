@@ -19,16 +19,6 @@ public interface FileExtConst {
     String DOT_ZIP = FileNameUtil.C_EXT_SEPARATOR + ZIP;
 
     /**
-     * zip压缩文件
-     */
-    String RAR = "rar";
-
-    /**
-     * zip压缩文件
-     */
-    String DOT_RAR = FileNameUtil.C_EXT_SEPARATOR + RAR;
-
-    /**
      * jar文件
      */
     String JAR = "jar";

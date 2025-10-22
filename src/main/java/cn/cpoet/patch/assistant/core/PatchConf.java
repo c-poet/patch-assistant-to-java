@@ -37,11 +37,6 @@ public class PatchConf implements Cloneable {
     private Boolean writePatchSign = Boolean.TRUE;
 
     /**
-     * unrar路径
-     */
-    private String unrarPath = "C:\\Program Files\\WinRAR";
-
-    /**
      * 补丁文件比较
      */
     private Boolean patchFileDiff = Boolean.TRUE;
@@ -84,14 +79,6 @@ public class PatchConf implements Cloneable {
 
     public void setWritePatchSign(Boolean writePatchSign) {
         this.writePatchSign = writePatchSign;
-    }
-
-    public String getUnrarPath() {
-        return unrarPath;
-    }
-
-    public void setUnrarPath(String unrarPath) {
-        this.unrarPath = unrarPath;
     }
 
     public Boolean getPatchFileDiff() {

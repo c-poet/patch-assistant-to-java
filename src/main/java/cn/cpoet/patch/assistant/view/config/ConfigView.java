@@ -82,14 +82,6 @@ public class ConfigView {
             box.setSpacing(10);
         }));
 
-        patchConfigBox.getChildren().add(FXUtil.pre(new HBox(new Label(I18nUtil.t("app.view.config.unrar-path")), FXUtil.pre(new TextField(), node -> {
-            HBox.setHgrow(node, Priority.ALWAYS);
-            node.setText(patch.getUnrarPath());
-            node.textProperty().addListener((observableValue, oldVal, newVal) -> {
-                patch.setUnrarPath(newVal);
-            });
-        })), box -> box.setAlignment(Pos.CENTER)));
-
         patchConfigPane.setContent(patchConfigBox);
         return patchConfigPane;
     }
