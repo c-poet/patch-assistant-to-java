@@ -206,6 +206,7 @@ public class SearchView {
                         if (item instanceof SearchNodeItem) {
                             TreeNode node = ((SearchNodeItem) item).getNode();
                             TreeView<TreeNode> treeView = node.isPatch() ? view.context.getPatchTree() : view.context.getAppTree();
+                            treeView.getSelectionModel().clearSelection();
                             treeView.getSelectionModel().select(node.getTreeItem());
                             int row = treeView.getRow(node.getTreeItem());
                             treeView.scrollTo(row);
