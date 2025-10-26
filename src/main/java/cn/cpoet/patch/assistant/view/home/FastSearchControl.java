@@ -181,9 +181,9 @@ public class FastSearchControl {
             } else if (KeyCode.ESCAPE.equals(event.getCode())) {
                 handleCancel();
                 event.consume();
-            } else if (event.isControlDown() && KeyCode.K.equals(event.getCode()) && selectPre()) {
+            } else if (event.isControlDown() && event.isAltDown() && KeyCode.UP.equals(event.getCode()) && selectPre()) {
                 event.consume();
-            } else if (event.isControlDown() && KeyCode.J.equals(event.getCode()) && selectNext()) {
+            } else if (event.isControlDown() && event.isAltDown() && KeyCode.DOWN.equals(event.getCode()) && selectNext()) {
                 event.consume();
             }
         }
