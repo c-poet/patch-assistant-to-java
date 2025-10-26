@@ -65,9 +65,20 @@ public abstract class TreeNodeUtil {
         if (node == null) {
             return;
         }
+        TreeNode appNode = node.isPatch() ? node.getMappedNode() : node;
+        deepCleanMappedNode0(totalInfo, node, filter);
+        // 需要判断应用节点的父级节点是否需要取消关联
+        if (appNode != null) {
+            while ((appNode = appNode.getParent()) instanceof VirtualNode && CollectionUtil.isEmpty(appNode.getChildren())) {
+                deepCleanMappedNode0(totalInfo, appNode, filter);
+            }
+        }
+    }
+
+    private static void deepCleanMappedNode0(TotalInfo totalInfo, TreeNode node, Predicate<TreeNode> filter) {
         if (CollectionUtil.isNotEmpty(node.getChildren())) {
             // 避免并发异常
-            new ArrayList<>(node.getChildren()).forEach(child -> deepCleanMappedNode(totalInfo, child, filter));
+            new ArrayList<>(node.getChildren()).forEach(child -> deepCleanMappedNode0(totalInfo, child, filter));
         }
         if (!node.isDir()) {
             TreeNodeType nodeType = node.getType();
