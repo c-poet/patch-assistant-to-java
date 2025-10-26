@@ -147,11 +147,13 @@ public class FastSearchControl {
     }
 
     private void selectItem(TreeNode node) {
-        TreeItem<TreeNode> treeItem = node.getTreeItem();
-        int index = treeView.getRow(treeItem);
-        treeView.scrollTo(index);
-        treeView.getSelectionModel().clearSelection();
-        treeView.getSelectionModel().select(index);
+        UIUtil.runUI(() -> {
+            TreeItem<TreeNode> treeItem = node.getTreeItem();
+            int index = treeView.getRow(treeItem);
+            treeView.scrollTo(index);
+            treeView.getSelectionModel().clearSelection();
+            treeView.getSelectionModel().select(index);
+        });
     }
 
     public boolean isSearch() {
