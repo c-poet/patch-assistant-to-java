@@ -14,6 +14,7 @@ import java.time.temporal.TemporalAccessor;
 public abstract class DateUtil {
 
     public final static String DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
+    public final static DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(DATE_TIME_FORMAT);
 
     private DateUtil() {
     }
@@ -55,7 +56,7 @@ public abstract class DateUtil {
      * @return 格式化的时间
      */
     public static String formatDateTime(TemporalAccessor temporal) {
-        return DateTimeFormatter.ofPattern(DATE_TIME_FORMAT).format(temporal);
+        return DATE_TIME_FORMATTER.format(temporal);
     }
 
     /**

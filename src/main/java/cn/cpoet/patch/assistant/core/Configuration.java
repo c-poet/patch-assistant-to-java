@@ -72,18 +72,6 @@ public class Configuration {
     private Double nodeMappedHeight = 560D;
 
     /**
-     * 进度窗口宽度
-     */
-    @JacksonXmlProperty
-    private Double progressWidth = 720D;
-
-    /**
-     * 进度窗口高度
-     */
-    @JacksonXmlProperty
-    private Double progressHeight = 560D;
-
-    /**
      * 补丁签名查看窗口宽度
      */
     @JacksonXmlProperty
@@ -248,22 +236,6 @@ public class Configuration {
 
     public void setNodeMappedHeight(Double nodeMappedHeight) {
         this.nodeMappedHeight = nodeMappedHeight;
-    }
-
-    public Double getProgressWidth() {
-        return progressWidth;
-    }
-
-    public void setProgressWidth(Double progressWidth) {
-        this.progressWidth = progressWidth;
-    }
-
-    public Double getProgressHeight() {
-        return progressHeight;
-    }
-
-    public void setProgressHeight(Double progressHeight) {
-        this.progressHeight = progressHeight;
     }
 
     public Double getPatchSignWidth() {

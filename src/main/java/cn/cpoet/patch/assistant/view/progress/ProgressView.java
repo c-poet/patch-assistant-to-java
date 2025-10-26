@@ -1,16 +1,18 @@
 package cn.cpoet.patch.assistant.view.progress;
 
 import cn.cpoet.patch.assistant.control.DialogPurePane;
-import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.util.AlterUtil;
 import cn.cpoet.patch.assistant.util.I18nUtil;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.layout.Border;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.Window;
 
 import java.util.function.Consumer;
 
@@ -34,10 +36,16 @@ public class ProgressView extends ProgressContext {
         progressBar.setPadding(new Insets(2, 1, 2, 1));
         progressBar.setMaxWidth(Double.MAX_VALUE);
         box.getChildren().add(progressBar);
-        textArea = new TextArea();
-        textArea.setEditable(false);
-        VBox.setVgrow(textArea, Priority.ALWAYS);
-        box.getChildren().add(textArea);
+        textField = new TextField();
+        textField.setEditable(false);
+        textField.setStyle("-fx-border-color: transparent; " +
+                "-fx-border-width: 0; " +
+                "-fx-background-color: transparent; " +
+                "-fx-background-insets: 0; " +
+                "-fx-focus-color: transparent; " +
+                "-fx-faint-focus-color: transparent;");
+        VBox.setVgrow(textField, Priority.ALWAYS);
+        box.getChildren().add(textField);
         return box;
     }
 
@@ -45,14 +53,10 @@ public class ProgressView extends ProgressContext {
         dialog = new Dialog<>();
         dialog.initOwner(stage);
         dialog.initModality(Modality.WINDOW_MODAL);
-        dialog.setResizable(true);
         dialog.setTitle(I18nUtil.t("app.view.progress.executing-title") + taskName);
         DialogPane dialogPane = new DialogPurePane();
         dialogPane.setContent(build());
-        Configuration configuration = Configuration.getInstance();
-        dialogPane.setPrefSize(configuration.getProgressWidth(), configuration.getProgressHeight());
-        dialogPane.widthProperty().addListener((observableValue, oldVal, newVal) -> configuration.setProgressWidth(newVal.doubleValue()));
-        dialogPane.heightProperty().addListener((observableValue, oldVal, newVal) -> configuration.setProgressHeight(newVal.doubleValue()));
+        dialogPane.setMinWidth(580);
         dialog.setDialogPane(dialogPane);
         dialogPane.getButtonTypes().addAll(ButtonType.CLOSE);
         consumer.accept(this);
@@ -62,6 +66,7 @@ public class ProgressView extends ProgressContext {
                 e.consume();
             }
         });
+
         dialog.showAndWait();
     }
 }
