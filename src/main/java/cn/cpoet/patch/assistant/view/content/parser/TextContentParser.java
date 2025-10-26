@@ -1,6 +1,7 @@
 package cn.cpoet.patch.assistant.view.content.parser;
 
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
+import cn.cpoet.patch.assistant.util.CharsetUtil;
 import cn.cpoet.patch.assistant.util.TreeNodeUtil;
 
 import java.nio.charset.Charset;
@@ -11,6 +12,10 @@ import java.nio.charset.Charset;
 public class TextContentParser extends ContentParser {
     @Override
     public String parse(TreeNode node, Charset charset) {
-        return new String(TreeNodeUtil.readNodeBytes(node), charset);
+        byte[] bytes = TreeNodeUtil.readNodeBytes(node);
+        if (charset == null) {
+            charset = CharsetUtil.getCharset(bytes);
+        }
+        return new String(bytes, charset);
     }
 }

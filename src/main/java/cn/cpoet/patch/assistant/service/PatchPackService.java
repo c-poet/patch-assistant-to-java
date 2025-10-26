@@ -60,7 +60,7 @@ public class PatchPackService extends BasePackService {
             rootInfo.setReadmeNode(readmeNode);
             byte[] bytes = TreeNodeUtil.readNodeBytes(readmeNode);
             if (bytes.length > 0) {
-                rootInfo.getPatchSign().setReadme(new String(bytes, CharsetConst.UTF_8));
+                rootInfo.getPatchSign().setReadme(new String(bytes, CharsetUtil.getCharset(bytes)));
             }
             patchTreeInfo.updateReadmeText();
         }

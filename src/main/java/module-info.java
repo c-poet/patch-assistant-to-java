@@ -8,6 +8,7 @@ module cn.cpoet.patch.assistant {
     requires reactfx;
     requires org.fxmisc.flowless;
     requires io.github.javadiffutils;
+    requires com.github.albfernandez.juniversalchardet;
 
     exports cn.cpoet.patch.assistant;
 
