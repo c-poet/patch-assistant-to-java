@@ -35,8 +35,8 @@ public class MappedNode extends TreeNode {
         super.setMappedNode(mappedNode);
         if (mappedNode != null) {
             setName(mappedNode.getName());
-            setMd5(mappedNode.getMd5());
-            setSize(mappedNode.getSize());
+            setMd5(mappedNode.getMd5OrInit());
+            setSize(mappedNode.getSizeOrInit());
         }
     }
 }

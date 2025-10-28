@@ -1,7 +1,6 @@
 package cn.cpoet.patch.assistant.service;
 
 import cn.cpoet.patch.assistant.constant.AppConst;
-import cn.cpoet.patch.assistant.constant.CharsetConst;
 import cn.cpoet.patch.assistant.constant.FileExtConst;
 import cn.cpoet.patch.assistant.control.tree.*;
 import cn.cpoet.patch.assistant.control.tree.node.*;
@@ -132,8 +131,15 @@ public class PatchPackService extends BasePackService {
             pathPrefix = treeNode.getPath();
         }
         for (ReadMePathInfo pathInfo : pathInfos) {
-            String filePath = pathPrefix == null ? pathInfo.getFilePath() : FileNameUtil.joinPath(pathPrefix, pathInfo.getFilePath());
+            String filePath = pathPrefix == null ? pathInfo.getPath1() : FileNameUtil.joinPath(pathPrefix, pathInfo.getPath1());
             TreeNode patchNode = TreeNodeUtil.findNodeByPath(treeNode, filePath);
+            if (patchNode == null && StringUtil.isEmpty(pathInfo.getPath2())) {
+                String fileName = FileNameUtil.getFileName(pathInfo.getPath1());
+                if (!Objects.equals(fileName, pathInfo.getPath1())) {
+                    filePath = pathPrefix == null ? fileName : FileNameUtil.joinPath(pathPrefix, fileName);
+                    patchNode = TreeNodeUtil.findNodeByPath(treeNode, filePath);
+                }
+            }
             if (patchNode == null && !ReadMePathInfo.TypeEnum.DEL.equals(pathInfo.getType())) {
                 continue;
             }
@@ -142,12 +148,23 @@ public class PatchPackService extends BasePackService {
     }
 
     private void matchMappedNodeWithReadme(TotalInfo totalInfo, ReadMePathInfo pathInfo, AppTreeInfo appTreeInfo, TreeNode patchNode) {
-        // 组装完成映射路径
-        String appNodePath = pathInfo.getFirstPath();
-        if (!StringUtil.isBlank(pathInfo.getSecondPath())) {
-            appNodePath = FileNameUtil.joinPath(appNodePath, pathInfo.getSecondPath());
+        String appNodePath;
+        if (!StringUtil.isEmpty(pathInfo.getPath3())) {
+            appNodePath = FileNameUtil.joinPath(pathInfo.getPath2(), pathInfo.getPath3());
+            String fileName = FileNameUtil.getFileName(pathInfo.getPath1());
+            if (!appNodePath.endsWith(fileName)) {
+                appNodePath = FileNameUtil.joinPath(appNodePath, fileName);
+            }
+        } else if (!StringUtil.isEmpty(pathInfo.getPath2())) {
+            appNodePath = pathInfo.getPath2();
+            String fileName = FileNameUtil.getFileName(pathInfo.getPath1());
+            if (!appNodePath.endsWith(fileName)) {
+                appNodePath = FileNameUtil.joinPath(appNodePath, fileName);
+            }
+        } else {
+            appNodePath = pathInfo.getPath1();
         }
-        String[] paths = FileNameUtil.joinPath(appNodePath, pathInfo.getFilePath()).split(FileNameUtil.SEPARATOR);
+        String[] paths = appNodePath.split(FileNameUtil.SEPARATOR);
         doMatchMappedNodeChildrenWithReadme(totalInfo, pathInfo, paths, 0, appTreeInfo.getRootNode(), patchNode);
     }
 

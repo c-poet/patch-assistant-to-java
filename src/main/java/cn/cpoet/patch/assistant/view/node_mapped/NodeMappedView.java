@@ -88,8 +88,8 @@ public class NodeMappedView {
         UIUtil.runNotUI(() -> {
             if (originMappedInfo == null) {
                 PatchRootInfo patchRootInfo = patchTree.getTreeInfo().getRootInfoByNode(patchRootNode);
-                String readmeText = ReadMeFileService.INSTANCE.delAllFilePath(patchRootInfo.getPatchSign().getReadme());
-                originMappedInfo = readmeText == null ? "" : readmeText;
+                // String readmeText = ReadMeFileService.INSTANCE.delAllFilePath(patchRootInfo.getPatchSign().getReadme());
+                // originMappedInfo = readmeText == null ? "" : readmeText;
             }
             UIUtil.runUI(() -> textArea.setText(StringUtil.isBlank(originMappedInfo) ? "Files path:\n" + text : (originMappedInfo + '\n' + text)));
         });

@@ -41,17 +41,17 @@ public class ReadMePathInfo {
     /**
      * 文件名或者路径
      */
-    private String filePath;
+    private String path1;
 
     /**
      * 一级路径
      */
-    private String firstPath;
+    private String path2;
 
     /**
      * 二级路径
      */
-    private String secondPath;
+    private String path3;
 
     public TypeEnum getType() {
         return type;
@@ -61,27 +61,27 @@ public class ReadMePathInfo {
         this.type = type;
     }
 
-    public String getFilePath() {
-        return filePath;
+    public String getPath1() {
+        return path1;
     }
 
-    public void setFilePath(String fileName) {
-        this.filePath = fileName;
+    public void setPath1(String fileName) {
+        this.path1 = fileName;
     }
 
-    public String getFirstPath() {
-        return firstPath;
+    public String getPath2() {
+        return path2;
     }
 
-    public void setFirstPath(String firstPath) {
-        this.firstPath = firstPath;
+    public void setPath2(String path2) {
+        this.path2 = path2;
     }
 
-    public String getSecondPath() {
-        return secondPath;
+    public String getPath3() {
+        return path3;
     }
 
-    public void setSecondPath(String secondPath) {
-        this.secondPath = secondPath;
+    public void setPath3(String path3) {
+        this.path3 = path3;
     }
 }

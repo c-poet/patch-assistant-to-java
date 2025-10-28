@@ -89,13 +89,13 @@ public class AppPackWriteProcessor {
                 transitCompleted(file, transitFile, true);
                 progressContext.end(true);
             } catch (Exception e) {
-                progressContext.step(ExceptionUtil.asString(e));
+                progressContext.step(e.getMessage());
+                System.err.println(ExceptionUtil.asString(e));
                 transitCompleted(file, transitFile, false);
                 progressContext.end(false);
             }
         });
     }
-
     private void write(File file) {
         AppTreeView appTree = context.getAppTree();
         TreeNode rootNode = appTree.getTreeInfo().getRootNode();
@@ -261,6 +261,10 @@ public class AppPackWriteProcessor {
     private ZipEntry getNewEntryWithZipEntry(TreeNode node) {
         ZipEntry entry = new ZipEntry(node.isDir() ? FileNameUtil.perfectDirPath(node.getPath()) : node.getPath());
         if (!node.isDir()) {
+            long sizeOrInit = node.getSizeOrInit();
+           if (sizeOrInit <= 0) {
+               System.out.println(sizeOrInit);
+           }
             entry.setSize(node.getSizeOrInit());
             if (node.getName().endsWith(FileExtConst.DOT_JAR)) {
                 entry.setMethod(ZipEntry.STORED);
