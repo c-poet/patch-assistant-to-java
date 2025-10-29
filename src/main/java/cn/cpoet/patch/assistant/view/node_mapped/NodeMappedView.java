@@ -50,6 +50,7 @@ public class NodeMappedView {
     private Node build() {
         textArea = new TextArea();
         textArea.setPadding(Insets.EMPTY);
+        textArea.setEditable(false);
         createContentMenu();
         buildMappedInfo();
         return textArea;
@@ -82,14 +83,7 @@ public class NodeMappedView {
     }
 
     private void updateText(String text) {
-        // UIUtil.runNotUI(() -> {
-        //     if (originMappedInfo == null) {
-        //         PatchRootInfo patchRootInfo = patchTree.getTreeInfo().getRootInfoByNode(patchRootNode);
-        //         // String readmeText = ReadMeFileService.INSTANCE.delAllFilePath(patchRootInfo.getPatchSign().getReadme());
-        //         // originMappedInfo = readmeText == null ? "" : readmeText;
-        //     }
-        //     UIUtil.runUI(() -> textArea.setText(StringUtil.isBlank(originMappedInfo) ? "Files path:\n" + text : (originMappedInfo + '\n' + text)));
-        // });
+        UIUtil.runNotUI(() -> UIUtil.runUI(() -> textArea.setText(text)));
     }
 
     private void buildDelInfo() {
