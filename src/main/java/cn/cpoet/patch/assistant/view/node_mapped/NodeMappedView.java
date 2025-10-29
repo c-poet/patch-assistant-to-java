@@ -3,13 +3,11 @@ package cn.cpoet.patch.assistant.view.node_mapped;
 import cn.cpoet.patch.assistant.constant.AppConst;
 import cn.cpoet.patch.assistant.constant.FileExtConst;
 import cn.cpoet.patch.assistant.constant.SpringConst;
-import cn.cpoet.patch.assistant.control.tree.PatchRootInfo;
 import cn.cpoet.patch.assistant.control.tree.PatchTreeView;
 import cn.cpoet.patch.assistant.control.tree.TreeNodeType;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.service.PatchPackService;
-import cn.cpoet.patch.assistant.service.ReadMeFileService;
 import cn.cpoet.patch.assistant.util.*;
 import cn.cpoet.patch.assistant.view.progress.ProgressView;
 import javafx.event.ActionEvent;
@@ -39,7 +37,6 @@ public class NodeMappedView {
     private String delInfo;
     private String mappedInfo;
     private TextArea textArea;
-    private String originMappedInfo;
     private final TreeNode appRootNode;
     private final TreeNode patchRootNode;
     private final PatchTreeView patchTree;
@@ -85,14 +82,14 @@ public class NodeMappedView {
     }
 
     private void updateText(String text) {
-        UIUtil.runNotUI(() -> {
-            if (originMappedInfo == null) {
-                PatchRootInfo patchRootInfo = patchTree.getTreeInfo().getRootInfoByNode(patchRootNode);
-                // String readmeText = ReadMeFileService.INSTANCE.delAllFilePath(patchRootInfo.getPatchSign().getReadme());
-                // originMappedInfo = readmeText == null ? "" : readmeText;
-            }
-            UIUtil.runUI(() -> textArea.setText(StringUtil.isBlank(originMappedInfo) ? "Files path:\n" + text : (originMappedInfo + '\n' + text)));
-        });
+        // UIUtil.runNotUI(() -> {
+        //     if (originMappedInfo == null) {
+        //         PatchRootInfo patchRootInfo = patchTree.getTreeInfo().getRootInfoByNode(patchRootNode);
+        //         // String readmeText = ReadMeFileService.INSTANCE.delAllFilePath(patchRootInfo.getPatchSign().getReadme());
+        //         // originMappedInfo = readmeText == null ? "" : readmeText;
+        //     }
+        //     UIUtil.runUI(() -> textArea.setText(StringUtil.isBlank(originMappedInfo) ? "Files path:\n" + text : (originMappedInfo + '\n' + text)));
+        // });
     }
 
     private void buildDelInfo() {
@@ -259,18 +256,11 @@ public class NodeMappedView {
         dialogPane.setPrefSize(configuration.getNodeMappedWidth(), configuration.getNodeMappedHeight());
         dialogPane.widthProperty().addListener((observableValue, oldVal, newVal) -> configuration.setNodeMappedWidth(newVal.doubleValue()));
         dialogPane.heightProperty().addListener((observableValue, oldVal, newVal) -> configuration.setNodeMappedHeight(newVal.doubleValue()));
-        ButtonType updateReadmeBT = new ButtonType(I18nUtil.t("app.view.node-mapped.update"), ButtonBar.ButtonData.YES);
-        dialogPane.getButtonTypes().add(updateReadmeBT);
         ButtonType saveAsFileBT = new ButtonType(I18nUtil.t("app.view.node-mapped.save-as-file"), ButtonBar.ButtonData.APPLY);
         dialogPane.getButtonTypes().add(saveAsFileBT);
         ButtonType copyInfoBT = new ButtonType(I18nUtil.t("app.view.node-mapped.copy-info"), ButtonBar.ButtonData.OK_DONE);
         dialogPane.getButtonTypes().add(copyInfoBT);
         dialogPane.getButtonTypes().add(ButtonType.CANCEL);
-        Button updateReadmeBtn = (Button) dialogPane.lookupButton(updateReadmeBT);
-        updateReadmeBtn.addEventFilter(ActionEvent.ACTION, e -> {
-            handleUpdateReadme(stage);
-            e.consume();
-        });
         dialogPane.lookupButton(saveAsFileBT).addEventFilter(ActionEvent.ACTION, e -> {
             handleSaveAsFile(stage);
             e.consume();
