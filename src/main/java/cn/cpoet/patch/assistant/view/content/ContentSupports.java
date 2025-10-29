@@ -35,6 +35,7 @@ public abstract class ContentSupports {
                 case "htm":
                 case "css":
                 case "sql":
+                case "json":
                     return new TextContentParser();
                 default:
             }

@@ -41,6 +41,12 @@ public abstract class CodeAreaFactory {
     }
 
     public StyleSpans<Collection<String>> computeHighlighting(String text) {
+        if (StringUtil.isEmpty(text)) {
+            return null;
+        }
+        if (text.getBytes().length > 64 * 1024) {
+            return null;
+        }
         Matcher matcher = createMatcher(text);
         if (matcher == null) {
             return null;
