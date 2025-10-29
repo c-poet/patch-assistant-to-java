@@ -3,13 +3,10 @@ package cn.cpoet.patch.assistant.view.node_mapped;
 import cn.cpoet.patch.assistant.constant.AppConst;
 import cn.cpoet.patch.assistant.constant.FileExtConst;
 import cn.cpoet.patch.assistant.constant.SpringConst;
-import cn.cpoet.patch.assistant.control.tree.PatchTreeView;
 import cn.cpoet.patch.assistant.control.tree.TreeNodeType;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.core.Configuration;
-import cn.cpoet.patch.assistant.service.PatchPackService;
 import cn.cpoet.patch.assistant.util.*;
-import cn.cpoet.patch.assistant.view.progress.ProgressView;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
@@ -39,12 +36,10 @@ public class NodeMappedView {
     private TextArea textArea;
     private final TreeNode appRootNode;
     private final TreeNode patchRootNode;
-    private final PatchTreeView patchTree;
 
-    public NodeMappedView(TreeNode appRootNode, TreeNode patchRootNode, PatchTreeView patchTree) {
+    public NodeMappedView(TreeNode appRootNode, TreeNode patchRootNode) {
         this.appRootNode = appRootNode;
         this.patchRootNode = patchRootNode;
-        this.patchTree = patchTree;
     }
 
     private Node build() {
@@ -231,16 +226,6 @@ public class NodeMappedView {
         if (file != null) {
             FileUtil.writeFile(file, textArea.getText().getBytes());
         }
-    }
-
-    private void handleUpdateReadme(Stage stage) {
-        ButtonType bt = AlterUtil.confirm(stage, I18nUtil.t("app.view.node-mapped.update-tip"), ButtonType.YES, ButtonType.NO);
-        if (!ButtonType.YES.equals(bt)) {
-            return;
-        }
-        String text = textArea.getText();
-        new ProgressView(I18nUtil.t("app.view.node-mapped.update-task-name"))
-                .showDialog(stage, progressContext -> PatchPackService.INSTANCE.updatePatchReadme(progressContext, patchTree, patchRootNode, text));
     }
 
     private DialogPane createDialogPane(Stage stage) {

@@ -16,6 +16,7 @@ import cn.cpoet.patch.assistant.util.*;
 import cn.cpoet.patch.assistant.view.content.ContentView;
 import cn.cpoet.patch.assistant.view.node_mapped.NodeMappedView;
 import cn.cpoet.patch.assistant.view.patch_sign.PatchSignView;
+import cn.cpoet.patch.assistant.view.readme.ReadmeView;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.geometry.Insets;
@@ -87,7 +88,7 @@ public class HomeRightTreeView extends HomeTreeView {
 
     private void handleViewNodeMapped(ActionEvent event) {
         TreeNode rootNode = patchTree.getSelectionModel().getSelectedItem().getValue();
-        new NodeMappedView(appTree.getTreeInfo().getRootNode(), rootNode, patchTree).showDialog(stage);
+        new NodeMappedView(appTree.getTreeInfo().getRootNode(), rootNode).showDialog(stage);
     }
 
     private void reloadPatchTree(TreeNode rootNode) {
@@ -402,6 +403,12 @@ public class HomeRightTreeView extends HomeTreeView {
                     if (PatchPackService.INSTANCE.buildChildrenWithCompress(selectedTreeNode, true)) {
                         TreeNodeUtil.buildNodeChildren(selectedItem, selectedTreeNode);
                     }
+                } else if (TreeNodeType.README.equals(selectedTreeNode.getType())) {
+                    new ReadmeView(selectedTreeNode, patchTree, isOk -> {
+                        if (isOk) {
+                            refreshPatchMappedNode(true);
+                        }
+                    }).showDialog(stage);
                 } else {
                     new ContentView(selectedTreeNode).showDialog(stage);
                 }

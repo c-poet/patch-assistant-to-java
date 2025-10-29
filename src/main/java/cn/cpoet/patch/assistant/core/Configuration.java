@@ -72,6 +72,18 @@ public class Configuration {
     private Double nodeMappedHeight = 560D;
 
     /**
+     * 说明信息窗口宽度
+     */
+    @JacksonXmlProperty
+    private Double readmeWidth = 720D;
+
+    /**
+     * 说明信息窗口高度
+     */
+    @JacksonXmlProperty
+    private Double readmeHeight = 560D;
+
+    /**
      * 补丁签名查看窗口宽度
      */
     @JacksonXmlProperty
@@ -236,6 +248,22 @@ public class Configuration {
 
     public void setNodeMappedHeight(Double nodeMappedHeight) {
         this.nodeMappedHeight = nodeMappedHeight;
+    }
+
+    public Double getReadmeWidth() {
+        return readmeWidth;
+    }
+
+    public void setReadmeWidth(Double readmeWidth) {
+        this.readmeWidth = readmeWidth;
+    }
+
+    public Double getReadmeHeight() {
+        return readmeHeight;
+    }
+
+    public void setReadmeHeight(Double readmeHeight) {
+        this.readmeHeight = readmeHeight;
     }
 
     public Double getPatchSignWidth() {

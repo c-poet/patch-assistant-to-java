@@ -18,6 +18,7 @@ import java.io.*;
 import java.security.MessageDigest;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -472,8 +473,9 @@ public class PatchPackService extends BasePackService {
      * @param patchTree       补丁树
      * @param rootNode        根节点
      * @param text            文本信息
+     * @param callback        更新回调
      */
-    public void updatePatchReadme(ProgressContext progressContext, PatchTreeView patchTree, TreeNode rootNode, String text) {
+    public void updatePatchReadme(ProgressContext progressContext, PatchTreeView patchTree, TreeNode rootNode, String text, Consumer<Boolean> callback) {
         UIUtil.runNotUI(() -> {
             PatchTreeInfo treeInfo = patchTree.getTreeInfo();
             PatchRootInfo patchRootInfo = treeInfo.getRootInfoByNode(rootNode);
@@ -515,6 +517,7 @@ public class PatchPackService extends BasePackService {
                     }
                     patchTree.refresh();
                 });
+                callback.accept(Boolean.TRUE);
             } catch (Exception e) {
                 if (oldReadmeNode == null) {
                     rootNode.getChildren().remove(readmeNode);
@@ -530,6 +533,7 @@ public class PatchPackService extends BasePackService {
                 }
                 progressContext.step(ExceptionUtil.asString(e));
                 progressContext.end(false);
+                callback.accept(Boolean.FALSE);
             }
         });
     }
