@@ -49,9 +49,12 @@ public class PatchPackService extends BasePackService {
         }
         TreeNode readmeNode = null;
         for (TreeNode child : rootNode.getChildren()) {
-            if (readmeFileName.equalsIgnoreCase(child.getName())) {
+            if (TreeNodeType.README.equals(child.getType())) {
                 readmeNode = child;
                 break;
+            }
+            if (readmeFileName.equalsIgnoreCase(child.getName())) {
+                readmeNode = child;
             }
         }
         if (readmeNode != null) {
@@ -248,7 +251,8 @@ public class PatchPackService extends BasePackService {
                 if (ReadMePathInfo.TypeEnum.ADD.equals(pathInfo.getType())) {
                     addMappedNodeChildren(totalInfo, appNode, patchNode);
                 }
-            } else {
+            } else if (ReadMePathInfo.TypeEnum.NONE.equals(pathInfo.getType())
+                    || ReadMePathInfo.TypeEnum.MOD.equals(pathInfo.getType())) {
                 TreeNodeUtil.mappedNode(totalInfo, appNode, patchNode, TreeNodeType.MOD);
                 mappedInnerClassNode(totalInfo, appNode, patchNode);
             }

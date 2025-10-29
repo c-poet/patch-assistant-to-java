@@ -353,6 +353,16 @@ public abstract class TreeNodeUtil {
     }
 
     /**
+     * 判断节点是否节节点或者自定义根节点
+     *
+     * @param node 节点
+     * @return 根节点或者自定义根节点
+     */
+    public static boolean isRootNode(TreeNode node) {
+        return node != null && (TreeNodeType.ROOT.equals(node.getType()) || TreeNodeType.CUSTOM_ROOT.equals(node.getType()));
+    }
+
+    /**
      * 判断是否是压缩文件节点
      *
      * @param treeNode 节点

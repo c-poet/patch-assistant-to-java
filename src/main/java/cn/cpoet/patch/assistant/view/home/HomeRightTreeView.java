@@ -59,6 +59,18 @@ public class HomeRightTreeView extends HomeTreeView {
         patchTree.fireEvent(event);
     }
 
+    private void handleMarkReadme() {
+        TreeItem<TreeNode> selectedItem = patchTree.getSelectionModel().getSelectedItem();
+        TreeNode selectedNode = selectedItem.getValue();
+        PatchRootInfo patchRootInfo = patchTree.getTreeInfo().getRootInfoByNode(selectedNode.getParent());
+        TreeNode readmeNode = patchRootInfo.getReadmeNode();
+        if (readmeNode != null) {
+            readmeNode.setType(TreeNodeType.NONE);
+        }
+        selectedNode.setType(TreeNodeType.README);
+        refreshPatchMappedNode(true);
+    }
+
     protected void handleCancelMapped(ActionEvent event) {
         TreeItem<TreeNode> selectedItem = patchTree.getSelectionModel().getSelectedItem();
         TreeNodeUtil.deepCleanMappedNode(context.totalInfo, selectedItem.getValue());
@@ -174,6 +186,15 @@ public class HomeRightTreeView extends HomeTreeView {
         }));
 
         addContextMenuItemClaim(MenuItemClaim.create(() -> {
+            MenuItem markRootMenuItem = new MenuItem(I18nUtil.t("app.view.right-tree.mark-readme"));
+            markRootMenuItem.setOnAction(e -> handleMarkReadme());
+            return markRootMenuItem;
+        }, menu -> {
+            TreeNode node = patchTree.getSingleSelectedNode();
+            return node != null && !node.isDir() && TreeNodeType.NONE.equals(node.getType()) && TreeNodeUtil.isRootNode(node.getParent());
+        }));
+
+        addContextMenuItemClaim(MenuItemClaim.create(() -> {
             MenuItem saveFileMenuItem = new MenuItem(I18nUtil.t("app.view.right-tree.save-file"));
             saveFileMenuItem.setOnAction(e -> saveFile(patchTree));
             return saveFileMenuItem;
@@ -197,7 +218,7 @@ public class HomeRightTreeView extends HomeTreeView {
             return viewPatchSign;
         }, menu -> {
             TreeNode node = patchTree.getSingleSelectedNode();
-            return node != null && (TreeNodeType.CUSTOM_ROOT.equals(node.getType()) || TreeNodeType.ROOT.equals(node.getType()));
+            return TreeNodeUtil.isRootNode(node);
         }));
 
         addContextMenuItemClaim(MenuItemClaim.create(() -> {
