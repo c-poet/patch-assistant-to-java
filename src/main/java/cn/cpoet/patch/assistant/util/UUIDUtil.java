@@ -16,6 +16,17 @@ public abstract class UUIDUtil {
     }
 
     public static String random32() {
-        return random().replaceAll("-", "");
+        char c;
+        int i = 0, j = 0;
+        char[] chars = new char[32];
+        String random = random();
+        while (i < random.length()) {
+            c = random.charAt(i);
+            if (c != '-') {
+                chars[j++] = c;
+            }
+            ++i;
+        }
+        return new String(chars);
     }
 }
