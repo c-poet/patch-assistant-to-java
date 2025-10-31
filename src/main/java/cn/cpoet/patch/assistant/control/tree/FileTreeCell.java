@@ -7,6 +7,7 @@ import cn.cpoet.patch.assistant.core.AppContext;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.util.*;
 import cn.cpoet.patch.assistant.view.home.HomeContext;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Label;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
@@ -17,10 +18,8 @@ import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 
 import java.io.File;
-import java.io.InputStream;
 import java.util.List;
 import java.util.Stack;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -49,8 +48,7 @@ public class FileTreeCell extends TreeCell<TreeNode> {
         }
         TreeNode node = getItem();
         Dragboard db = this.startDragAndDrop(TransferMode.COPY);
-        Image image = getIconImage(node, in -> new Image(in, 68, 68, true, true));
-        db.setDragView(image);
+        db.setDragView(getDragIconImage(node));
         ClipboardContent content = new ClipboardContent();
         content.putString(node.getName());
         FileTreeCellDragInfo dragInfo = new FileTreeCellDragInfo();
@@ -199,25 +197,33 @@ public class FileTreeCell extends TreeCell<TreeNode> {
         ImageView icon = new ImageView();
         icon.setFitWidth(16);
         icon.setFitHeight(16);
-        icon.setImage(getIconImage(node, null));
+        icon.setImage(getIconImage(node));
         box.getChildren().add(icon);
     }
 
-    private Image getIconImage(TreeNode node, Function<InputStream, Image> imgFactory) {
+    private Image getDragIconImage(TreeNode node) {
+        ImageView imageView = new ImageView(getIconImage(node));
+        imageView.setFitHeight(50);
+        imageView.setFitWidth(50);
+        imageView.setPreserveRatio(false);
+        return imageView.snapshot(new SnapshotParameters(), null);
+    }
+
+    private Image getIconImage(TreeNode node) {
         if (TreeNodeType.CUSTOM_ROOT.equals(node.getType())) {
-            return ImageUtil.loadImage(IConConst.FILE_MARK, imgFactory);
+            return ImageUtil.loadImageCache(IConConst.FILE_MARK);
         }
         if (TreeNodeType.README.equals(node.getType())) {
-            return ImageUtil.loadImage(IConConst.FILE_README, imgFactory);
+            return ImageUtil.loadImageCache(IConConst.FILE_README);
         }
-        Image image = IConUtil.loadIconByFileExt(node.getName(), imgFactory);
+        Image image = IConUtil.loadIconByFileExt(node.getName());
         if (image != null) {
             return image;
         }
         if (node.isDir()) {
-            return ImageUtil.loadImage(IConConst.DIRECTORY, imgFactory);
+            return ImageUtil.loadImageCache(IConConst.DIRECTORY);
         }
-        return ImageUtil.loadImage(IConConst.FILE, imgFactory);
+        return ImageUtil.loadImageCache(IConConst.FILE);
     }
 
     private void addFileDetail(TreeNode node) {
