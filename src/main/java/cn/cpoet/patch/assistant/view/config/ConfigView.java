@@ -77,6 +77,9 @@ public class ConfigView {
         })), FXUtil.pre(new RadioButton(I18nUtil.t("app.view.config.write-patch-sign")), node -> {
             node.setSelected(Boolean.TRUE.equals(patch.getWritePatchSign()));
             node.setOnAction(e -> patch.setWritePatchSign(!Boolean.TRUE.equals(patch.getWritePatchSign())));
+        }), FXUtil.pre(new RadioButton(I18nUtil.t("app.view.config.load-last-patch")), node -> {
+            node.setSelected(Boolean.TRUE.equals(patch.getLoadLastPatch()));
+            node.setOnAction(e -> patch.setLoadLastPatch(!Boolean.TRUE.equals(patch.getLoadLastPatch())));
         })), box -> {
             box.setAlignment(Pos.CENTER_LEFT);
             box.setSpacing(10);

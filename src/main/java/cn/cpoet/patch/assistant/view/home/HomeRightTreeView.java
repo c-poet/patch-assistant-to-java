@@ -482,12 +482,15 @@ public class HomeRightTreeView extends HomeTreeView {
         patchTree.setOnKeyPressed(this::onKeyPressed);
         patchTree.setOnKeyReleased(this::onKeyReleased);
         initPatchTreeDrag();
-        UIUtil.runNotUI(() -> {
-            File file = getInitPatchFile();
-            if (file != null) {
-                refreshPatchTree(file);
-            }
-        });
+        // 判断是否需要加载最后操作的补丁信息
+        if (Boolean.TRUE.equals(Configuration.getInstance().getPatch().getLoadLastPatch())) {
+            UIUtil.runNotUI(() -> {
+                File file = getInitPatchFile();
+                if (file != null) {
+                    refreshPatchTree(file);
+                }
+            });
+        }
         StackPane stackPane = new StackPane();
         stackPane.getChildren().add(patchTree);
         fastSearchControl.fillNode(stackPane);

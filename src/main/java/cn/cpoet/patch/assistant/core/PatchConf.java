@@ -41,6 +41,11 @@ public class PatchConf implements Cloneable {
      */
     private Boolean patchFileDiff = Boolean.TRUE;
 
+    /**
+     * 打开应用时加载最后操作的补丁
+     */
+    private Boolean loadLastPatch = Boolean.TRUE;
+
     public String getUsername() {
         return StringUtil.isBlank(username) ? EnvUtil.getUserName() : username;
     }
@@ -87,6 +92,14 @@ public class PatchConf implements Cloneable {
 
     public void setPatchFileDiff(Boolean patchFileDiff) {
         this.patchFileDiff = patchFileDiff;
+    }
+
+    public Boolean getLoadLastPatch() {
+        return loadLastPatch;
+    }
+
+    public void setLoadLastPatch(Boolean loadLastPatch) {
+        this.loadLastPatch = loadLastPatch;
     }
 
     @Override
