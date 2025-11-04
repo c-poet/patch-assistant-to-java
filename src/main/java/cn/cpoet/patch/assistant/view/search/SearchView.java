@@ -7,7 +7,10 @@ import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.core.SearchConf;
 import cn.cpoet.patch.assistant.core.SearchItem;
+import cn.cpoet.patch.assistant.util.FileNameUtil;
+import cn.cpoet.patch.assistant.util.I18nUtil;
 import cn.cpoet.patch.assistant.util.StringUtil;
+import cn.cpoet.patch.assistant.util.UIUtil;
 import cn.cpoet.patch.assistant.view.home.HomeContext;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
@@ -20,8 +23,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
-import java.util.Set;
-import java.util.Stack;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -32,6 +34,7 @@ import java.util.regex.Pattern;
 public class SearchView {
 
     private Dialog<?> dialog;
+    private volatile long lastVer;
     private TextField searchField;
     private final HomeContext context;
     private ListView<SearchItem> searchList;
@@ -50,28 +53,56 @@ public class SearchView {
         searchList.setCellFactory(l -> new SearchListCell(this));
         VBox.setVgrow(searchList, Priority.ALWAYS);
         box.getChildren().add(searchList);
-        searchHistory();
+        searchNode(null);
         return box;
     }
 
     private Stack<String> createPathStack(boolean isPatch) {
         Stack<String> stack = new Stack<>();
-        stack.push(isPatch ? "R:" : "L:");
+        stack.push(isPatch ? I18nUtil.t("app.view.search.patch-pack") : I18nUtil.t("app.view.search.app-pack"));
         return stack;
     }
 
-    private void searchHistory() {
+    private void searchHistory(Set<SearchItem> results) {
         SearchConf search = Configuration.getInstance().getSearch();
         Set<SearchItem> history = search.getHistory();
         if (history != null) {
-            searchList.getItems().addAll(history);
+            results.addAll(history);
         }
     }
 
     private void searchNode(String keyword) {
-        searchList.getItems().clear();
+        long curVer = System.currentTimeMillis();
+        UIUtil.runNotUI(() -> {
+            // 如果版本号已经过期，则停止搜索
+            if (curVer <= lastVer) {
+                return;
+            }
+            Set<SearchItem> results = new LinkedHashSet<>();
+            searchNode(keyword, results);
+            updateSearchResult(curVer, results);
+        });
+    }
+
+    private void updateSearchResult(long curVer, Set<SearchItem> results) {
+        if (curVer <= lastVer) {
+            return;
+        }
+        synchronized (SearchView.class) {
+            if (curVer <= lastVer) {
+                return;
+            }
+            lastVer = curVer;
+            UIUtil.runUI(() -> {
+                searchList.getItems().clear();
+                searchList.getItems().addAll(results);
+            });
+        }
+    }
+
+    private void searchNode(String keyword, Set<SearchItem> results) {
         if (StringUtil.isBlank(keyword)) {
-            searchHistory();
+            searchHistory(results);
             return;
         }
         String[] paths = keyword.split("[/\\\\]");
@@ -80,72 +111,72 @@ public class SearchView {
         if (paths.length > 1) {
             SearchKeyword[] searchKeywords = createKeywords(paths);
             if (appTreeInfo != null) {
-                searchNodeWithPath(appTreeInfo.getRootNode(), searchKeywords);
+                searchNodeWithPath(appTreeInfo.getRootNode(), searchKeywords, results);
             }
             if (patchTreeInfo != null) {
-                searchNodeWithPath(patchTreeInfo.getRootNode(), searchKeywords);
+                searchNodeWithPath(patchTreeInfo.getRootNode(), searchKeywords, results);
             }
         } else {
             SearchKeyword searchKeyword = createKeyword(keyword);
             if (appTreeInfo != null) {
-                searchNode(appTreeInfo.getRootNode(), searchKeyword);
+                searchNode(appTreeInfo.getRootNode(), searchKeyword, results);
             }
             if (patchTreeInfo != null) {
-                searchNode(patchTreeInfo.getRootNode(), searchKeyword);
+                searchNode(patchTreeInfo.getRootNode(), searchKeyword, results);
             }
         }
     }
 
-    private void searchNode(TreeNode node, SearchKeyword keyword) {
+    private void searchNode(TreeNode node, SearchKeyword keyword, Set<SearchItem> results) {
         if (node.getChildren() != null) {
-            node.getChildren().forEach(child -> searchNode(child, keyword, createPathStack(node.isPatch())));
+            node.getChildren().forEach(child -> searchNode(child, keyword, createPathStack(node.isPatch()), results));
         }
     }
 
-    private void searchNode(TreeNode node, SearchKeyword keyword, Stack<String> paths) {
+    private void searchNode(TreeNode node, SearchKeyword keyword, Stack<String> paths, Set<SearchItem> results) {
         if (matchKeyword(keyword, node.getName())) {
             SearchNodeItem item = new SearchNodeItem();
             item.setName(node.getName());
             item.setNode(node);
-            item.setPath(String.join("/", paths));
-            searchList.getItems().add(item);
+            item.setPath(String.join(FileNameUtil.SEPARATOR, paths));
+            results.add(item);
         }
         if (node.getChildren() != null) {
             paths.push(node.getName());
-            node.getChildren().forEach(child -> searchNode(child, keyword, paths));
+            node.getChildren().forEach(child -> searchNode(child, keyword, paths, results));
             paths.pop();
         }
     }
 
-    private void searchNodeWithPath(TreeNode node, SearchKeyword[] keywords) {
+    private void searchNodeWithPath(TreeNode node, SearchKeyword[] keywords, Set<SearchItem> results) {
         if (node.getChildren() != null) {
-            node.getChildren().forEach(child -> searchNodeWithPath(node, keywords, createPathStack(node.isPatch())));
+            node.getChildren().forEach(child -> searchNodeWithPath(node, keywords, createPathStack(node.isPatch()), results));
         }
     }
 
-    private void searchNodeWithPath(TreeNode node, SearchKeyword[] keywords, Stack<String> pathStack) {
-        searchNodeWithPath(node, keywords, 0, pathStack);
+    private void searchNodeWithPath(TreeNode node, SearchKeyword[] keywords, Stack<String> pathStack, Set<SearchItem> results) {
+        searchNodeWithPath(node, keywords, 0, pathStack, results);
     }
 
-    private void searchNodeWithPath(TreeNode node, SearchKeyword[] keywords, int index, Stack<String> paths) {
+    private void searchNodeWithPath(TreeNode node, SearchKeyword[] keywords, int index, Stack<String> paths, Set<SearchItem> results) {
         if (index < keywords.length) {
             if (matchKeyword(keywords[index], node.getName())) {
                 if (index == keywords.length - 1) {
                     SearchNodeItem item = new SearchNodeItem();
                     item.setName(node.getName());
                     item.setNode(node);
-                    item.setPath(String.join("/", paths));
-                    searchList.getItems().add(item);
+                    item.setPath(String.join(FileNameUtil.SEPARATOR, paths));
+                    results.add(item);
                 } else if (node.getChildren() != null) {
                     paths.push(node.getName());
-                    node.getChildren().forEach(child -> searchNodeWithPath(child, keywords, index + 1, paths));
+                    node.getChildren().forEach(child -> searchNodeWithPath(child, keywords, index + 1, paths, results));
                     paths.pop();
                 }
             }
         }
         if (node.getChildren() != null) {
             paths.push(node.getName());
-            node.getChildren().forEach(child -> searchNodeWithPath(child, keywords, paths));
+            node.getChildren().forEach(child -> searchNodeWithPath(child, keywords, paths, results));
             paths.pop();
         }
     }
@@ -180,7 +211,7 @@ public class SearchView {
         dialog.initOwner(stage);
         dialog.initModality(Modality.WINDOW_MODAL);
         dialog.setResizable(true);
-        dialog.setTitle("搜索");
+        dialog.setTitle(I18nUtil.t("app.view.search.title"));
         DialogPane dialogPane = new DialogPurePane();
         dialogPane.setContent(build());
         Configuration configuration = Configuration.getInstance();
