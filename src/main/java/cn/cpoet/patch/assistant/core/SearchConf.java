@@ -1,6 +1,5 @@
 package cn.cpoet.patch.assistant.core;
 
-import java.io.Closeable;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
