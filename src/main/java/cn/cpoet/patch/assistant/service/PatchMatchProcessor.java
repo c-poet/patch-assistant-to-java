@@ -96,6 +96,9 @@ public class PatchMatchProcessor {
     }
 
     private boolean match(List<TreeNode> appNodes, List<TreeNode> patchNodes, Map<String, TreeNode> nameMapping) {
+        if (CollectionUtil.isEmpty(appNodes)) {
+            return false;
+        }
         Map<String, TreeNode> patchNodeMapping = CollectionUtil.isEmpty(patchNodes)
                 ? Collections.emptyMap()
                 : patchNodes.stream().collect(Collectors.toMap(TreeNode::getName, Function.identity()));
@@ -111,6 +114,9 @@ public class PatchMatchProcessor {
     }
 
     private boolean matchWithThread(List<TreeNode> appNodes, List<TreeNode> patchNodes, Map<String, TreeNode> nameMapping) {
+        if (CollectionUtil.isEmpty(appNodes)) {
+            return false;
+        }
         Map<String, TreeNode> patchNodeMapping = CollectionUtil.isEmpty(patchNodes)
                 ? Collections.emptyMap()
                 : patchNodes.stream().collect(Collectors.toMap(TreeNode::getName, Function.identity()));
@@ -140,6 +146,9 @@ public class PatchMatchProcessor {
     private boolean match(TreeNode appNode, Map<String, TreeNode> patchNodeMapping, Map<String, TreeNode> nameMapping) {
         if (appNode.getMappedNode() != null) {
             return true;
+        }
+        if (appNode.getName().endsWith(FileExtConst.DOT_JAR)) {
+            System.out.println(appNode.getPath());
         }
         if (CollectionUtil.isNotEmpty(patchNodeMapping)) {
             TreeNode matchPatchNode = findPatchNode(appNode, patchNodeMapping);
