@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 /**
  * 查看最新绑定的信息
@@ -30,6 +31,8 @@ import java.util.concurrent.TimeUnit;
  * @author CPoet
  */
 public class NodeMappedView {
+
+    private final static Pattern JAR_VER_PATTERN = Pattern.compile("-[0-9.]+-.*");
 
     private String delInfo;
     private String mappedInfo;
@@ -154,6 +157,10 @@ public class NodeMappedView {
         }
     }
 
+    private String removeJarVersionInfo(String name) {
+        return JAR_VER_PATTERN.matcher(name).replaceAll("");
+    }
+
     private void buildMappedInfo(StringBuilder sb, TreeNode node, Stack<String> pathStack) {
         if (node.isDir()) {
             if (CollectionUtil.isNotEmpty(node.getChildren())) {
@@ -187,7 +194,12 @@ public class NodeMappedView {
                     Collections.reverse(paths);
                     secondPath = String.join(FileNameUtil.SEPARATOR, paths);
                     paths.clear();
-                    paths.add(parent.getName());
+                    // jar包的情况下，去除版本号
+                    if (parent.getName().endsWith(FileExtConst.DOT_JAR)) {
+                        paths.add(removeJarVersionInfo(parent.getName()));
+                    } else {
+                        paths.add(parent.getName());
+                    }
                 } else if (SpringConst.CLASSES_PATH.equals(nextParent.getPath())) {
                     paths.add(parent.getName());
                     Collections.reverse(paths);
