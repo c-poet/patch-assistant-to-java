@@ -4,15 +4,12 @@ import cn.cpoet.patch.assistant.control.DialogPurePane;
 import cn.cpoet.patch.assistant.util.AlterUtil;
 import cn.cpoet.patch.assistant.util.I18nUtil;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
-import javafx.scene.layout.Border;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.stage.Window;
 
 import java.util.function.Consumer;
 
@@ -56,7 +53,7 @@ public class ProgressView extends ProgressContext {
         dialog.setTitle(I18nUtil.t("app.view.progress.executing-title") + taskName);
         DialogPane dialogPane = new DialogPurePane();
         dialogPane.setContent(build());
-        dialogPane.setMinWidth(580);
+        dialogPane.setPrefWidth(580);
         dialog.setDialogPane(dialogPane);
         dialogPane.getButtonTypes().addAll(ButtonType.CLOSE);
         consumer.accept(this);
@@ -66,7 +63,6 @@ public class ProgressView extends ProgressContext {
                 e.consume();
             }
         });
-
         dialog.showAndWait();
     }
 }

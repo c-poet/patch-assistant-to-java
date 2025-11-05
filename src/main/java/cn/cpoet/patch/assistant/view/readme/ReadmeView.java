@@ -64,15 +64,16 @@ public class ReadmeView {
         }
     }
 
-    private void handleUpdateReadme(Stage stage) {
+    private boolean handleUpdateReadme(Stage stage) {
         ButtonType bt = AlterUtil.confirm(stage, I18nUtil.t("app.view.readme.update-tip"), ButtonType.YES, ButtonType.NO);
         if (!ButtonType.YES.equals(bt)) {
-            return;
+            return false;
         }
         String text = textArea.getText();
         TreeNode rootNode = TreeNodeUtil.getUnderRootNode(readmeNode);
         new ProgressView(I18nUtil.t("app.view.readme.update-task-name")).showDialog(stage, progressContext
                 -> PatchPackService.INSTANCE.updatePatchReadme(progressContext, patchTree, rootNode, text, callback));
+        return true;
     }
 
     private DialogPane createDialogPane(Stage stage) {
@@ -91,8 +92,9 @@ public class ReadmeView {
         dialogPane.getButtonTypes().add(ButtonType.CANCEL);
         Button updateReadmeBtn = (Button) dialogPane.lookupButton(updateReadmeBT);
         updateReadmeBtn.addEventFilter(ActionEvent.ACTION, e -> {
-            handleUpdateReadme(stage);
-            e.consume();
+            if (!handleUpdateReadme(stage)) {
+                e.consume();
+            }
         });
         dialogPane.lookupButton(saveAsFileBT).addEventFilter(ActionEvent.ACTION, e -> {
             handleSaveAsFile(stage);

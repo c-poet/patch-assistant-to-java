@@ -16,6 +16,7 @@ import cn.cpoet.patch.assistant.util.*;
 import cn.cpoet.patch.assistant.view.content.ContentView;
 import cn.cpoet.patch.assistant.view.node_mapped.NodeMappedView;
 import cn.cpoet.patch.assistant.view.patch_sign.PatchSignView;
+import cn.cpoet.patch.assistant.view.progress.ProgressView;
 import cn.cpoet.patch.assistant.view.readme.ReadmeView;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
@@ -334,18 +335,23 @@ public class HomeRightTreeView extends HomeTreeView {
     }
 
     private void refreshPatchMappedNode(boolean isRefreshReadme, TreeNode rootNode) {
-        UIUtil.runNotUI(() -> {
-            AppTreeInfo appTreeInfo = appTree.getTreeInfo();
-            PatchTreeInfo patchTreeInfo = patchTree.getTreeInfo();
-            if (isRefreshReadme) {
-                PatchPackService.INSTANCE.refreshReadmeNode(patchTreeInfo, rootNode);
-            }
-            PatchPackService.INSTANCE.refreshMappedNode(context.totalInfo, appTreeInfo, patchTreeInfo, rootNode);
-            UIUtil.runUI(() -> {
-                patchTree.refresh();
-                appTree.fireEvent(new Event(AppTreeView.APP_TREE_NONE_REFRESH_CALL));
-            });
-        });
+        UIUtil.runUI(() -> new ProgressView(I18nUtil.t("app.view.right-tree.progress-refresh-mapped-info"))
+                .showDialog(stage, pc -> UIUtil.runNotUI(() -> {
+                    try {
+                        AppTreeInfo appTreeInfo = appTree.getTreeInfo();
+                        PatchTreeInfo patchTreeInfo = patchTree.getTreeInfo();
+                        if (isRefreshReadme) {
+                            PatchPackService.INSTANCE.refreshReadmeNode(patchTreeInfo, rootNode, pc);
+                        }
+                        PatchPackService.INSTANCE.refreshMappedNode(context.totalInfo, appTreeInfo, patchTreeInfo, rootNode, pc);
+                    } finally {
+                        pc.end(true);
+                    }
+                    UIUtil.runUI(() -> {
+                        patchTree.refresh();
+                        appTree.fireEvent(new Event(AppTreeView.APP_TREE_NONE_REFRESH_CALL));
+                    });
+                })));
     }
 
     private void cleanPatchMappedNode(TreeNode rootNode) {
