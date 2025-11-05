@@ -14,9 +14,16 @@ import java.time.temporal.TemporalAccessor;
 public abstract class DateUtil {
 
     public final static String DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
-    public final static DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(DATE_TIME_FORMAT);
 
     private DateUtil() {
+    }
+
+    private static final class DateTimeFormatterHolder {
+        private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(DATE_TIME_FORMAT);
+    }
+
+    public static DateTimeFormatter getDateTimeFormatter() {
+        return DateTimeFormatterHolder.DATE_TIME_FORMATTER;
     }
 
     /**
@@ -56,7 +63,7 @@ public abstract class DateUtil {
      * @return 格式化的时间
      */
     public static String formatDateTime(TemporalAccessor temporal) {
-        return DATE_TIME_FORMATTER.format(temporal);
+        return getDateTimeFormatter().format(temporal);
     }
 
     /**

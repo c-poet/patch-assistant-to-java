@@ -32,8 +32,6 @@ import java.util.regex.Pattern;
  */
 public class NodeMappedView {
 
-    private final static Pattern JAR_VER_PATTERN = Pattern.compile("-[0-9.]+-.*");
-
     private String delInfo;
     private String mappedInfo;
     private TextArea textArea;
@@ -43,6 +41,14 @@ public class NodeMappedView {
     public NodeMappedView(TreeNode appRootNode, TreeNode patchRootNode) {
         this.appRootNode = appRootNode;
         this.patchRootNode = patchRootNode;
+    }
+
+    private static final class JarVerPatternHolder {
+        private static final Pattern JAR_VER_PATTERN = Pattern.compile("-[0-9.]+-.*");
+    }
+
+    private static Pattern getJarVerPattern() {
+        return JarVerPatternHolder.JAR_VER_PATTERN;
     }
 
     private Node build() {
@@ -158,7 +164,7 @@ public class NodeMappedView {
     }
 
     private String removeJarVersionInfo(String name) {
-        return JAR_VER_PATTERN.matcher(name).replaceAll("");
+        return getJarVerPattern().matcher(name).replaceAll("");
     }
 
     private void buildMappedInfo(StringBuilder sb, TreeNode node, Stack<String> pathStack) {
