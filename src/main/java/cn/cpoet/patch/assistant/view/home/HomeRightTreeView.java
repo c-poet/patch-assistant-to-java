@@ -344,6 +344,8 @@ public class HomeRightTreeView extends HomeTreeView {
                             if (isRefreshReadme) {
                                 PatchPackService.INSTANCE.refreshReadmeNode(patchTreeInfo, rootNode, pc);
                             }
+                            // 刷新关联信息，清空原有比较结果
+                            appTreeInfo.setPatchDiffInfo(null);
                             PatchPackService.INSTANCE.refreshMappedNode(context.totalInfo, appTreeInfo, patchTreeInfo, rootNode, pc);
                         } finally {
                             pc.end(true);
