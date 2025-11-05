@@ -1,6 +1,7 @@
 package cn.cpoet.patch.assistant.service;
 
 import cn.cpoet.patch.assistant.constant.FileExtConst;
+import cn.cpoet.patch.assistant.constant.SpringConst;
 import cn.cpoet.patch.assistant.control.tree.AppTreeInfo;
 import cn.cpoet.patch.assistant.control.tree.TotalInfo;
 import cn.cpoet.patch.assistant.control.tree.TreeNodeType;
@@ -12,6 +13,8 @@ import cn.cpoet.patch.assistant.view.progress.ProgressContext;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -111,25 +114,50 @@ public class PatchMatchProcessor {
         if (appNode.getMappedNode() != null) {
             return true;
         }
+        // 未满足路径匹配和名称匹配的条件时，直接返回结果
+        if (CollectionUtil.isEmpty(patchNodes) && CollectionUtil.isEmpty(nameMapping)) {
+            pc.step("not matched " + appNode.getPath());
+            return false;
+        }
         if (CollectionUtil.isEmpty(patchNodes)) {
             return match0(appNode, null, nameMapping);
         }
         return hasMatch(patchNodes, patchNode -> appNode.getMappedNode() != null || match0(appNode, patchNode, nameMapping));
     }
 
-    private boolean match0(TreeNode appNode, TreeNode patchNode, Map<String, TreeNode> nameMapping) {
-        // 未满足路径匹配和名称匹配的条件时，直接返回结果
-        if (patchNode == null && CollectionUtil.isEmpty(nameMapping)) {
-            pc.step("not matched " + appNode.getPath());
-            return false;
+    private boolean matchLibWithHigh(List<TreeNode> jarNodes, List<TreeNode> patchNodes, Map<String, TreeNode> nameMapping) {
+        AtomicBoolean flag = new AtomicBoolean(false);
+        CountDownLatch downLatch = new CountDownLatch(jarNodes.size());
+        for (TreeNode jarNode : jarNodes) {
+            new Thread(() -> {
+                try {
+                    if (match(jarNode, patchNodes, nameMapping)) {
+                        flag.set(true);
+                    }
+                } finally {
+                    downLatch.countDown();
+                }
+            }).start();
         }
+        try {
+            downLatch.await();
+        } catch (Exception ignored) {
+        }
+        return flag.get();
+    }
+
+    private boolean match0(TreeNode appNode, TreeNode patchNode, Map<String, TreeNode> nameMapping) {
         pc.step("matching " + appNode.getPath());
         boolean isMatch = patchNode != null && PatchPackService.INSTANCE.matchPatchName(appNode, patchNode);
         if (appNode.isDir()) {
-            if (CollectionUtil.isNotEmpty(appNode.getChildren())) {
-                return match(appNode.getChildren(), isMatch ? patchNode.getChildren() : null, nameMapping);
+            if (CollectionUtil.isEmpty(appNode.getChildren())) {
+                return false;
             }
-            return false;
+            // 加载jar包匹配过慢，采用多线程处理
+            if (SpringConst.LIB_PATH.equals(appNode.getPath())) {
+                return matchLibWithHigh(appNode.getChildren(), isMatch ? patchNode.getChildren() : null, nameMapping);
+            }
+            return match(appNode.getChildren(), isMatch ? patchNode.getChildren() : null, nameMapping);
         }
         if (appNode.getName().endsWith(FileExtConst.DOT_JAR)) {
             List<TreeNode> oldChildren = appNode.getChildren();
