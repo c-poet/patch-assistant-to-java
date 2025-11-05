@@ -1,7 +1,6 @@
 package cn.cpoet.patch.assistant.service;
 
 import cn.cpoet.patch.assistant.constant.FileExtConst;
-import cn.cpoet.patch.assistant.constant.SpringConst;
 import cn.cpoet.patch.assistant.control.tree.AppTreeInfo;
 import cn.cpoet.patch.assistant.control.tree.TotalInfo;
 import cn.cpoet.patch.assistant.control.tree.TreeNodeType;
@@ -13,10 +12,7 @@ import cn.cpoet.patch.assistant.view.progress.ProgressContext;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -96,105 +92,94 @@ public class PatchMatchProcessor {
         match(appRootNode.getChildren(), isWithPath ? patchRootNode.getChildren() : null, nameMapping);
     }
 
-    private <T> boolean hasMatch(List<T> list, Predicate<T> predicate) {
-        boolean hasFlag = false;
-        for (T item : list) {
-            if (predicate.test(item)) {
-                hasFlag = true;
+    private boolean match(List<TreeNode> appNodes, List<TreeNode> patchNodes, Map<String, TreeNode> nameMapping) {
+        Map<String, TreeNode> patchNodeMapping = CollectionUtil.isEmpty(patchNodes)
+                ? Collections.emptyMap()
+                : patchNodes.stream().collect(Collectors.toMap(TreeNode::getName, Function.identity()));
+        boolean flag = false;
+        for (TreeNode appNode : appNodes) {
+            if (match(appNode, patchNodeMapping, nameMapping)) {
+                flag = true;
+            } else {
+                pc.step("not matched " + appNode.getPath());
             }
         }
-        return hasFlag;
+        return flag;
     }
 
-    private boolean match(List<TreeNode> appNodes, List<TreeNode> patchNodes, Map<String, TreeNode> nameMapping) {
-        return hasMatch(appNodes, appNode -> match(appNode, patchNodes, nameMapping));
-    }
-
-    private boolean match(TreeNode appNode, List<TreeNode> patchNodes, Map<String, TreeNode> nameMapping) {
+    private boolean match(TreeNode appNode, Map<String, TreeNode> patchNodeMapping, Map<String, TreeNode> nameMapping) {
         if (appNode.getMappedNode() != null) {
             return true;
         }
-        // 未满足路径匹配和名称匹配的条件时，直接返回结果
-        if (CollectionUtil.isEmpty(patchNodes) && CollectionUtil.isEmpty(nameMapping)) {
-            pc.step("not matched " + appNode.getPath());
-            return false;
-        }
-        if (CollectionUtil.isEmpty(patchNodes)) {
-            return match0(appNode, null, nameMapping);
-        }
-        return hasMatch(patchNodes, patchNode -> appNode.getMappedNode() != null || match0(appNode, patchNode, nameMapping));
-    }
-
-    private boolean matchLibWithHigh(List<TreeNode> jarNodes, List<TreeNode> patchNodes, Map<String, TreeNode> nameMapping) {
-        AtomicBoolean flag = new AtomicBoolean(false);
-        CountDownLatch downLatch = new CountDownLatch(jarNodes.size());
-        for (TreeNode jarNode : jarNodes) {
-            new Thread(() -> {
-                try {
-                    if (match(jarNode, patchNodes, nameMapping)) {
-                        flag.set(true);
+        if (CollectionUtil.isNotEmpty(patchNodeMapping)) {
+            TreeNode matchPatchNode = findPatchNode(appNode, patchNodeMapping);
+            if (matchPatchNode != null) {
+                if (appNode.isDir()) {
+                    return match(appNode.getChildren(), matchPatchNode.getChildren(), nameMapping);
+                }
+                if (appNode.getName().endsWith(FileExtConst.DOT_JAR) && !matchPatchNode.getName().endsWith(FileExtConst.DOT_JAR)) {
+                    if (appNode.getChildren() != null) {
+                        return match(appNode.getChildren(), matchPatchNode.getChildren(), nameMapping);
                     }
-                } finally {
-                    downLatch.countDown();
+                    if (!AppPackService.INSTANCE.buildChildrenWithCompress(appNode, false)) {
+                        return false;
+                    }
+                    if (match(appNode.getChildren(), matchPatchNode.getChildren(), nameMapping)) {
+                        return true;
+                    }
+                    appNode.setChildren(null);
+                    return false;
                 }
-            }).start();
-        }
-        try {
-            downLatch.await();
-        } catch (Exception ignored) {
-        }
-        return flag.get();
-    }
-
-    private boolean match0(TreeNode appNode, TreeNode patchNode, Map<String, TreeNode> nameMapping) {
-        pc.step("matching " + appNode.getPath());
-        boolean isMatch = patchNode != null && PatchPackService.INSTANCE.matchPatchName(appNode, patchNode);
-        if (appNode.isDir()) {
-            if (CollectionUtil.isEmpty(appNode.getChildren())) {
-                return false;
+                mappedNode(appNode, matchPatchNode);
+                return true;
             }
-            // 加载jar包匹配过慢，采用多线程处理
-            if (SpringConst.LIB_PATH.equals(appNode.getPath())) {
-                return matchLibWithHigh(appNode.getChildren(), isMatch ? patchNode.getChildren() : null, nameMapping);
-            }
-            return match(appNode.getChildren(), isMatch ? patchNode.getChildren() : null, nameMapping);
-        }
-        if (appNode.getName().endsWith(FileExtConst.DOT_JAR)) {
-            List<TreeNode> oldChildren = appNode.getChildren();
-            if (oldChildren == null) {
-                AppPackService.INSTANCE.buildChildrenWithCompress(appNode, false);
-            }
-            if (CollectionUtil.isNotEmpty(appNode.getChildren())) {
-                if (match(appNode.getChildren(), isMatch ? patchNode.getChildren() : null, nameMapping)) {
-                    return true;
-                }
-            }
-            appNode.setChildren(oldChildren);
-        }
-        if (isMatch) {
-            pc.step("successful match " + appNode.getPath());
-            TreeNodeUtil.mappedNode(totalInfo, appNode, patchNode, TreeNodeType.MOD);
-            AppPackService.INSTANCE.createPatchDiffInfo(appTreeInfo, appNode, patchNode);
-            PatchPackService.INSTANCE.mappedInnerClassNode(totalInfo, appTreeInfo, appNode, patchNode);
-            return true;
         }
         return matchWithName(appNode, nameMapping);
     }
 
     private boolean matchWithName(TreeNode appNode, Map<String, TreeNode> nameMapping) {
-        if (appNode.getMappedNode() != null) {
+        if (CollectionUtil.isEmpty(nameMapping)) {
+            return false;
+        }
+        if (appNode.isDir()) {
+            return match(appNode.getChildren(), null, nameMapping);
+        }
+        TreeNode patchNode = nameMapping.remove(appNode.getName());
+        if (patchNode != null) {
+            mappedNode(appNode, patchNode);
             return true;
         }
-        if (!appNode.isDir()) {
-            TreeNode patchNode = nameMapping.remove(appNode.getName());
-            if (patchNode != null) {
-                pc.step("successful match " + appNode.getPath());
-                TreeNodeUtil.mappedNode(totalInfo, appNode, patchNode, TreeNodeType.MOD);
-                AppPackService.INSTANCE.createPatchDiffInfo(appTreeInfo, appNode, patchNode);
-                PatchPackService.INSTANCE.mappedInnerClassNode(totalInfo, appTreeInfo, appNode, patchNode);
-                return true;
+        if (!appNode.getName().endsWith(FileExtConst.DOT_JAR)) {
+            return false;
+        }
+        if (appNode.getChildren() != null) {
+            return match(appNode.getChildren(), null, nameMapping);
+        }
+        if (!AppPackService.INSTANCE.buildChildrenWithCompress(appNode, false)) {
+            return false;
+        }
+        if (match(appNode.getChildren(), null, nameMapping)) {
+            return true;
+        }
+        appNode.setChildren(null);
+        return false;
+    }
+
+    private TreeNode findPatchNode(TreeNode appNode, Map<String, TreeNode> patchNodeMapping) {
+        if (appNode.getName().endsWith(FileExtConst.DOT_JAR)) {
+            for (String patchName : patchNodeMapping.keySet()) {
+                if (PatchPackService.INSTANCE.matchPatchName(appNode, patchName)) {
+                    return patchNodeMapping.remove(patchName);
+                }
             }
         }
-        return false;
+        return patchNodeMapping.remove(appNode.getName());
+    }
+
+    private void mappedNode(TreeNode appNode, TreeNode patchNode) {
+        pc.step("successful match " + appNode.getPath());
+        TreeNodeUtil.mappedNode(totalInfo, appNode, patchNode, TreeNodeType.MOD);
+        AppPackService.INSTANCE.createPatchDiffInfo(appTreeInfo, appNode, patchNode);
+        PatchPackService.INSTANCE.mappedInnerClassNode(totalInfo, appTreeInfo, appNode, patchNode);
     }
 }
