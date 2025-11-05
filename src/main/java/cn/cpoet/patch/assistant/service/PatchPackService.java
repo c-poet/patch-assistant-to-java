@@ -180,17 +180,18 @@ public class PatchPackService extends BasePackService {
         }
         pc.step("app node path: " + appNodePath);
         String[] paths = appNodePath.split(FileNameUtil.SEPARATOR);
-        doMatchMappedNodeChildrenWithReadme(totalInfo, pathInfo, paths, 0, appTreeInfo.getRootNode(), patchNode);
+        doMatchMappedNodeChildrenWithReadme(totalInfo, appTreeInfo, pathInfo, paths, 0, appTreeInfo.getRootNode(), patchNode);
     }
 
-    private boolean doMatchMappedNodeChildrenWithReadme(TotalInfo totalInfo, ReadMePathInfo pathInfo, String[] paths, int index, TreeNode appNode, TreeNode patchNode) {
+    private boolean doMatchMappedNodeChildrenWithReadme(TotalInfo totalInfo, AppTreeInfo appTreeInfo, ReadMePathInfo pathInfo,
+                                                        String[] paths, int index, TreeNode appNode, TreeNode patchNode) {
         if (index >= paths.length) {
             return false;
         }
         List<TreeNode> children = appNode.getChildren();
         if (CollectionUtil.isNotEmpty(children)) {
             for (TreeNode child : children) {
-                if (doMatchMappedNodeWithReadme(totalInfo, pathInfo, paths, index, child, patchNode)) {
+                if (doMatchMappedNodeWithReadme(totalInfo, appTreeInfo, pathInfo, paths, index, child, patchNode)) {
                     return true;
                 }
             }
@@ -251,7 +252,8 @@ public class PatchPackService extends BasePackService {
         }
     }
 
-    private boolean doMatchMappedNodeWithReadme(TotalInfo totalInfo, ReadMePathInfo pathInfo, String[] paths, int index, TreeNode appNode, TreeNode patchNode) {
+    private boolean doMatchMappedNodeWithReadme(TotalInfo totalInfo, AppTreeInfo appTreeInfo, ReadMePathInfo pathInfo,
+                                                String[] paths, int index, TreeNode appNode, TreeNode patchNode) {
         if (!matchPatchName(appNode, paths[index])) {
             return false;
         }
@@ -266,15 +268,16 @@ public class PatchPackService extends BasePackService {
             } else if (ReadMePathInfo.TypeEnum.NONE.equals(pathInfo.getType())
                     || ReadMePathInfo.TypeEnum.MOD.equals(pathInfo.getType())) {
                 TreeNodeUtil.mappedNode(totalInfo, appNode, patchNode, TreeNodeType.MOD);
-                mappedInnerClassNode(totalInfo, appNode, patchNode);
+                AppPackService.INSTANCE.createPatchDiffInfo(appTreeInfo, appNode, patchNode);
+                mappedInnerClassNode(totalInfo, appTreeInfo, appNode, patchNode);
             }
             return true;
         }
         if (CollectionUtil.isNotEmpty(appNode.getChildren())) {
-            return doMatchMappedNodeChildrenWithReadme(totalInfo, pathInfo, paths, ++index, appNode, patchNode);
+            return doMatchMappedNodeChildrenWithReadme(totalInfo, appTreeInfo, pathInfo, paths, ++index, appNode, patchNode);
         }
         if (appNode.getName().endsWith(FileExtConst.DOT_JAR) && buildChildrenWithCompress(appNode, false)) {
-            return doMatchMappedNodeChildrenWithReadme(totalInfo, pathInfo, paths, ++index, appNode, patchNode);
+            return doMatchMappedNodeChildrenWithReadme(totalInfo, appTreeInfo, pathInfo, paths, ++index, appNode, patchNode);
         }
         return false;
     }
@@ -307,7 +310,7 @@ public class PatchPackService extends BasePackService {
      * @param appNode   应用节点
      * @param patchNode 补丁节点
      */
-    public void mappedInnerClassNode(TotalInfo totalInfo, TreeNode appNode, TreeNode patchNode) {
+    public void mappedInnerClassNode(TotalInfo totalInfo, AppTreeInfo appTreeInfo, TreeNode appNode, TreeNode patchNode) {
         if (!appNode.getName().endsWith(FileExtConst.DOT_CLASS) || !patchNode.getName().endsWith(FileExtConst.DOT_CLASS)) {
             return;
         }
@@ -329,7 +332,8 @@ public class PatchPackService extends BasePackService {
                 continue;
             }
             TreeNodeUtil.mappedNode(totalInfo, appInnerNode, patchInnerNode, TreeNodeType.MOD);
-            mappedInnerClassNode(totalInfo, appInnerNode, patchInnerNode);
+            AppPackService.INSTANCE.createPatchDiffInfo(appTreeInfo, appInnerNode, patchInnerNode);
+            mappedInnerClassNode(totalInfo, appTreeInfo, appInnerNode, patchInnerNode);
             innerNodeMap.remove(patchInnerNode.getName());
         }
         if (CollectionUtil.isNotEmpty(innerNodeMap)) {

@@ -147,7 +147,7 @@ public class PatchMatchProcessor {
             pc.step("successful match " + appNode.getPath());
             TreeNodeUtil.mappedNode(totalInfo, appNode, patchNode, TreeNodeType.MOD);
             AppPackService.INSTANCE.createPatchDiffInfo(appTreeInfo, appNode, patchNode);
-            PatchPackService.INSTANCE.mappedInnerClassNode(totalInfo, appNode, patchNode);
+            PatchPackService.INSTANCE.mappedInnerClassNode(totalInfo, appTreeInfo, appNode, patchNode);
             return true;
         }
         return matchWithName(appNode, nameMapping);
@@ -163,7 +163,7 @@ public class PatchMatchProcessor {
                 pc.step("successful match " + appNode.getPath());
                 TreeNodeUtil.mappedNode(totalInfo, appNode, patchNode, TreeNodeType.MOD);
                 AppPackService.INSTANCE.createPatchDiffInfo(appTreeInfo, appNode, patchNode);
-                PatchPackService.INSTANCE.mappedInnerClassNode(totalInfo, appNode, patchNode);
+                PatchPackService.INSTANCE.mappedInnerClassNode(totalInfo, appTreeInfo, appNode, patchNode);
                 return true;
             }
         }
