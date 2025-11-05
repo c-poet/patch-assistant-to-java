@@ -109,12 +109,12 @@ public class PatchMatchProcessor {
 
     private boolean match(TreeNode appNode, List<TreeNode> patchNodes, Map<String, TreeNode> nameMapping) {
         if (appNode.getMappedNode() != null) {
-            return false;
+            return true;
         }
         if (CollectionUtil.isEmpty(patchNodes)) {
             return match0(appNode, null, nameMapping);
         }
-        return hasMatch(patchNodes, patchNode -> appNode.getMappedNode() == null && match0(appNode, patchNode, nameMapping));
+        return hasMatch(patchNodes, patchNode -> appNode.getMappedNode() != null || match0(appNode, patchNode, nameMapping));
     }
 
     private boolean match0(TreeNode appNode, TreeNode patchNode, Map<String, TreeNode> nameMapping) {
@@ -154,16 +154,18 @@ public class PatchMatchProcessor {
     }
 
     private boolean matchWithName(TreeNode appNode, Map<String, TreeNode> nameMapping) {
-        if (appNode.getMappedNode() != null || appNode.isDir()) {
-            return false;
-        }
-        TreeNode patchNode = nameMapping.remove(appNode.getName());
-        if (patchNode != null) {
-            pc.step("successful match " + appNode.getPath());
-            TreeNodeUtil.mappedNode(totalInfo, appNode, patchNode, TreeNodeType.MOD);
-            AppPackService.INSTANCE.createPatchDiffInfo(appTreeInfo, appNode, patchNode);
-            PatchPackService.INSTANCE.mappedInnerClassNode(totalInfo, appNode, patchNode);
+        if (appNode.getMappedNode() != null) {
             return true;
+        }
+        if (!appNode.isDir()) {
+            TreeNode patchNode = nameMapping.remove(appNode.getName());
+            if (patchNode != null) {
+                pc.step("successful match " + appNode.getPath());
+                TreeNodeUtil.mappedNode(totalInfo, appNode, patchNode, TreeNodeType.MOD);
+                AppPackService.INSTANCE.createPatchDiffInfo(appTreeInfo, appNode, patchNode);
+                PatchPackService.INSTANCE.mappedInnerClassNode(totalInfo, appNode, patchNode);
+                return true;
+            }
         }
         return false;
     }
