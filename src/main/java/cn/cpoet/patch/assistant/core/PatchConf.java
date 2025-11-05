@@ -34,7 +34,7 @@ public class PatchConf implements Cloneable {
     /**
      * 按照名称或者路径匹配时，过滤的文件
      */
-    private String filterFileRegex = "([^.]+)|(.*\\.sql)|(.*\\.txt)";
+    private String filterFileRegex = "([^.]+)|(.*\\.sql)|(.*\\.txt)|(.*\\.zip)|(.*\\.rar)|(.*\\.docx?)|(.*\\.xlsx?)";
 
     /**
      * 写入补丁签名
