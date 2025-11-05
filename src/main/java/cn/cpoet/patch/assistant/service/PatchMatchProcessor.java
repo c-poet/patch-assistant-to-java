@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -92,8 +93,18 @@ public class PatchMatchProcessor {
         match(appRootNode.getChildren(), isWithPath ? patchRootNode.getChildren() : null, nameMapping);
     }
 
+    private <T> boolean hasMatch(List<T> list, Predicate<T> predicate) {
+        boolean hasFlag = false;
+        for (T item : list) {
+            if (predicate.test(item)) {
+                hasFlag = true;
+            }
+        }
+        return hasFlag;
+    }
+
     private boolean match(List<TreeNode> appNodes, List<TreeNode> patchNodes, Map<String, TreeNode> nameMapping) {
-        return appNodes.stream().anyMatch(appNode -> match(appNode, patchNodes, nameMapping));
+        return hasMatch(appNodes, appNode -> match(appNode, patchNodes, nameMapping));
     }
 
     private boolean match(TreeNode appNode, List<TreeNode> patchNodes, Map<String, TreeNode> nameMapping) {
@@ -103,9 +114,7 @@ public class PatchMatchProcessor {
         if (CollectionUtil.isEmpty(patchNodes)) {
             return match0(appNode, null, nameMapping);
         }
-        return patchNodes.stream()
-                .filter(node -> node.getMappedNode() == null)
-                .anyMatch(node -> match0(appNode, node, nameMapping));
+        return hasMatch(patchNodes, patchNode -> appNode.getMappedNode() == null && match0(appNode, patchNode, nameMapping));
     }
 
     private boolean match0(TreeNode appNode, TreeNode patchNode, Map<String, TreeNode> nameMapping) {
