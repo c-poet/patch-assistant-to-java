@@ -6,7 +6,9 @@ import cn.cpoet.patch.assistant.control.tree.AppTreeInfo;
 import cn.cpoet.patch.assistant.control.tree.TotalInfo;
 import cn.cpoet.patch.assistant.control.tree.TreeNodeType;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
+import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.util.CollectionUtil;
+import cn.cpoet.patch.assistant.util.StringUtil;
 import cn.cpoet.patch.assistant.util.TreeNodeUtil;
 import cn.cpoet.patch.assistant.view.progress.ProgressContext;
 
@@ -16,6 +18,7 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -24,6 +27,9 @@ import java.util.stream.Collectors;
  * @author CPoet
  */
 public class PatchMatchProcessor {
+
+    private volatile static Pattern FILTER_FILE_PATTERN = null;
+
     /**
      * 统计信息
      */
@@ -80,6 +86,30 @@ public class PatchMatchProcessor {
                 && patchRootNode != null && CollectionUtil.isNotEmpty(patchRootNode.getChildren());
     }
 
+    private static boolean isAcceptPatchFile(String name) {
+        String filterFileRegex = Configuration.getInstance().getPatch().getFilterFileRegex();
+        if (StringUtil.isBlank(filterFileRegex)) {
+            FILTER_FILE_PATTERN = null;
+            return false;
+        }
+        if (FILTER_FILE_PATTERN == null) {
+            synchronized (PatchMatchProcessor.class) {
+                if (FILTER_FILE_PATTERN == null) {
+                    FILTER_FILE_PATTERN = Pattern.compile(filterFileRegex);
+                }
+            }
+        } else {
+            if (!filterFileRegex.equals(FILTER_FILE_PATTERN.pattern())) {
+                synchronized (PatchMatchProcessor.class) {
+                    if (!filterFileRegex.equals(FILTER_FILE_PATTERN.pattern())) {
+                        FILTER_FILE_PATTERN = Pattern.compile(filterFileRegex);
+                    }
+                }
+            }
+        }
+        return !FILTER_FILE_PATTERN.matcher(name).matches();
+    }
+
     public void exec() {
         if (!checkRootNode()) {
             return;
@@ -89,6 +119,7 @@ public class PatchMatchProcessor {
             nameMapping = patchRootNode.getChildren().stream()
                     .filter(node -> !node.isDir() && node.getMappedNode() == null)
                     .filter(node -> TreeNodeType.NONE.equals(node.getType()))
+                    .filter(node -> isAcceptPatchFile(node.getName()))
                     .collect(Collectors.toMap(TreeNode::getName, Function.identity()));
             pc.step("number of nodes matched by name " + nameMapping.size());
         }
@@ -99,9 +130,7 @@ public class PatchMatchProcessor {
         if (CollectionUtil.isEmpty(appNodes)) {
             return false;
         }
-        Map<String, TreeNode> patchNodeMapping = CollectionUtil.isEmpty(patchNodes)
-                ? Collections.emptyMap()
-                : patchNodes.stream().collect(Collectors.toMap(TreeNode::getName, Function.identity()));
+        Map<String, TreeNode> patchNodeMapping = createPatchNodeMapping(patchNodes);
         boolean flag = false;
         for (TreeNode appNode : appNodes) {
             if (match(appNode, patchNodeMapping, nameMapping)) {
@@ -113,13 +142,19 @@ public class PatchMatchProcessor {
         return flag;
     }
 
+    private Map<String, TreeNode> createPatchNodeMapping(List<TreeNode> patchNodes) {
+        if (CollectionUtil.isEmpty(patchNodes)) {
+            return Collections.emptyMap();
+        }
+        return patchNodes.stream().filter(node -> isAcceptPatchFile(node.getName()))
+                .collect(Collectors.toMap(TreeNode::getName, Function.identity()));
+    }
+
     private boolean matchWithThread(List<TreeNode> appNodes, List<TreeNode> patchNodes, Map<String, TreeNode> nameMapping) {
         if (CollectionUtil.isEmpty(appNodes)) {
             return false;
         }
-        Map<String, TreeNode> patchNodeMapping = CollectionUtil.isEmpty(patchNodes)
-                ? Collections.emptyMap()
-                : patchNodes.stream().collect(Collectors.toMap(TreeNode::getName, Function.identity()));
+        Map<String, TreeNode> patchNodeMapping = createPatchNodeMapping(patchNodes);
         // 上百个线程，后期评估是否引入线程池或者固定线程数量
         AtomicBoolean flagAtomic = new AtomicBoolean(false);
         CountDownLatch downLatch = new CountDownLatch(appNodes.size());
@@ -146,9 +181,6 @@ public class PatchMatchProcessor {
     private boolean match(TreeNode appNode, Map<String, TreeNode> patchNodeMapping, Map<String, TreeNode> nameMapping) {
         if (appNode.getMappedNode() != null) {
             return true;
-        }
-        if (appNode.getName().endsWith(FileExtConst.DOT_JAR)) {
-            System.out.println(appNode.getPath());
         }
         if (CollectionUtil.isNotEmpty(patchNodeMapping)) {
             TreeNode matchPatchNode = findPatchNode(appNode, patchNodeMapping);
