@@ -87,27 +87,27 @@ public class PatchMatchProcessor {
     }
 
     private static boolean isAcceptPatchFile(String name) {
-        String filterFileRegex = Configuration.getInstance().getPatch().getFilterFileRegex();
-        if (StringUtil.isBlank(filterFileRegex)) {
+        String patchFileRegex = Configuration.getInstance().getPatch().getPatchFileRegex();
+        if (StringUtil.isBlank(patchFileRegex)) {
             FILTER_FILE_PATTERN = null;
-            return false;
+            return true;
         }
         if (FILTER_FILE_PATTERN == null) {
             synchronized (PatchMatchProcessor.class) {
                 if (FILTER_FILE_PATTERN == null) {
-                    FILTER_FILE_PATTERN = Pattern.compile(filterFileRegex);
+                    FILTER_FILE_PATTERN = Pattern.compile(patchFileRegex);
                 }
             }
         } else {
-            if (!filterFileRegex.equals(FILTER_FILE_PATTERN.pattern())) {
+            if (!patchFileRegex.equals(FILTER_FILE_PATTERN.pattern())) {
                 synchronized (PatchMatchProcessor.class) {
-                    if (!filterFileRegex.equals(FILTER_FILE_PATTERN.pattern())) {
-                        FILTER_FILE_PATTERN = Pattern.compile(filterFileRegex);
+                    if (!patchFileRegex.equals(FILTER_FILE_PATTERN.pattern())) {
+                        FILTER_FILE_PATTERN = Pattern.compile(patchFileRegex);
                     }
                 }
             }
         }
-        return !FILTER_FILE_PATTERN.matcher(name).matches();
+        return FILTER_FILE_PATTERN.matcher(name).matches();
     }
 
     public void exec() {

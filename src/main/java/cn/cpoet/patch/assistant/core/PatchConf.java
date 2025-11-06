@@ -32,9 +32,9 @@ public class PatchConf implements Cloneable {
     private Boolean fileNameMatch = Boolean.TRUE;
 
     /**
-     * 按照名称或者路径匹配时，过滤的文件
+     * 按照名称或者路径匹配时，允许的文件
      */
-    private String filterFileRegex = "([^.]+)|(.*\\.jar)|(.*\\.sql)|(.*\\.txt)|(.*\\.zip)|(.*\\.rar)|(.*\\.docx?)|(.*\\.xlsx?)";
+    private String patchFileRegex = "(.*\\.class)|(.*\\.html)|(.*\\.js)|(.*\\.css)";
 
     /**
      * 写入补丁签名
@@ -83,12 +83,12 @@ public class PatchConf implements Cloneable {
         this.fileNameMatch = fileNameMatch;
     }
 
-    public String getFilterFileRegex() {
-        return filterFileRegex;
+    public String getPatchFileRegex() {
+        return patchFileRegex;
     }
 
-    public void setFilterFileRegex(String filterFileRegex) {
-        this.filterFileRegex = filterFileRegex;
+    public void setPatchFileRegex(String patchFileRegex) {
+        this.patchFileRegex = patchFileRegex;
     }
 
     public Boolean getWritePatchSign() {

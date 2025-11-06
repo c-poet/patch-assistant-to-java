@@ -63,11 +63,11 @@ public class ConfigView {
             box.setSpacing(10);
         }));
 
-        patchConfigBox.getChildren().add(FXUtil.pre(new HBox(new Label(I18nUtil.t("app.view.config.patch-filter-regex")), FXUtil.pre(new TextField(), node -> {
+        patchConfigBox.getChildren().add(FXUtil.pre(new HBox(new Label(I18nUtil.t("app.view.config.patch-file-regex")), FXUtil.pre(new TextField(), node -> {
             HBox.setHgrow(node, Priority.ALWAYS);
-            node.setText(patch.getFilterFileRegex());
+            node.setText(patch.getPatchFileRegex());
             node.textProperty().addListener((e, oldVal, newVal) -> {
-                patch.setFilterFileRegex(newVal);
+                patch.setPatchFileRegex(newVal);
             });
         })), box -> box.setAlignment(Pos.CENTER)));
 
