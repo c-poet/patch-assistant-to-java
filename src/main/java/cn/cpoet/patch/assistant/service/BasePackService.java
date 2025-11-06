@@ -46,7 +46,8 @@ public abstract class BasePackService {
     public void handleInnerClass(List<TreeNode> classes, List<TreeNode> innerClasses) {
         Map<String, TreeNode> classMap = classes.stream()
                 .filter(node -> node.getName().endsWith(FileExtConst.DOT_CLASS))
-                .collect(Collectors.toMap(node -> FileNameUtil.getName(node.getPath()), Function.identity()));
+                // ZIP 包中同路径下可能存在同名文件，需要处理这种特殊情况
+                .collect(Collectors.toMap(node -> FileNameUtil.getName(node.getPath()), Function.identity(), (first, last) -> first));
         handleInnerClass(classMap, innerClasses, 1);
     }
 
