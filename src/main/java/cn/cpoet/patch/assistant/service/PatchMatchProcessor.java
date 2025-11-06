@@ -13,6 +13,7 @@ import cn.cpoet.patch.assistant.util.TreeNodeUtil;
 import cn.cpoet.patch.assistant.view.progress.ProgressContext;
 
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -28,6 +29,7 @@ import java.util.stream.Collectors;
  */
 public class PatchMatchProcessor {
 
+    private static final int MATCH_THREAD_SIZE = 5;
     private volatile static Pattern FILTER_FILE_PATTERN = null;
 
     /**
@@ -154,28 +156,47 @@ public class PatchMatchProcessor {
         if (CollectionUtil.isEmpty(appNodes)) {
             return false;
         }
-        Map<String, TreeNode> patchNodeMapping = createPatchNodeMapping(patchNodes);
-        // 上百个线程，后期评估是否引入线程池或者固定线程数量
+        int threadNum = Math.min(appNodes.size(), MATCH_THREAD_SIZE);
+        if (threadNum == 1) {
+            return match(appNodes, patchNodes, nameMapping);
+        }
+        Iterator<TreeNode> it = appNodes.iterator();
         AtomicBoolean flagAtomic = new AtomicBoolean(false);
-        CountDownLatch downLatch = new CountDownLatch(appNodes.size());
-        for (TreeNode appNode : appNodes) {
+        CountDownLatch downLatch = new CountDownLatch(threadNum);
+        Map<String, TreeNode> patchNodeMapping = createPatchNodeMapping(patchNodes);
+        for (int i = 0; i < threadNum; ++i) {
             new Thread(() -> {
                 try {
-                    if (match(appNode, patchNodeMapping, nameMapping)) {
-                        flagAtomic.set(true);
-                    } else {
-                        pc.step("not matched " + appNode.getPath());
-                    }
+                    doMatchWithThread(it, patchNodeMapping, nameMapping, flagAtomic);
                 } finally {
                     downLatch.countDown();
                 }
             }).start();
         }
+        doMatchWithThread(it, patchNodeMapping, nameMapping, flagAtomic);
         try {
             downLatch.await();
         } catch (Exception ignored) {
         }
         return flagAtomic.get();
+    }
+
+    private void doMatchWithThread(Iterator<TreeNode> it, Map<String, TreeNode> patchNodeMapping, Map<String, TreeNode> nameMapping,
+                                   AtomicBoolean flagAtomic) {
+        TreeNode node;
+        while (true) {
+            synchronized (PatchMatchProcessor.class) {
+                node = it.hasNext() ? it.next() : null;
+            }
+            if (node == null) {
+                break;
+            }
+            if (match(node, patchNodeMapping, nameMapping)) {
+                flagAtomic.set(true);
+            } else {
+                pc.step("not matched " + node.getPath());
+            }
+        }
     }
 
     private boolean match(TreeNode appNode, Map<String, TreeNode> patchNodeMapping, Map<String, TreeNode> nameMapping) {
