@@ -490,15 +490,12 @@ public class HomeRightTreeView extends HomeTreeView {
         patchTree.setOnKeyPressed(this::onKeyPressed);
         patchTree.setOnKeyReleased(this::onKeyReleased);
         initPatchTreeDrag();
-        // 判断是否需要加载最后操作的补丁信息
-        if (Boolean.TRUE.equals(Configuration.getInstance().getPatch().getLoadLastPatch())) {
-            UIUtil.runNotUI(() -> {
-                File file = getInitPatchFile();
-                if (file != null) {
-                    refreshPatchTree(file);
-                }
-            });
-        }
+        UIUtil.runNotUI(() -> {
+            File file = getInitPatchFile();
+            if (file != null) {
+                refreshPatchTree(file);
+            }
+        });
         StackPane stackPane = new StackPane();
         stackPane.getChildren().add(patchTree);
         fastSearchControl.fillNode(stackPane);
@@ -507,16 +504,26 @@ public class HomeRightTreeView extends HomeTreeView {
 
     private File getInitPatchFile() {
         File file = null;
-        String startPatchPath = AppContext.getInstance().getArg(ParamNameConst.START_PATCH);
-        if (!StringUtil.isBlank(startPatchPath)) {
-            file = FileUtil.getExistsDirOrFile(startPatchPath);
+        String patchPath = AppContext.getInstance().getArg(ParamNameConst.PATCH);
+        if (!StringUtil.isBlank(patchPath)) {
+            file = FileUtil.getExistsDirOrFile(patchPath);
         }
         if (file != null) {
             return file;
         }
-        String lastPatchPackPath = Configuration.getInstance().getLastPatchPackPath();
-        if (!StringUtil.isBlank(lastPatchPackPath)) {
-            file = FileUtil.getExistsDirOrFile(lastPatchPackPath);
+        String targetPath = AppContext.getInstance().getArg(ParamNameConst.TARGET);
+        if (!StringUtil.isBlank(targetPath) && !targetPath.endsWith(FileExtConst.DOT_JAR)) {
+            file = FileUtil.getExistsDirOrFile(targetPath);
+        }
+        if (file != null) {
+            return file;
+        }
+        // 判断是否需要加载最后操作的补丁信息
+        if (Boolean.TRUE.equals(Configuration.getInstance().getPatch().getLoadLastPatch())) {
+            String lastPatchPackPath = Configuration.getInstance().getLastPatchPackPath();
+            if (!StringUtil.isBlank(lastPatchPackPath)) {
+                file = FileUtil.getExistsDirOrFile(lastPatchPackPath);
+            }
         }
         return file;
     }

@@ -2,12 +2,14 @@ package cn.cpoet.patch.assistant.view.home;
 
 import cn.cpoet.patch.assistant.constant.FileExtConst;
 import cn.cpoet.patch.assistant.constant.FocusTreeStatusConst;
+import cn.cpoet.patch.assistant.constant.ParamNameConst;
 import cn.cpoet.patch.assistant.control.menu.MenuItemClaim;
 import cn.cpoet.patch.assistant.control.tree.*;
 import cn.cpoet.patch.assistant.control.tree.node.CompressNode;
 import cn.cpoet.patch.assistant.control.tree.node.FileNode;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.control.tree.node.VirtualNode;
+import cn.cpoet.patch.assistant.core.AppContext;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.service.AppPackService;
 import cn.cpoet.patch.assistant.util.*;
@@ -369,11 +371,7 @@ public class HomeLeftTreeView extends HomeTreeView {
         appTree.setOnKeyReleased(this::onKeyReleased);
         initAppTreeDrag();
         UIUtil.runNotUI(() -> {
-            String lastAppPackPath = Configuration.getInstance().getLastAppPackPath();
-            if (StringUtil.isBlank(lastAppPackPath)) {
-                return;
-            }
-            File file = FileUtil.getExistsFile(lastAppPackPath);
+            File file = getInitAppPackFile();
             if (file != null) {
                 refreshAppTree(file);
             }
@@ -382,6 +380,22 @@ public class HomeLeftTreeView extends HomeTreeView {
         stackPane.getChildren().add(appTree);
         fastSearchControl.fillNode(stackPane);
         return stackPane;
+    }
+
+    private File getInitAppPackFile() {
+        File file = null;
+        String targetPath = AppContext.getInstance().getArg(ParamNameConst.TARGET);
+        if (!StringUtil.isBlank(targetPath) && targetPath.endsWith(FileExtConst.DOT_JAR)) {
+            file = FileUtil.getExistsFile(targetPath);
+        }
+        if (file != null) {
+            return file;
+        }
+        String lastAppPackPath = Configuration.getInstance().getLastAppPackPath();
+        if (!StringUtil.isBlank(lastAppPackPath)) {
+            file = FileUtil.getExistsFile(lastAppPackPath);
+        }
+        return file;
     }
 
     private void updatePackPathLabel(TextField textField) {
