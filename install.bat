@@ -28,7 +28,7 @@ echo Installing PatchAssistant2J...
 echo Current directory: %CurrentDir%
 
 :: 注册PatchAssistant2J.JAR类型
-reg add "HKEY_CLASSES_ROOT\PatchAssistant2J.JAR" /ve /t REG_SZ /d "PatchAssistant2J JAR 应用包" /f
+reg add "HKEY_CLASSES_ROOT\PatchAssistant2J.JAR" /ve /t REG_SZ /d "PatchAssistant2J JAR" /f
 reg add "HKEY_CLASSES_ROOT\PatchAssistant2J.JAR\DefaultIcon" /ve /t REG_SZ /d "%CurrentDir%\PatchAssistant2J.exe" /f
 reg add "HKEY_CLASSES_ROOT\PatchAssistant2J.JAR\shell\open\command" /ve /t REG_SZ /d "\"%CurrentDir%\PatchAssistant2J.exe\" \"--target=%%1\"" /f
 
