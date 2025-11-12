@@ -27,9 +27,17 @@ set "CurrentDir=%CurrentDir:~0,-1%"
 echo Installing PatchAssistant2J...
 echo Current directory: %CurrentDir%
 
-:: 注册文件右键菜单
-reg add "HKEY_CLASSES_ROOT\*\shell\PatchAssistant2J" /v "Icon" /t REG_SZ /d "%CurrentDir%\PatchAssistant2J.exe" /f
+:: 注册PatchAssistant2J.JAR类型
+reg add "HKEY_CLASSES_ROOT\PatchAssistant2J.JAR\DefaultIcon" /ve /t REG_SZ /d "%CurrentDir%\PatchAssistant2J.exe" /f
+reg add "HKEY_CLASSES_ROOT\PatchAssistant2J.JAR\shell\open\command" /ve /t REG_SZ /d "\"%CurrentDir%\PatchAssistant2J.exe\" \"--target=%%1\"" /f
+
+:: 注册.jar类型
 reg add "HKEY_CLASSES_ROOT\*\shell\PatchAssistant2J\command" /ve /t REG_SZ /d "\"%CurrentDir%\PatchAssistant2J.exe\" \"--target=%%1\"" /f
+reg add "HKEY_CLASSES_ROOT\*\shell\PatchAssistant2J\command" /ve /t REG_SZ /d "\"%CurrentDir%\PatchAssistant2J.exe\" \"--target=%%1\"" /f
+
+:: 注册文件右键菜单
+reg add "HKEY_CLASSES_ROOT\.jar" /ve /t REG_SZ /d "PatchAssistant2J.JAR" /f
+reg add "HKEY_CLASSES_ROOT\.jar" /v "Content Type" /t REG_SZ /d "application/java-archive" /f
 
 :: 注册文件夹右键菜单
 reg add "HKEY_CLASSES_ROOT\Directory\shell\PatchAssistant2J" /v "Icon" /t REG_SZ /d "%CurrentDir%\PatchAssistant2J.exe" /f
