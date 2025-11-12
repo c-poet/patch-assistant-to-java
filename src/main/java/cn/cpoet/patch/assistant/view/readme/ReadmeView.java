@@ -1,24 +1,20 @@
 package cn.cpoet.patch.assistant.view.readme;
 
-import cn.cpoet.patch.assistant.constant.FileExtConst;
 import cn.cpoet.patch.assistant.control.tree.PatchTreeView;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.service.PatchPackService;
-import cn.cpoet.patch.assistant.service.compress.UnCallback;
-import cn.cpoet.patch.assistant.util.*;
+import cn.cpoet.patch.assistant.util.AlterUtil;
+import cn.cpoet.patch.assistant.util.I18nUtil;
+import cn.cpoet.patch.assistant.util.UIUtil;
+import cn.cpoet.patch.assistant.view.node_mapped.AbsNodeMappedView;
 import cn.cpoet.patch.assistant.view.progress.ProgressView;
 import javafx.event.ActionEvent;
-import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.*;
-import javafx.scene.input.Clipboard;
-import javafx.scene.input.ClipboardContent;
-import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
-import java.io.File;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
@@ -27,52 +23,42 @@ import java.util.function.Consumer;
  *
  * @author CPoet
  */
-public class ReadmeView {
+public class ReadmeView extends AbsNodeMappedView {
 
-    private TextArea textArea;
     private final TreeNode readmeNode;
     private final PatchTreeView patchTree;
     private final Consumer<Boolean> callback;
 
-    public ReadmeView(TreeNode readmeNode, PatchTreeView patchTree, Consumer<Boolean> callback) {
+    public ReadmeView(TreeNode readmeNode, PatchTreeView patchTree, TreeNode appRootNode, TreeNode patchTreeNode, Consumer<Boolean> callback) {
+        super(appRootNode, patchTreeNode, readmeNode == null);
         this.readmeNode = readmeNode;
         this.patchTree = patchTree;
         this.callback = callback;
     }
 
-    private Node build() {
-        textArea = new TextArea();
-        textArea.setPadding(Insets.EMPTY);
-        textArea.setText(patchTree.getTreeInfo().getReadmeText());
-        return textArea;
-    }
-
-    private void handleCopyInfo() {
-        Clipboard systemClipboard = Clipboard.getSystemClipboard();
-        ClipboardContent content = new ClipboardContent();
-        content.putString(textArea.getText());
-        systemClipboard.setContent(content);
-    }
-
-    private void handleSaveAsFile(Stage stage) {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setInitialFileName(readmeNode.getName());
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("README FILE", "*" + FileExtConst.DOT_TXT));
-        File file = fileChooser.showSaveDialog(stage);
-        if (file != null) {
-            FileUtil.writeFile(file, textArea.getText().getBytes());
+    protected Node build() {
+        Node node = super.build();
+        if (readmeNode != null) {
+            textArea.setText(patchTree.getTreeInfo().getReadmeText());
         }
+        return node;
+    }
+
+    @Override
+    protected String getSaveFileName() {
+        return readmeNode != null ? readmeNode.getName() : super.getSaveFileName();
     }
 
     private boolean handleUpdateReadme(Stage stage) {
-        ButtonType bt = AlterUtil.confirm(stage, I18nUtil.t("app.view.readme.update-tip"), ButtonType.YES, ButtonType.NO);
-        if (!ButtonType.YES.equals(bt)) {
-            return false;
+        if (readmeNode != null) {
+            ButtonType bt = AlterUtil.confirm(stage, I18nUtil.t("app.view.readme.update-tip"), ButtonType.YES, ButtonType.NO);
+            if (!ButtonType.YES.equals(bt)) {
+                return false;
+            }
         }
         String text = textArea.getText();
-        TreeNode rootNode = TreeNodeUtil.getUnderRootNode(readmeNode);
-        new ProgressView(I18nUtil.t("app.view.readme.update-task-name")).showDialog(stage, progressContext
-                -> PatchPackService.INSTANCE.updatePatchReadme(progressContext, patchTree, rootNode, text, callback));
+        new ProgressView(I18nUtil.t(readmeNode == null ? "app.view.readme.create-task-name" : "app.view.readme.update-task-name"))
+                .showDialog(stage, progressContext -> PatchPackService.INSTANCE.updatePatchReadme(progressContext, patchTree, patchRootNode, text, callback));
         return true;
     }
 
@@ -83,7 +69,7 @@ public class ReadmeView {
         dialogPane.setPrefSize(configuration.getReadmeWidth(), configuration.getReadmeHeight());
         dialogPane.widthProperty().addListener((observableValue, oldVal, newVal) -> configuration.setReadmeWidth(newVal.doubleValue()));
         dialogPane.heightProperty().addListener((observableValue, oldVal, newVal) -> configuration.setReadmeHeight(newVal.doubleValue()));
-        ButtonType updateReadmeBT = new ButtonType(I18nUtil.t("app.view.readme.update"), ButtonBar.ButtonData.YES);
+        ButtonType updateReadmeBT = new ButtonType(I18nUtil.t(readmeNode == null ? "app.view.readme.create" : "app.view.readme.update"), ButtonBar.ButtonData.YES);
         dialogPane.getButtonTypes().add(updateReadmeBT);
         ButtonType saveAsFileBT = new ButtonType(I18nUtil.t("app.view.readme.save-as-file"), ButtonBar.ButtonData.APPLY);
         dialogPane.getButtonTypes().add(saveAsFileBT);

@@ -92,6 +92,16 @@ public class HomeRightTreeView extends HomeTreeView {
         new NodeMappedView(appTree.getTreeInfo().getRootNode(), rootNode).showDialog(stage);
     }
 
+    private void handleOpenReadme(TreeNode readmeNode) {
+        new ReadmeView(readmeNode, patchTree, appTree.getTreeInfo().getRootNode(),
+                TreeNodeUtil.getUnderRootNode(readmeNode == null ? patchTree.getSingleSelectedNode() : readmeNode),
+                isOk -> {
+                    if (isOk) {
+                        refreshPatchMappedNode(true);
+                    }
+                }).showDialog(stage);
+    }
+
     private void reloadPatchTree(TreeNode rootNode) {
         File file = ((FileNode) rootNode).getFile();
         if (file.exists()) {
@@ -221,6 +231,22 @@ public class HomeRightTreeView extends HomeTreeView {
         }, menu -> {
             TreeNode node = patchTree.getSingleSelectedNode();
             return TreeNodeUtil.isRootNode(node);
+        }));
+
+        addContextMenuItemClaim(MenuItemClaim.create(() -> {
+            MenuItem createReadmeItem = new MenuItem(I18nUtil.t("app.view.right-tree.create-readme"));
+            createReadmeItem.setOnAction(e -> handleOpenReadme(null));
+            return createReadmeItem;
+        }, menu -> {
+            TreeNode node = patchTree.getSingleSelectedNode();
+            if (node != null) {
+                if ((TreeNodeType.ROOT.equals(node.getType())
+                        && CollectionUtil.isEmpty(patchTree.getTreeInfo().getCustomRootInfoMap()))
+                        || TreeNodeType.CUSTOM_ROOT.equals(node.getType())) {
+                    return patchTree.getTreeInfo().getRootInfoByNode(node).getReadmeNode() == null;
+                }
+            }
+            return false;
         }));
 
         addContextMenuItemClaim(MenuItemClaim.create(() -> {
@@ -412,11 +438,7 @@ public class HomeRightTreeView extends HomeTreeView {
                         TreeNodeUtil.buildNodeChildren(selectedItem, selectedTreeNode);
                     }
                 } else if (TreeNodeType.README.equals(selectedTreeNode.getType())) {
-                    new ReadmeView(selectedTreeNode, patchTree, isOk -> {
-                        if (isOk) {
-                            refreshPatchMappedNode(true);
-                        }
-                    }).showDialog(stage);
+                    handleOpenReadme(selectedTreeNode);
                 } else {
                     new ContentView(selectedTreeNode).showDialog(stage);
                 }
