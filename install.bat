@@ -24,7 +24,7 @@ set "CurrentDir=%~dp0"
 :: 移除路径末尾的反斜杠
 set "CurrentDir=%CurrentDir:~0,-1%"
 
-echo Installing PatchAssistant2J context menu...
+echo Installing PatchAssistant2J...
 echo Current directory: %CurrentDir%
 
 :: 注册文件右键菜单
@@ -39,5 +39,15 @@ reg add "HKEY_CLASSES_ROOT\Directory\shell\PatchAssistant2J\command" /ve /t REG_
 reg add "HKEY_CLASSES_ROOT\Directory\Background\shell\PatchAssistant2J" /v "Icon" /t REG_SZ /d "%CurrentDir%\PatchAssistant2J.exe" /f
 reg add "HKEY_CLASSES_ROOT\Directory\Background\shell\PatchAssistant2J\command" /ve /t REG_SZ /d "\"%CurrentDir%\PatchAssistant2J.exe\" \"--patch=%%V\"" /f
 
-echo PatchAssistant2J context menu installed successfully!
+:: 创建桌面快捷方式
+set "DESKTOP_DIR=%PUBLIC%\Desktop"
+if exist "%USERPROFILE%\Desktop" set "DESKTOP_DIR=%USERPROFILE%\Desktop"
+
+powershell -Command "$s=(New-Object -COM WScript.Shell).CreateShortcut('%DESKTOP_DIR%\PatchAssistant2J.lnk');$s.TargetPath='%CurrentDir%\PatchAssistant2J.exe';$s.WorkingDirectory='%CurrentDir%';$s.Save()"
+
+:: 创建开始菜单快捷方式
+set "START_MENU_DIR=%APPDATA%\Microsoft\Windows\Start Menu\Programs"
+powershell -Command "$s=(New-Object -COM WScript.Shell).CreateShortcut('%START_MENU_DIR%\PatchAssistant2J.lnk');$s.TargetPath='%CurrentDir%\PatchAssistant2J.exe';$s.WorkingDirectory='%CurrentDir%';$s.Save()"
+
+echo PatchAssistant2J installed successfully!
 pause
