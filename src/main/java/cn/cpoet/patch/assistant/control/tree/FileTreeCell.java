@@ -47,7 +47,7 @@ public class FileTreeCell extends TreeCell<TreeNode> {
             return;
         }
         TreeNode node = getItem();
-        Dragboard db = this.startDragAndDrop(TransferMode.COPY);
+        Dragboard db = startDragAndDrop(TransferMode.COPY);
         db.setDragView(getDragIconImage(node));
         ClipboardContent content = new ClipboardContent();
         content.putString(node.getName());
@@ -58,23 +58,28 @@ public class FileTreeCell extends TreeCell<TreeNode> {
                 .map(TreeItem::getValue)
                 .collect(Collectors.toList());
         dragInfo.setTreeNodes(patchNodes);
-        List<File> files = patchNodes.stream().map(patchNode -> {
-            File tempDir = AppContext.getInstance().getTempDir();
-            if (patchNode.isDir()) {
-                File file = FileUtil.mkdir(tempDir, FileNameUtil.uniqueFileName(patchNode.getName()));
-                updateCellDragInfo(dragInfo, patchNode, file);
-                deepWriteFile2Path(file, patchNode, dragInfo);
-                return file;
-            }
-            File file = new File(tempDir, FileNameUtil.uniqueFileName(patchNode.getName()));
-            FileUtil.writeFile(file, patchNode::consumeBytes);
-            updateCellDragInfo(dragInfo, patchNode, file);
-            return file;
-        }).collect(Collectors.toList());
+        List<File> files = getDragFiles(patchNodes, dragInfo);
         content.putFiles(files);
         db.setContent(content);
         DRAG_INFO_TL.set(dragInfo);
         event.consume();
+    }
+
+    private List<File> getDragFiles(List<TreeNode> patchNodes, FileTreeCellDragInfo dragInfo) {
+        File dragTempDir = FileUtil.mkdir(AppContext.getInstance().getTempDir(), UUIDUtil.random32());
+        dragInfo.addTempFile(dragTempDir);
+        return patchNodes.stream().map(patchNode -> {
+            if (patchNode.isDir()) {
+                File file = FileUtil.mkdir(dragTempDir, patchNode.getName());
+                updateCellDragInfo(dragInfo, patchNode, file);
+                deepWriteFile2Path(file, patchNode, dragInfo);
+                return file;
+            }
+            File file = new File(dragTempDir, patchNode.getName());
+            FileUtil.writeFile(file, patchNode::consumeBytes);
+            updateCellDragInfo(dragInfo, patchNode, file);
+            return file;
+        }).collect(Collectors.toList());
     }
 
     private void onDragOver(DragEvent event) {
