@@ -1,11 +1,13 @@
 package cn.cpoet.patch.assistant.view.home;
 
+import cn.cpoet.patch.assistant.constant.FileExtConst;
 import cn.cpoet.patch.assistant.constant.IConConst;
 import cn.cpoet.patch.assistant.constant.StyleConst;
 import cn.cpoet.patch.assistant.control.tree.AppTreeInfo;
 import cn.cpoet.patch.assistant.control.tree.AppTreeView;
 import cn.cpoet.patch.assistant.control.tree.PatchRootInfo;
 import cn.cpoet.patch.assistant.control.tree.PatchTreeInfo;
+import cn.cpoet.patch.assistant.control.tree.node.FileNode;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.service.AppPackService;
@@ -229,17 +231,22 @@ public class HomeView extends HomeContext {
                 }
             }
         }
-        // 判断是否Docker模式
         Configuration configuration = Configuration.getInstance();
         FileChooser fileChooser = new FileChooser();
-        String lastSavePackPath = configuration.getLastSavePackPath();
-        if (!StringUtil.isBlank(lastSavePackPath)) {
-            fileChooser.setInitialDirectory(FileUtil.getExistsDirOrFile(lastSavePackPath));
+        if (Boolean.TRUE.equals(configuration.getPatch().getSaveToSourceDir())) {
+            fileChooser.setInitialDirectory(getAppPackSourceDir());
+        } else {
+            File file = null;
+            String lastSavePackPath = configuration.getLastSavePackPath();
+            if (!StringUtil.isBlank(lastSavePackPath)) {
+                file = FileUtil.getExistsDirOrFile(lastSavePackPath);
+            }
+            fileChooser.setInitialDirectory(file == null ? getAppPackSourceDir() : file);
         }
         String fileName = appTree.getTreeInfo().getRootNode().getName();
         fileChooser.setTitle(I18nUtil.t("app.view.home.save-jar"));
         fileChooser.setInitialFileName(fileName);
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(I18nUtil.t("app.view.home.java-package"), "*.jar"));
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(I18nUtil.t("app.view.home.java-package"), "*" + FileExtConst.DOT_JAR));
         File file = fileChooser.showSaveDialog(stage);
         if (file == null) {
             return;
@@ -247,6 +254,11 @@ public class HomeView extends HomeContext {
         configuration.setLastSavePackPath(file.getParent());
         new ProgressView(fileChooser.getTitle()).showDialog(stage, (progressContext)
                 -> AppPackService.INSTANCE.savePack(this, progressContext, file));
+    }
+
+    private File getAppPackSourceDir() {
+        TreeNode rootNode = appTree.getTreeInfo().getRootNode();
+        return ((FileNode) rootNode).getFile().getParentFile();
     }
 
     private Node buildFooter() {

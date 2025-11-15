@@ -51,6 +51,11 @@ public class PatchConf implements Cloneable {
      */
     private Boolean loadLastPatch = Boolean.TRUE;
 
+    /**
+     * 保存结果到源目录
+     */
+    private Boolean saveToSourceDir = Boolean.TRUE;
+
     public String getUsername() {
         return StringUtil.isBlank(username) ? EnvUtil.getUserName() : username;
     }
@@ -113,6 +118,14 @@ public class PatchConf implements Cloneable {
 
     public void setLoadLastPatch(Boolean loadLastPatch) {
         this.loadLastPatch = loadLastPatch;
+    }
+
+    public Boolean getSaveToSourceDir() {
+        return saveToSourceDir;
+    }
+
+    public void setSaveToSourceDir(Boolean saveToSourceDir) {
+        this.saveToSourceDir = saveToSourceDir;
     }
 
     @Override
