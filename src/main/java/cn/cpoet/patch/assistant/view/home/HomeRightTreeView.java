@@ -419,7 +419,13 @@ public class HomeRightTreeView extends HomeTreeView {
             if (TreeNodeType.CUSTOM_ROOT.equals(treeNode.getType())) {
                 patchTree.getTreeInfo().removeCustomRootInfo(treeNode);
                 cleanPatchMappedNode(treeNode);
+                if (CollectionUtil.isEmpty(patchTree.getTreeInfo().getCustomRootInfoMap())) {
+                    refreshPatchMappedNode(true, patchTree.getTreeInfo().getRootNode());
+                }
                 return;
+            }
+            if (CollectionUtil.isEmpty(patchTree.getTreeInfo().getCustomRootInfoMap())) {
+                cleanPatchMappedNode(patchTree.getTreeInfo().getRootNode());
             }
             treeNode.setType(TreeNodeType.CUSTOM_ROOT);
             PatchRootInfo patchRootInfo = PatchPackService.INSTANCE.createPatchRootInfo(treeNode);

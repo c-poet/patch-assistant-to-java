@@ -69,6 +69,9 @@ public abstract class TreeNodeUtil {
             if (CollectionUtil.isNotEmpty(node.getChildren())) {
                 node.getChildren().forEach(child -> deepCleanMappedNode(totalInfo, child, filter));
             }
+            if (!TreeNodeType.ROOT.equals(node.getType())) {
+                deepCleanMappedNode1(totalInfo, node, filter);
+            }
             return;
         }
         TreeNode appNode = node.isPatch() ? node.getMappedNode() : node;
@@ -86,6 +89,10 @@ public abstract class TreeNodeUtil {
             // 避免并发异常
             new ArrayList<>(node.getChildren()).forEach(child -> deepCleanMappedNode0(totalInfo, child, filter));
         }
+        deepCleanMappedNode1(totalInfo, node, filter);
+    }
+
+    private static void deepCleanMappedNode1(TotalInfo totalInfo, TreeNode node, Predicate<TreeNode> filter) {
         if (!node.isDir()) {
             TreeNodeType nodeType = node.getType();
             UIUtil.runUI(() -> totalInfo.decrTotal(nodeType));
