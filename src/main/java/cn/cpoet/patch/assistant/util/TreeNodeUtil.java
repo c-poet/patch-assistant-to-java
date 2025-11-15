@@ -65,6 +65,12 @@ public abstract class TreeNodeUtil {
         if (node == null) {
             return;
         }
+        if (node.isPatch() && TreeNodeUtil.isRootNode(node)) {
+            if (CollectionUtil.isNotEmpty(node.getChildren())) {
+                node.getChildren().forEach(child -> deepCleanMappedNode(totalInfo, child, filter));
+            }
+            return;
+        }
         TreeNode appNode = node.isPatch() ? node.getMappedNode() : node;
         deepCleanMappedNode0(totalInfo, node, filter);
         // 需要判断应用节点的父级节点是否需要取消关联
