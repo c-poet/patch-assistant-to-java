@@ -258,19 +258,7 @@ public class PatchPackService extends BasePackService {
             return false;
         }
         if (index == paths.length - 1) {
-            if (ReadMePathInfo.TypeEnum.DEL.equals(pathInfo.getType())) {
-                TreeNodeUtil.countAndSetNodeType(totalInfo, appNode, TreeNodeType.DEL);
-            } else if (TreeNodeType.DEL.equals(appNode.getType())) {
-                TreeNodeUtil.mappedNode(totalInfo, appNode, patchNode, TreeNodeType.ADD);
-                if (ReadMePathInfo.TypeEnum.ADD.equals(pathInfo.getType())) {
-                    addMappedNodeChildren(totalInfo, appNode, patchNode);
-                }
-            } else if (ReadMePathInfo.TypeEnum.NONE.equals(pathInfo.getType())
-                    || ReadMePathInfo.TypeEnum.MOD.equals(pathInfo.getType())) {
-                TreeNodeUtil.mappedNode(totalInfo, appNode, patchNode, TreeNodeType.MOD);
-                AppPackService.INSTANCE.createPatchDiffInfo(appTreeInfo, appNode, patchNode);
-                mappedInnerClassNode(totalInfo, appTreeInfo, appNode, patchNode);
-            }
+            mappedNodeWithType(totalInfo, appTreeInfo, pathInfo, appNode, patchNode);
             return true;
         }
         if (CollectionUtil.isNotEmpty(appNode.getChildren())) {
@@ -280,6 +268,61 @@ public class PatchPackService extends BasePackService {
             return doMatchMappedNodeChildrenWithReadme(totalInfo, appTreeInfo, pathInfo, paths, ++index, appNode, patchNode);
         }
         return false;
+    }
+
+    private void mappedNodeWithType(TotalInfo totalInfo, AppTreeInfo appTreeInfo, ReadMePathInfo pathInfo, TreeNode appNode,
+                                    TreeNode patchNode) {
+        switch (pathInfo.getType()) {
+            case DEL:
+                mappedDelNodeWithType(totalInfo, appNode);
+                break;
+            case ADD:
+                mappedAddNodeWithType(totalInfo, appNode, patchNode);
+                break;
+            case MOD:
+            case NONE:
+            default:
+                mappedModNodeWithType(totalInfo, appTreeInfo, appNode, patchNode);
+        }
+    }
+
+    public void mappedDelNodeWithType(TotalInfo totalInfo, TreeNode appNode) {
+        if (TreeNodeType.DEL.equals(appNode.getType())) {
+            return;
+        }
+        TreeNodeType oldType = appNode.getType();
+        if (!TreeNodeType.NONE.equals(appNode.getType())) {
+            cleanMappedNode(totalInfo, appNode, true);
+        }
+        if (TreeNodeType.NONE.equals(oldType) || TreeNodeType.MOD.equals(oldType)) {
+            TreeNodeUtil.countAndSetNodeType(totalInfo, appNode, TreeNodeType.DEL);
+        }
+    }
+
+    public void mappedAddNodeWithType(TotalInfo totalInfo, TreeNode appNode, TreeNode patchNode) {
+        if (TreeNodeType.DEL.equals(appNode.getType())) {
+            cleanMappedNode(totalInfo, appNode, true);
+            TreeNodeUtil.mappedNode(totalInfo, appNode, patchNode, TreeNodeType.ADD);
+            addMappedNodeChildren(totalInfo, appNode, patchNode);
+        }
+    }
+
+    public void mappedModNodeWithType(TotalInfo totalInfo, AppTreeInfo appTreeInfo, TreeNode appNode, TreeNode patchNode) {
+        if (TreeNodeType.DEL.equals(appNode.getType())) {
+            return;
+        }
+        if (TreeNodeType.ADD.equals(appNode.getType())) {
+            cleanMappedNode(totalInfo, appNode, true, node -> appNode == node);
+            TreeNodeUtil.mappedNode(totalInfo, appNode, patchNode, TreeNodeType.ADD);
+            addMappedNodeChildren(totalInfo, appNode, patchNode);
+            return;
+        }
+        if (TreeNodeType.MOD.equals(appNode.getType())) {
+            cleanMappedNode(totalInfo, appNode, true);
+        }
+        TreeNodeUtil.mappedNode(totalInfo, appNode, patchNode, TreeNodeType.MOD);
+        AppPackService.INSTANCE.createPatchDiffInfo(appTreeInfo, appNode, patchNode);
+        mappedInnerClassNode(totalInfo, appTreeInfo, appNode, patchNode);
     }
 
     private void refreshMappedNodeWithPathOrName(TotalInfo totalInfo, AppTreeInfo appTreeInfo, PatchTreeInfo patchTreeInfo, ProgressContext pc) {

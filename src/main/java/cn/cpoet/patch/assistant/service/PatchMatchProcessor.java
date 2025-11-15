@@ -9,7 +9,6 @@ import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.util.CollectionUtil;
 import cn.cpoet.patch.assistant.util.StringUtil;
-import cn.cpoet.patch.assistant.util.TreeNodeUtil;
 import cn.cpoet.patch.assistant.view.progress.ProgressContext;
 
 import java.util.Collections;
@@ -276,8 +275,6 @@ public class PatchMatchProcessor {
 
     private void mappedNode(TreeNode appNode, TreeNode patchNode) {
         pc.step("successful match " + appNode.getPath());
-        TreeNodeUtil.mappedNode(totalInfo, appNode, patchNode, TreeNodeType.MOD);
-        AppPackService.INSTANCE.createPatchDiffInfo(appTreeInfo, appNode, patchNode);
-        PatchPackService.INSTANCE.mappedInnerClassNode(totalInfo, appTreeInfo, appNode, patchNode);
+        PatchPackService.INSTANCE.mappedModNodeWithType(totalInfo, appTreeInfo, appNode, patchNode);
     }
 }
