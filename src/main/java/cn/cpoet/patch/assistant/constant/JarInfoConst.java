@@ -25,4 +25,9 @@ public interface JarInfoConst {
      * Jar元信息文件路径
      */
     String MANIFEST_PATH = META_INFO_DIR + MANIFEST_FILE;
+
+    /**
+     * 补丁操作记录路径
+     */
+    String PATCH_UP_PATH = JarInfoConst.META_INFO_DIR + AppConst.PATCH_UP_DIR + "/";
 }

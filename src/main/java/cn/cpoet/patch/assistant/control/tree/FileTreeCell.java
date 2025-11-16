@@ -1,6 +1,7 @@
 package cn.cpoet.patch.assistant.control.tree;
 
 import cn.cpoet.patch.assistant.constant.IConConst;
+import cn.cpoet.patch.assistant.constant.JarInfoConst;
 import cn.cpoet.patch.assistant.constant.StyleConst;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.core.AppContext;
@@ -220,6 +221,9 @@ public class FileTreeCell extends TreeCell<TreeNode> {
         }
         if (TreeNodeType.README.equals(node.getType())) {
             return ImageUtil.loadImageCache(IConConst.FILE_README);
+        }
+        if (JarInfoConst.PATCH_UP_PATH.equals(node.getPath())) {
+            return ImageUtil.loadImageCache(IConConst.OPER_LOG);
         }
         Image image = IConUtil.loadIconByFileExt(node.getName());
         if (image != null) {

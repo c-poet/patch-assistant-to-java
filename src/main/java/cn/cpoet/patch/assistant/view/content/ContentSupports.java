@@ -1,7 +1,8 @@
 package cn.cpoet.patch.assistant.view.content;
 
-import cn.cpoet.patch.assistant.util.FileNameUtil;
+import cn.cpoet.patch.assistant.constant.FileExtConst;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
+import cn.cpoet.patch.assistant.util.FileNameUtil;
 import cn.cpoet.patch.assistant.view.content.facotry.*;
 import cn.cpoet.patch.assistant.view.content.parser.ClassContentParser;
 import cn.cpoet.patch.assistant.view.content.parser.ContentParser;
@@ -22,10 +23,10 @@ public abstract class ContentSupports {
     public static ContentParser getContentParser(String ext) {
         if (ext != null) {
             switch (ext) {
-                case "class":
+                case FileExtConst.CLASS:
                     return new ClassContentParser();
-                case "java":
-                case "txt":
+                case FileExtConst.JAVA:
+                case FileExtConst.TXT:
                 case "yaml":
                 case "yml":
                 case "xml":
@@ -36,6 +37,7 @@ public abstract class ContentSupports {
                 case "css":
                 case "sql":
                 case "json":
+                case FileExtConst.SIGN:
                     return new TextContentParser();
                 default:
             }

@@ -57,4 +57,14 @@ public interface FileExtConst {
      * 文本
      */
     String DOT_TXT = FileNameUtil.C_EXT_SEPARATOR + TXT;
+
+    /**
+     * 签名文件
+     */
+    String SIGN = "sign";
+
+    /**
+     * 签名文件
+     */
+    String DOT_SIGN = FileNameUtil.C_EXT_SEPARATOR + SIGN;
 }

@@ -1,6 +1,7 @@
 package cn.cpoet.patch.assistant.util;
 
 import java.nio.file.attribute.FileTime;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -13,6 +14,7 @@ import java.time.temporal.TemporalAccessor;
  */
 public abstract class DateUtil {
 
+    public final static String DATE_PURE_FORMAT = "yyyyMMdd";
     public final static String DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
     private DateUtil() {
@@ -22,8 +24,16 @@ public abstract class DateUtil {
         private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(DATE_TIME_FORMAT);
     }
 
+    private static final class DatePureFormatterHolder {
+        private static final DateTimeFormatter DATE_PURE_FORMATTER = DateTimeFormatter.ofPattern(DATE_PURE_FORMAT);
+    }
+
     public static DateTimeFormatter getDateTimeFormatter() {
         return DateTimeFormatterHolder.DATE_TIME_FORMATTER;
+    }
+
+    public static DateTimeFormatter getDatePureFormatter() {
+        return DatePureFormatterHolder.DATE_PURE_FORMATTER;
     }
 
     /**
@@ -73,5 +83,15 @@ public abstract class DateUtil {
      */
     public static String curDateTime() {
         return formatDateTime(LocalDateTime.now());
+    }
+
+    /**
+     * 获取当前日期
+     * <p>格式：{@link #DATE_PURE_FORMAT}</p>
+     *
+     * @return 当前日期
+     */
+    public static String curDatePure() {
+        return getDatePureFormatter().format(LocalDate.now());
     }
 }

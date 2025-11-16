@@ -1,7 +1,6 @@
 package cn.cpoet.patch.assistant.service;
 
 import cn.cpoet.patch.assistant.common.InputBufConsumer;
-import cn.cpoet.patch.assistant.constant.AppConst;
 import cn.cpoet.patch.assistant.constant.FileExtConst;
 import cn.cpoet.patch.assistant.constant.JarInfoConst;
 import cn.cpoet.patch.assistant.control.tree.*;
@@ -11,28 +10,21 @@ import cn.cpoet.patch.assistant.core.AppContext;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.core.PatchConf;
 import cn.cpoet.patch.assistant.exception.AppException;
-import cn.cpoet.patch.assistant.model.AppPackSign;
-import cn.cpoet.patch.assistant.model.PatchSign;
-import cn.cpoet.patch.assistant.model.PatchUpSign;
+import cn.cpoet.patch.assistant.model.*;
 import cn.cpoet.patch.assistant.util.*;
 import cn.cpoet.patch.assistant.view.home.HomeContext;
 import cn.cpoet.patch.assistant.view.progress.ProgressContext;
-import com.fasterxml.jackson.core.type.TypeReference;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 /**
@@ -42,6 +34,9 @@ import java.util.zip.ZipOutputStream;
  */
 public class AppPackWriteProcessor {
 
+    private List<DelInfo> delInfos;
+    private List<AddInfo> addInfos;
+    private List<ModInfo> modInfos;
     private final HomeContext context;
     private final ProgressContext progressContext;
 
@@ -96,6 +91,7 @@ public class AppPackWriteProcessor {
             }
         });
     }
+
     private void write(File file) {
         AppTreeView appTree = context.getAppTree();
         TreeNode rootNode = appTree.getTreeInfo().getRootNode();
@@ -109,49 +105,69 @@ public class AppPackWriteProcessor {
 
     private void doWrite(TreeNode rootNode, ZipOutputStream zipOut) throws IOException {
         progressContext.step("Start write");
-        boolean hasMetaInfoNode = false;
-        TreeNode patchUpSignNode = context.getAppTree().getTreeInfo().getPatchUpSignNode();
-        boolean isPatchSign = Boolean.TRUE.equals(Configuration.getInstance().getPatch().getWritePatchSign());
+        TreeNode metaInfoNode = null;
         if (rootNode.getChildren() != null) {
             progressContext.step("Application pack name:" + rootNode.getName());
             for (TreeNode child : rootNode.getChildren()) {
                 writeTreeNode2Pack(zipOut, child);
-                // 需要写入补丁签名的情况
-                if (JarInfoConst.META_INFO_DIR.equals(child.getPath()) && (isPatchSign || patchUpSignNode != null)) {
-                    hasMetaInfoNode = true;
-                    writePatchSign(zipOut, patchUpSignNode, isPatchSign);
+                if (JarInfoConst.META_INFO_DIR.equals(child.getPath())) {
+                    metaInfoNode = child;
                 }
             }
         }
-        if (!hasMetaInfoNode && (isPatchSign || patchUpSignNode != null)) {
-            ZipEntry zipEntry = new ZipEntry(JarInfoConst.META_INFO_DIR);
-            zipOut.putNextEntry(zipEntry);
-            writePatchSign(zipOut, patchUpSignNode, isPatchSign);
+        if (isWritePatchSign()) {
+            writePatchSign(zipOut, metaInfoNode);
         }
         zipOut.finish();
         progressContext.step("Write finished");
     }
 
-    private void writePatchSign(ZipOutputStream zipOut, TreeNode patchUpSignNode, boolean isPatchSign) throws IOException {
-        if (patchUpSignNode instanceof CompressNode) {
-            ZipEntry zipEntry = getNewEntryWithZipEntry(patchUpSignNode);
-            zipEntry.setLastModifiedTime(DateUtil.toFileTimeOrCur(null));
-            writePatchSign(zipOut, zipEntry, isPatchSign, TreeNodeUtil.readNodeBytes(patchUpSignNode));
-            return;
+    private void writePatchSign(ZipOutputStream zipOut, TreeNode metaInfoNode) throws IOException {
+        int targetNo = 1;
+        TreeNode patchSignNode = null;
+        String fileName = DateUtil.curDatePure();
+        if (metaInfoNode == null) {
+            zipOut.putNextEntry(new ZipEntry(JarInfoConst.META_INFO_DIR));
+        } else if (CollectionUtil.isNotEmpty(metaInfoNode.getChildren())) {
+            for (TreeNode child : metaInfoNode.getChildren()) {
+                if (JarInfoConst.PATCH_UP_PATH.equals(child.getPath())) {
+                    patchSignNode = child;
+                    break;
+                }
+            }
         }
-        ZipEntry zipEntry = new ZipEntry(JarInfoConst.META_INFO_DIR + AppConst.PATCH_UP_SIGN);
-        writePatchSign(zipOut, zipEntry, isPatchSign, patchUpSignNode == null ? null : TreeNodeUtil.readNodeBytes(patchUpSignNode));
+        if (patchSignNode == null) {
+            zipOut.putNextEntry(new ZipEntry(JarInfoConst.PATCH_UP_PATH));
+        } else if (CollectionUtil.isNotEmpty(patchSignNode.getChildren())) {
+            Set<Integer> existsNoSet = patchSignNode.getChildren()
+                    .stream()
+                    .map(TreeNode::getName)
+                    .filter(name -> name.startsWith(fileName))
+                    .map(name -> {
+                        try {
+                            return Integer.parseInt(name.substring(0, name.length() - FileExtConst.DOT_SIGN.length()).substring(fileName.length()));
+                        } catch (Exception ignored) {
+                        }
+                        return 0;
+                    }).collect(Collectors.toSet());
+            if (CollectionUtil.isNotEmpty(existsNoSet)) {
+                while (existsNoSet.contains(targetNo)) {
+                    ++targetNo;
+                }
+            }
+        }
+        String name = fileName + (targetNo > 9 ? targetNo : "0" + targetNo) + FileExtConst.DOT_SIGN;
+        ZipEntry zipEntry = new ZipEntry(FileNameUtil.joinPath(JarInfoConst.PATCH_UP_PATH, name));
+        doWritePatchSign(zipOut, zipEntry);
     }
 
-    private void writePatchSign(ZipOutputStream zipOut, ZipEntry zipEntry, boolean isPatchSign, byte[] bytes) throws IOException {
+    private void doWritePatchSign(ZipOutputStream zipOut, ZipEntry zipEntry) throws IOException {
         zipOut.putNextEntry(zipEntry);
-        if (isPatchSign) {
-            bytes = updatePatchSignContent(bytes);
-        }
-        zipOut.write(bytes == null ? new byte[0] : bytes);
+        byte[] patchSignContent = createPatchSignContent();
+        zipOut.write(patchSignContent);
     }
 
-    private byte[] updatePatchSignContent(byte[] bytes) {
+    private byte[] createPatchSignContent() {
         PatchConf patchConf = Configuration.getInstance().getPatch();
         PatchTreeInfo patchTreeInfo = context.getPatchTree().getTreeInfo();
         PatchUpSign patchUpSign = patchTreeInfo == null ? new PatchUpSign() : PatchUpSign.of(patchTreeInfo.getRootInfo().getPatchSign());
@@ -167,6 +183,9 @@ public class AppPackWriteProcessor {
         patchUpSign.setOriginAppMd5(appPackSign.getMd5());
         patchUpSign.setOriginAppSha1(appPackSign.getSha1());
         patchUpSign.setOriginAppSize(treeInfo.getRootNode().getSize());
+        patchUpSign.setDelInfos(delInfos);
+        patchUpSign.setAddInfos(addInfos);
+        patchUpSign.setModInfos(modInfos);
         if (patchTreeInfo != null) {
             Map<TreeNode, PatchRootInfo> customRootInfoMap = patchTreeInfo.getCustomRootInfoMap();
             if (CollectionUtil.isNotEmpty(customRootInfoMap)) {
@@ -174,22 +193,16 @@ public class AppPackWriteProcessor {
                 patchUpSign.setSigns(patchSigns);
             }
         }
-        List<PatchUpSign> patchUpSigns = null;
-        if (bytes != null && bytes.length > 0) {
-            try {
-                patchUpSigns = JsonUtil.read(bytes, new TypeReference<>() {
-                });
-                patchUpSigns.add(0, patchUpSign);
-            } catch (Exception ignored) {
-            }
-        }
-        return patchUpSigns == null ? JsonUtil.writeAsBytes(Collections.singletonList(patchUpSign)) : JsonUtil.writeAsBytes(patchUpSigns);
+        return JsonUtil.writeAsBytes(patchUpSign);
     }
 
     private void writeTreeNode2Pack(ZipOutputStream zipOut, TreeNode node) throws IOException {
         // 标记为删除状态的节点不在写入新的包中
         TreeNodeType status = node.getType();
         if (TreeNodeType.DEL.equals(status)) {
+            if (!node.isDir()) {
+                addDelInfo(node);
+            }
             progressContext.step("Delete:" + node.getName());
             return;
         }
@@ -210,6 +223,11 @@ public class AppPackWriteProcessor {
             zipEntry.setTimeLocal(mappedNode.getModifyTime());
             zipOut.putNextEntry(zipEntry);
             if (!zipEntry.isDirectory()) {
+                if (TreeNodeType.ADD.equals(node.getType())) {
+                    addAddInfo(node, mappedNode);
+                } else {
+                    addModInfo(node, mappedNode);
+                }
                 progressContext.step("Write:" + node.getName());
                 mappedNode.consumeBytes(((len, buf) -> zipOut.write(buf, 0, len)));
             }
@@ -261,10 +279,6 @@ public class AppPackWriteProcessor {
     private ZipEntry getNewEntryWithZipEntry(TreeNode node) {
         ZipEntry entry = new ZipEntry(node.isDir() ? FileNameUtil.perfectDirPath(node.getPath()) : node.getPath());
         if (!node.isDir()) {
-            long sizeOrInit = node.getSizeOrInit();
-           if (sizeOrInit <= 0) {
-               System.out.println(sizeOrInit);
-           }
             entry.setSize(node.getSizeOrInit());
             if (node.getName().endsWith(FileExtConst.DOT_JAR)) {
                 entry.setMethod(ZipEntry.STORED);
@@ -291,5 +305,52 @@ public class AppPackWriteProcessor {
         CRC32 crc32 = new CRC32();
         consumer.accept(((len, buf) -> crc32.update(buf, 0, len)));
         entry.setCrc(crc32.getValue());
+    }
+
+    private void addDelInfo(TreeNode appNode) {
+        if (isWritePatchSign()) {
+            if (delInfos == null) {
+                delInfos = new LinkedList<>();
+            }
+            DelInfo delInfo = new DelInfo();
+            delInfo.setAppPath(appNode.getPath());
+            delInfo.setAppMd5(appNode.getMd5OrInit());
+            delInfo.setAppCreateTime(DateUtil.formatDateTime(appNode.getModifyTime()));
+            delInfos.add(delInfo);
+        }
+    }
+
+    private void addAddInfo(TreeNode appNode, TreeNode patchNode) {
+        if (isWritePatchSign()) {
+            if (addInfos == null) {
+                addInfos = new LinkedList<>();
+            }
+            AddInfo addInfo = new AddInfo();
+            addInfo.setAppPath(appNode.getPath());
+            addInfo.setPatchPath(patchNode.getPath());
+            addInfo.setPatchMd5(patchNode.getMd5OrInit());
+            addInfo.setPatchCreateTime(DateUtil.formatDateTime(patchNode.getModifyTime()));
+            addInfos.add(addInfo);
+        }
+    }
+
+    private void addModInfo(TreeNode appNode, TreeNode patchNode) {
+        if (isWritePatchSign()) {
+            if (modInfos == null) {
+                modInfos = new LinkedList<>();
+            }
+            ModInfo modInfo = new ModInfo();
+            modInfo.setAppPath(appNode.getPath());
+            modInfo.setAppMd5(appNode.getMd5OrInit());
+            modInfo.setPatchPath(patchNode.getPath());
+            modInfo.setPatchMd5(patchNode.getMd5OrInit());
+            modInfo.setAppCreateTime(DateUtil.formatDateTime(appNode.getModifyTime()));
+            modInfo.setPatchCreateTime(DateUtil.formatDateTime(patchNode.getModifyTime()));
+            modInfos.add(modInfo);
+        }
+    }
+
+    private boolean isWritePatchSign() {
+        return Boolean.TRUE.equals(Configuration.getInstance().getPatch().getWritePatchSign());
     }
 }

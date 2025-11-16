@@ -62,7 +62,7 @@ public interface AppConst {
     String README_FILE = "README.txt";
 
     /**
-     * 补丁操作签名文件
+     * 补丁记录存放目录
      */
-    String PATCH_UP_SIGN = "patch-up.sign";
+    String PATCH_UP_DIR = "patch-up";
 }

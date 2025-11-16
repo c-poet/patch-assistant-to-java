@@ -1,7 +1,5 @@
 package cn.cpoet.patch.assistant.service;
 
-import cn.cpoet.patch.assistant.constant.AppConst;
-import cn.cpoet.patch.assistant.constant.JarInfoConst;
 import cn.cpoet.patch.assistant.control.tree.AppTreeInfo;
 import cn.cpoet.patch.assistant.control.tree.TreeNodeType;
 import cn.cpoet.patch.assistant.control.tree.node.FileNode;
@@ -10,13 +8,17 @@ import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.exception.AppException;
 import cn.cpoet.patch.assistant.model.AppPackSign;
 import cn.cpoet.patch.assistant.model.HashInfo;
-import cn.cpoet.patch.assistant.util.*;
+import cn.cpoet.patch.assistant.util.DateUtil;
+import cn.cpoet.patch.assistant.util.FileUtil;
+import cn.cpoet.patch.assistant.util.I18nUtil;
 import cn.cpoet.patch.assistant.view.home.HomeContext;
 import cn.cpoet.patch.assistant.view.progress.ProgressContext;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDateTime;
-import java.util.Iterator;
 import java.util.Objects;
 
 /**
@@ -51,8 +53,6 @@ public class AppPackService extends BasePackService {
         treeInfo.setAppPackSign(appPackSign);
         try (InputStream in = new FileInputStream(file)) {
             getTreeNode(in, rootNode);
-            TreeNode patchUpSignNode = removePatchUpSignNode(rootNode);
-            treeInfo.setPatchUpSignNode(patchUpSignNode);
             return treeInfo;
         } catch (IOException ex) {
             throw new AppException("Failed to read the contents of the app package", ex);
@@ -65,31 +65,6 @@ public class AppPackService extends BasePackService {
         } catch (Exception ex) {
             throw new AppException("Failed to read application package", ex);
         }
-    }
-
-    private TreeNode removePatchUpSignNode(TreeNode rootNode) {
-        if (rootNode == null || CollectionUtil.isEmpty(rootNode.getChildren())) {
-            return null;
-        }
-        TreeNode metaInfoNode = null;
-        for (TreeNode childNode : rootNode.getChildren()) {
-            if (JarInfoConst.META_INFO.equals(childNode.getName())) {
-                metaInfoNode = childNode;
-                break;
-            }
-        }
-        if (metaInfoNode == null || CollectionUtil.isEmpty(metaInfoNode.getChildren())) {
-            return null;
-        }
-        Iterator<TreeNode> it = metaInfoNode.getChildren().iterator();
-        while (it.hasNext()) {
-            TreeNode childNode = it.next();
-            if (AppConst.PATCH_UP_SIGN.equals(childNode.getName())) {
-                it.remove();
-                return childNode;
-            }
-        }
-        return null;
     }
 
     /**

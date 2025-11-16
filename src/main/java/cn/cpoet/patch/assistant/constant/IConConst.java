@@ -97,4 +97,13 @@ public interface IConConst {
      */
     String SEARCH = "/icons/search.png";
 
+    /**
+     * 补丁
+     */
+    String PATCH = "/icons/patch.png";
+
+    /**
+     * 操作日志
+     */
+    String OPER_LOG = "/icons/oper-log.png";
 }

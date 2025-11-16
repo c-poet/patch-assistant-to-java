@@ -59,6 +59,8 @@ public abstract class IConUtil {
             return IConConst.FILE_PPTX;
         } else if (name.endsWith(".xlsx") || name.endsWith(".xls")) {
             return IConConst.FILE_XLSX;
+        } else if (name.endsWith(FileExtConst.DOT_SIGN)) {
+            return IConConst.PATCH;
         }
         return null;
     }

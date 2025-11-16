@@ -1,6 +1,7 @@
 package cn.cpoet.patch.assistant.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.util.Date;
 import java.util.List;
@@ -10,6 +11,7 @@ import java.util.List;
  *
  * @author CPoet
  */
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class PatchUpSign extends PatchSign {
     /**
      * 修改统计
@@ -61,6 +63,21 @@ public class PatchUpSign extends PatchSign {
      * 内部补丁签名
      */
     private List<PatchSign> signs;
+
+    /**
+     * 删除列表
+     */
+    private List<DelInfo> delInfos;
+
+    /**
+     * 新增列表
+     */
+    private List<AddInfo> addInfos;
+
+    /**
+     * 更新列表
+     */
+    private List<ModInfo> modInfos;
 
     public Integer getModTotal() {
         return modTotal;
@@ -140,6 +157,30 @@ public class PatchUpSign extends PatchSign {
 
     public void setSigns(List<PatchSign> signs) {
         this.signs = signs;
+    }
+
+    public List<DelInfo> getDelInfos() {
+        return delInfos;
+    }
+
+    public void setDelInfos(List<DelInfo> delInfos) {
+        this.delInfos = delInfos;
+    }
+
+    public List<AddInfo> getAddInfos() {
+        return addInfos;
+    }
+
+    public void setAddInfos(List<AddInfo> addInfos) {
+        this.addInfos = addInfos;
+    }
+
+    public List<ModInfo> getModInfos() {
+        return modInfos;
+    }
+
+    public void setModInfos(List<ModInfo> modInfos) {
+        this.modInfos = modInfos;
     }
 
     public static PatchUpSign of(PatchSign patchSign) {

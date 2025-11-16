@@ -1,10 +1,13 @@
 package cn.cpoet.patch.assistant.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 /**
  * 补丁签名
  *
  * @author CPoet
  */
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class PatchSign {
     /**
      * 补丁编码

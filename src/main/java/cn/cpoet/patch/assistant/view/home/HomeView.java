@@ -5,7 +5,6 @@ import cn.cpoet.patch.assistant.constant.IConConst;
 import cn.cpoet.patch.assistant.constant.StyleConst;
 import cn.cpoet.patch.assistant.control.tree.AppTreeInfo;
 import cn.cpoet.patch.assistant.control.tree.AppTreeView;
-import cn.cpoet.patch.assistant.control.tree.PatchRootInfo;
 import cn.cpoet.patch.assistant.control.tree.PatchTreeInfo;
 import cn.cpoet.patch.assistant.control.tree.node.FileNode;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
@@ -32,8 +31,6 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
-import java.util.Map;
-import java.util.Set;
 
 public class HomeView extends HomeContext {
 
@@ -198,37 +195,11 @@ public class HomeView extends HomeContext {
         return centrePane;
     }
 
-    private boolean hasRepeatPatchWithSha1() {
-        Set<String> allPatchUpSignSha1 = appTree.getTreeInfo().getAllPatchUpSignSha1();
-        if (CollectionUtil.isEmpty(allPatchUpSignSha1)) {
-            return false;
-        }
-        PatchTreeInfo treeInfo = patchTree.getTreeInfo();
-        if (allPatchUpSignSha1.contains(treeInfo.getRootInfo().getPatchSign().getSha1())) {
-            return true;
-        }
-        if (CollectionUtil.isNotEmpty(treeInfo.getCustomRootInfoMap())) {
-            for (Map.Entry<TreeNode, PatchRootInfo> entry : treeInfo.getCustomRootInfoMap().entrySet()) {
-                if (allPatchUpSignSha1.contains(entry.getValue().getPatchSign().getSha1())) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
     private void handleSaveAppPack() {
         if (!totalInfo.isChangeNode()) {
             ButtonType buttonType = AlterUtil.warn(stage, I18nUtil.t("app.view.home.app-not-changed-tip"), ButtonType.YES, ButtonType.NO);
             if (ButtonType.NO.equals(buttonType)) {
                 return;
-            }
-        } else {
-            if (hasRepeatPatchWithSha1()) {
-                ButtonType buttonType = AlterUtil.warn(stage, I18nUtil.t("app.view.home.patch-duplication-tip"), ButtonType.YES, ButtonType.NO);
-                if (ButtonType.NO.equals(buttonType)) {
-                    return;
-                }
             }
         }
         Configuration configuration = Configuration.getInstance();
