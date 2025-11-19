@@ -6,7 +6,7 @@
 
     <groupId>cn.cpoet.patch.assistant</groupId>
     <artifactId>patch-assistant-to-java</artifactId>
-    <version>1.3.2-Beta</version>
+    <version>1.3.2</version>
     <name>PatchAssistant2J</name>
 
     <properties>
