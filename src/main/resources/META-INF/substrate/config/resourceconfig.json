@@ -2,7 +2,7 @@
   {
     "resources": [
       [
-        {"pattern": ".*\\.ico"},
+        {"pattern": ".*\\.ico$"},
         {"pattern": ".*\\.png$"},
         {"pattern": ".*\\.xml$"},
         {"pattern": ".*\\.css$"},

@@ -15,7 +15,7 @@
 
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
-        <javafx.version>17.0.17</javafx.version>
+        <javafx.version>19.0.2.1</javafx.version>
         <gluonfx.target>host</gluonfx.target>
         <gluonfx.bundleType>image</gluonfx.bundleType>
     </properties>
@@ -162,6 +162,9 @@
                         <vendor>CPoet</vendor>
                         <version>${project.version}</version>
                     </releaseConfiguration>
+                    <reflectionList>
+                        <list>javafx.scene.input.Dragboard</list>
+                    </reflectionList>
                 </configuration>
             </plugin>
         </plugins>

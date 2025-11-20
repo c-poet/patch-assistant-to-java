@@ -3,54 +3,36 @@
     "name": "cn.cpoet.patch.assistant.core.Configuration",
     "allDeclaredConstructors": true,
     "allDeclaredMethods": true,
-    "allDeclaredFields": true,
-    "allPublicConstructors": true,
-    "allPublicMethods": true,
-    "allPublicFields": true
+    "allDeclaredFields": true
   },
   {
     "name": "cn.cpoet.patch.assistant.core.ContentConf",
     "allDeclaredConstructors": true,
     "allDeclaredMethods": true,
-    "allDeclaredFields": true,
-    "allPublicConstructors": true,
-    "allPublicMethods": true,
-    "allPublicFields": true
+    "allDeclaredFields": true
   },
   {
     "name": "cn.cpoet.patch.assistant.core.GeneraConf",
     "allDeclaredConstructors": true,
     "allDeclaredMethods": true,
-    "allDeclaredFields": true,
-    "allPublicConstructors": true,
-    "allPublicMethods": true,
-    "allPublicFields": true
+    "allDeclaredFields": true
   },
   {
     "name": "cn.cpoet.patch.assistant.core.PatchConf",
     "allDeclaredConstructors": true,
     "allDeclaredMethods": true,
-    "allDeclaredFields": true,
-    "allPublicConstructors": true,
-    "allPublicMethods": true,
-    "allPublicFields": true
+    "allDeclaredFields": true
   },
   {
     "name": "cn.cpoet.patch.assistant.core.SearchConf",
     "allDeclaredConstructors": true,
     "allDeclaredMethods": true,
-    "allDeclaredFields": true,
-    "allPublicConstructors": true,
-    "allPublicMethods": true,
-    "allPublicFields": true
+    "allDeclaredFields": true
   },
   {
     "name": "cn.cpoet.patch.assistant.core.SearchItem",
     "allDeclaredConstructors": true,
     "allDeclaredMethods": true,
-    "allDeclaredFields": true,
-    "allPublicConstructors": true,
-    "allPublicMethods": true,
-    "allPublicFields": true
+    "allDeclaredFields": true
   }
 ]
