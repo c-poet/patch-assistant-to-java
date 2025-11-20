@@ -5,6 +5,7 @@ import cn.cpoet.patch.assistant.exception.AppException;
 import java.awt.*;
 import java.io.*;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 
 /**
  * 系统工具
@@ -145,5 +146,19 @@ public abstract class OSUtil {
             output.write('\n');
             output.flush();
         }
+    }
+
+    /**
+     * 获取执行文件所在目录
+     *
+     * @return 获取执行文件所在目录
+     */
+    public static String getExecDir() {
+        String path = OSUtil.class.getProtectionDomain()
+                .getCodeSource()
+                .getLocation()
+                .getPath();
+        path = java.net.URLDecoder.decode(path, StandardCharsets.UTF_8);
+        return new java.io.File(path).getParent();
     }
 }

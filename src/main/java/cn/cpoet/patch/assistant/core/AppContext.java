@@ -3,9 +3,7 @@ package cn.cpoet.patch.assistant.core;
 import cn.cpoet.patch.assistant.constant.AppConst;
 import cn.cpoet.patch.assistant.constant.ThemeEnum;
 import cn.cpoet.patch.assistant.exception.AppException;
-import cn.cpoet.patch.assistant.util.FileTempUtil;
-import cn.cpoet.patch.assistant.util.FileUtil;
-import cn.cpoet.patch.assistant.util.XMLUtil;
+import cn.cpoet.patch.assistant.util.*;
 import javafx.scene.Scene;
 
 import java.io.File;
@@ -123,7 +121,12 @@ public class AppContext {
     }
 
     public AppContext reload() {
-        try (InputStream in = FileUtil.getFileAsStream(AppConst.CONFIG_FILE_NAME)) {
+        loadConfig();
+        return this;
+    }
+
+    private void loadConfig() {
+        try (InputStream in = FileUtil.getFileAsStream(FileNameUtil.joinPath(OSUtil.getExecDir(), AppConst.CONFIG_FILE_NAME))) {
             if (in == null) {
                 configuration = new Configuration();
                 syncConf2File();
@@ -133,13 +136,12 @@ public class AppContext {
         } catch (Exception e) {
             throw new AppException("配置文件读取失败", e);
         }
-        return this;
     }
 
     public void syncConf2File() {
         try {
             byte[] bytes = XMLUtil.writeAsBytes(configuration);
-            FileUtil.writeFile(AppConst.CONFIG_FILE_NAME, bytes);
+            FileUtil.writeFile(FileNameUtil.joinPath(OSUtil.getExecDir(), AppConst.CONFIG_FILE_NAME), bytes);
         } catch (Exception e) {
             throw new AppException("配置文件写入失败", e);
         }
