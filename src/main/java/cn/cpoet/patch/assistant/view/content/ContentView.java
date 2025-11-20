@@ -7,8 +7,8 @@ import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.core.AppContext;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.core.ContentConf;
-import cn.cpoet.patch.assistant.exception.AppException;
 import cn.cpoet.patch.assistant.util.FileUtil;
+import cn.cpoet.patch.assistant.util.OSUtil;
 import cn.cpoet.patch.assistant.util.TextDiffUtil;
 import cn.cpoet.patch.assistant.view.content.facotry.CharsetChangeEvent;
 import cn.cpoet.patch.assistant.view.content.facotry.CodeAreaFactory;
@@ -28,7 +28,6 @@ import javafx.stage.Stage;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.CodeArea;
 
-import java.awt.*;
 import java.io.File;
 import java.nio.charset.Charset;
 import java.util.function.Consumer;
@@ -156,12 +155,7 @@ public class ContentView {
             file = new File(tempDir, tarNode.getName());
             FileUtil.writeFile(new File(tempDir, tarNode.getName()), tarNode::consumeBytes);
         }
-        Desktop desktop = Desktop.getDesktop();
-        try {
-            desktop.open(file);
-        } catch (Exception e) {
-            throw new AppException("Calling the system to open the file failed", e);
-        }
+        OSUtil.openFile(file.getPath());
     }
 
     private boolean isLoadDiffMode() {

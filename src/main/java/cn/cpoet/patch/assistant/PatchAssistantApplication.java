@@ -7,6 +7,7 @@ import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.core.TemporaryFileClear;
 import cn.cpoet.patch.assistant.util.I18nUtil;
 import cn.cpoet.patch.assistant.util.ImageUtil;
+import cn.cpoet.patch.assistant.util.OSUtil;
 import cn.cpoet.patch.assistant.view.home.HomeView;
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -16,6 +17,7 @@ public class PatchAssistantApplication extends Application {
 
     @Override
     public void start(Stage stage) {
+        OSUtil.initHostServices(getHostServices());
         AppContext appContext = AppContext.getInstance();
         Configuration configuration = appContext.getConfiguration();
         Scene scene = new Scene(new HomeView(stage).build(), configuration.getHomeWidth(), configuration.getHomeHeight());
