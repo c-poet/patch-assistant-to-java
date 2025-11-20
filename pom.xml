@@ -12,13 +12,19 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <junit.version>5.10.0</junit.version>
+
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <javafx.version>17.0.17</javafx.version>
+        <gluonfx.target>host</gluonfx.target>
+        <gluonfx.bundleType>image</gluonfx.bundleType>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>
-            <version>17.0.15</version>
+            <version>${javafx.version}</version>
         </dependency>
 
         <dependency>
@@ -69,7 +75,7 @@
     </dependencies>
 
     <build>
-        <finalName>${artifactId}</finalName>
+        <finalName>${project.artifactId}</finalName>
 
         <resources>
             <resource>
@@ -137,6 +143,26 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+
+            <!-- GluonFX 插件 -->
+            <plugin>
+                <groupId>com.gluonhq</groupId>
+                <artifactId>gluonfx-maven-plugin</artifactId>
+                <version>1.0.27</version>
+                <configuration>
+                    <mainClass>cn.cpoet.patch.assistant.PatchAssistantApplication</mainClass>
+                    <target>host</target>
+                    <verbose>true</verbose>
+                    <releaseConfiguration>
+                        <packageType>exe</packageType>
+                        <description>Patch Assistant, quickly perform patch matching and replacement for Jar
+                            applications.
+                        </description>
+                        <vendor>CPoet</vendor>
+                        <version>${project.version}</version>
+                    </releaseConfiguration>
+                </configuration>
             </plugin>
         </plugins>
     </build>

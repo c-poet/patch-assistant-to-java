@@ -1,0 +1,14 @@
+[
+  {
+    "resources": [
+      [
+        {"pattern": ".*\\.ico"},
+        {"pattern": ".*\\.png$"},
+        {"pattern": ".*\\.xml$"},
+        {"pattern": ".*\\.css$"},
+        {"pattern": ".*\\.json$"},
+        {"pattern": ".*\\.properties$"}
+      ]
+    ]
+  }
+]
