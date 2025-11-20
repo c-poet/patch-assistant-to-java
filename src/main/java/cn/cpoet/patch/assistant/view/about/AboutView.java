@@ -57,7 +57,7 @@ public class AboutView {
         linkBox.getChildren().add(helpUrl);
         Hyperlink githubPage = new Hyperlink(I18nUtil.t("app.view.about.github-page"));
         githubPage.setFont(Font.font(14));
-        githubPage.setOnAction(e -> OSUtil.openUrl("https://github.com/c-poet"));
+        githubPage.setOnAction(e -> OSUtil.openUrl("https://github.com/c-poet/patch-assistant-to-java"));
         linkBox.getChildren().add(githubPage);
         vBox.getChildren().add(linkBox);
         hBox.getChildren().add(vBox);
