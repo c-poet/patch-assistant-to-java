@@ -2,8 +2,8 @@ name: Windows
 
 on:
   push:
-    branches:
-      - develop
+    tags:
+      - '*'
 
 jobs:
   build:
@@ -52,7 +52,7 @@ jobs:
 
       - name: Compress portable package
         run: |
-          Compress-Archive -Path ./staging/PatchAssistant2J -DestinationPath ./staging/PatchAssistant2J-${{ steps.get-version.outputs.version }}.zip -Force
+          Compress-Archive -Path ./staging/PatchAssistant2J -DestinationPath ./staging/PatchAssistant2J-${{ steps.get-version.outputs.version }}-portable.zip -Force
           Remove-Item -Path ./staging/PatchAssistant2J -Recurse -Force
 
       - name: Upload
