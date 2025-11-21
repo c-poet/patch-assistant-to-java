@@ -26,6 +26,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract version from pom.xml
+        id: get-version
         run: |
           $pomPath = "pom.xml"
           $xml = [xml](Get-Content $pomPath)
