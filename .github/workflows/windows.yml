@@ -30,7 +30,7 @@ jobs:
           $pomPath = "pom.xml"
           $xml = [xml](Get-Content $pomPath)
           $version = $xml.project.version
-          echo "VERSION=$version" >> %GITHUB_OUTPUT%
+          echo "version=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8
 
       - name: Make staging directory
         run: mkdir staging/PatchAssistant2J
@@ -47,15 +47,15 @@ jobs:
       - name: Copy native bundles to staging
         run: |
           cp -r target/gluonfx/x86_64-windows/PatchAssistant2J.exe staging/PatchAssistant2J
-          cp -r target/gluonfx/x86_64-windows/PatchAssistant2J-%VERSION%.msi staging
+          cp -r target/gluonfx/x86_64-windows/PatchAssistant2J-${{ steps.get-version.outputs.version }}.msi staging
 
       - name: Compress portable package
         run: |
-          Compress-Archive -Path ./staging/PatchAssistant2J -DestinationPath ./staging/PatchAssistant2J-%VERSION%.zip -Force
+          Compress-Archive -Path ./staging/PatchAssistant2J -DestinationPath ./staging/PatchAssistant2J-${{ steps.get-version.outputs.version }}.zip -Force
           Remove-Item -Path ./staging/PatchAssistant2J -Recurse -Force
 
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: PatchAssistant2J-win-%VERSION%
+          name: PatchAssistant2J-win-${{ steps.get-version.outputs.version }}
           path: staging
