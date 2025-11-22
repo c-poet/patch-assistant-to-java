@@ -132,6 +132,26 @@
                 </configuration>
             </plugin>
 
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <id>timestamp-property</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>timestamp-property</goal>
+                        </goals>
+                        <configuration>
+                            <name>build.timestamp</name>
+                            <pattern>yyyy-MM-dd HH:mm:ss</pattern>
+                            <timeSource>build</timeSource>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
             <!-- GluonFX 插件 -->
             <plugin>
                 <groupId>com.gluonhq</groupId>
