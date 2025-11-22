@@ -1,0 +1,47 @@
+name: macOS x86_64
+
+on:
+  push:
+    branches: [ develop ]
+
+jobs:
+  build:
+    runs-on: macos-13
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Gluon's GraalVM
+        uses: gluonhq/setup-graalvm@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          graalvm: '22.1.0.1-Final'
+          jdk: 'java17'
+
+      - name: Developer ID Application certificate
+        uses: Apple-Actions/import-codesign-certs@v1
+        with:
+          keychain: ${{ github.run_id }}
+          keychain-password: ${{ github.run_id }}
+          p12-file-base64: ${{ secrets.GLUON_MACOS_CERTIFICATES_FILE_BASE64 }}
+          p12-password: ${{ secrets.GLUON_MACOS_CERTIFICATES_PASSWORD }}
+
+      - name: Make staging directory
+        run: mkdir staging
+
+      - name: Gluon License
+        uses: gluonhq/gluon-build-license@v1
+        with:
+          gluon-license: ${{ secrets.GLUON_LICENSE }}
+
+      - name: Gluon Build and Package
+        id: outputfile
+        run: |
+          ./mvnw -Pdesktop,mac gluonfx:build gluonfx:package
+          echo ::set-output name=path::target/gluonfx/x86_64-darwin/PatchAssistant2J-1.0.0.pkg
+
+      - name: Upload (pkg)
+        uses: actions/upload-artifact@v4
+        with:
+          name: Package
+          path: ${{ steps.outputfile.outputs.path }}

@@ -17,9 +17,6 @@
         <maven.compiler.target>11</maven.compiler.target>
         <javafx.version>19.0.2.1</javafx.version>
         <package.type/>
-        <mac.app.store/>
-        <bundle.version/>
-        <bundle.short.version/>
     </properties>
 
     <dependencies>
@@ -89,19 +86,7 @@
         <profile>
             <id>mac</id>
             <properties>
-                <package.type>pkg</package.type>
-                <mac.app.store>false</mac.app.store>
-                <bundle.version>${project.version}</bundle.version>
-                <bundle.short.version>1.0</bundle.short.version>
-            </properties>
-        </profile>
-        <profile>
-            <id>macstore</id>
-            <properties>
-                <package.type>pkg</package.type>
-                <mac.app.store>true</mac.app.store>
-                <bundle.version>${project.version}</bundle.version>
-                <bundle.short.version>1.6</bundle.short.version>
+                <package.type>dmg</package.type>
             </properties>
         </profile>
         <profile>
@@ -197,9 +182,7 @@
                         <vendor>CPoet</vendor>
                         <version>${project.version}</version>
                         <!-- for macOS -->
-                        <macAppStore>${mac.app.store}</macAppStore>
-                        <bundleVersion>${bundle.version}</bundleVersion>
-                        <bundleShortVersion>${bundle.short.version}</bundleShortVersion>
+                        <macAppStore>false</macAppStore>
                     </releaseConfiguration>
                     <reflectionList>
                         <list>javafx.scene.input.Dragboard</list>
