@@ -191,6 +191,9 @@
                     </releaseConfiguration>
                     <reflectionList>
                         <list>javafx.scene.input.Dragboard</list>
+                        <list>com.sun.prism.sw.SWPipeline</list>
+                        <list>com.sun.prism.sw.SWResourceFactory</list>
+                        <list>com.sun.prism.sw.SWPainter</list>
                     </reflectionList>
                     <nativeImageArgs>
                         <arg>-O0</arg>
