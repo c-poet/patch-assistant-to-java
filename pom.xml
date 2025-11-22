@@ -16,8 +16,10 @@
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <javafx.version>19.0.2.1</javafx.version>
-        <gluonfx.target>host</gluonfx.target>
-        <gluonfx.bundleType>image</gluonfx.bundleType>
+        <package.type/>
+        <mac.app.store/>
+        <bundle.version/>
+        <bundle.short.version/>
     </properties>
 
     <dependencies>
@@ -73,6 +75,42 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>desktop</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <gluonfx.target>host</gluonfx.target>
+            </properties>
+        </profile>
+        <profile>
+            <id>mac</id>
+            <properties>
+                <package.type>pkg</package.type>
+                <mac.app.store>false</mac.app.store>
+                <bundle.version>${project.version}</bundle.version>
+                <bundle.short.version>1.0</bundle.short.version>
+            </properties>
+        </profile>
+        <profile>
+            <id>macstore</id>
+            <properties>
+                <package.type>pkg</package.type>
+                <mac.app.store>true</mac.app.store>
+                <bundle.version>${project.version}</bundle.version>
+                <bundle.short.version>1.6</bundle.short.version>
+            </properties>
+        </profile>
+        <profile>
+            <id>pi</id>
+            <properties>
+                <gluonfx.target>linux-aarch64</gluonfx.target>
+            </properties>
+        </profile>
+    </profiles>
 
     <build>
         <finalName>${project.artifactId}</finalName>
@@ -132,26 +170,6 @@
                 </configuration>
             </plugin>
 
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                <version>3.2.0</version>
-                <executions>
-                    <execution>
-                        <id>timestamp-property</id>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>timestamp-property</goal>
-                        </goals>
-                        <configuration>
-                            <name>build.timestamp</name>
-                            <pattern>yyyy-MM-dd HH:mm:ss</pattern>
-                            <timeSource>build</timeSource>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
             <!-- GluonFX 插件 -->
             <plugin>
                 <groupId>com.gluonhq</groupId>
@@ -161,22 +179,27 @@
                     <dependency>
                         <groupId>cn.cpoet.patch.assistant</groupId>
                         <artifactId>patch-assistant-to-java-gluonfx</artifactId>
-                        <version>1.0</version>
+                        <version>0</version>
                         <scope>system</scope>
-                        <systemPath>${project.basedir}/lib/patch-assistant-to-java-gluonfx-1.0.jar</systemPath>
+                        <systemPath>${project.basedir}/lib/patch-assistant-to-java-gluonfx.jar</systemPath>
                     </dependency>
                 </dependencies>
                 <configuration>
                     <mainClass>cn.cpoet.patch.assistant.PatchAssistantApplication</mainClass>
-                    <target>host</target>
+                    <target>${gluonfx.target}</target>
                     <verbose>true</verbose>
                     <enableSWRendering>true</enableSWRendering>
                     <releaseConfiguration>
+                        <packageType>${package.type}</packageType>
                         <description>Patch Assistant, quickly perform patch matching and replacement for Jar
                             applications.
                         </description>
                         <vendor>CPoet</vendor>
                         <version>${project.version}</version>
+                        <!-- for macOS -->
+                        <macAppStore>${mac.app.store}</macAppStore>
+                        <bundleVersion>${bundle.version}</bundleVersion>
+                        <bundleShortVersion>${bundle.short.version}</bundleShortVersion>
                     </releaseConfiguration>
                     <reflectionList>
                         <list>javafx.scene.input.Dragboard</list>

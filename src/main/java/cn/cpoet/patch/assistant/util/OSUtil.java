@@ -1,12 +1,15 @@
 package cn.cpoet.patch.assistant.util;
 
+import cn.cpoet.patch.assistant.constant.AppConst;
 import cn.cpoet.patch.assistant.exception.AppException;
 import javafx.application.HostServices;
 
 import java.awt.*;
 import java.io.File;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * 系统工具
@@ -116,6 +119,15 @@ public abstract class OSUtil {
     }
 
     /**
+     * 获取当前用户家目录
+     *
+     * @return 家目录
+     */
+    public static String getUserHome() {
+        return System.getProperty("user.home");
+    }
+
+    /**
      * 判断是否是Linux操作系统
      *
      * @return 是否Linux操作系统
@@ -158,16 +170,47 @@ public abstract class OSUtil {
     }
 
     /**
-     * 获取执行文件所在目录
+     * 获取应用配置路径
      *
-     * @return 获取执行文件所在目录
+     * @return 应用配置路径
      */
-    public static String getExecDir() {
-        String path = OSUtil.class.getProtectionDomain()
-                .getCodeSource()
-                .getLocation()
-                .getPath();
-        path = java.net.URLDecoder.decode(path, StandardCharsets.UTF_8);
-        return new java.io.File(path).getParent();
+    public static Path getAppConfigPath() {
+        return getAppConfigPath(AppConst.APP_NAME);
+    }
+
+    /**
+     * 获取应用配置路径
+     *
+     * @param appName 应用名
+     * @return 配置路径
+     */
+    public static Path getAppConfigPath(String appName) {
+        Path configDir;
+        if (isWindows()) {
+            configDir = Paths.get(System.getenv("APPDATA"));
+        } else if (isMacOS()) {
+            configDir = Paths.get(getUserHome(), "Library", "Application Support");
+        } else {
+            String xdgConfig = System.getenv("XDG_CONFIG_HOME");
+            configDir = !StringUtil.isBlank(xdgConfig) ? Paths.get(xdgConfig) : Paths.get(getUserHome(), ".config");
+        }
+        Path appDir = configDir.resolve(appName);
+        try {
+            if (!Files.exists(appDir)) {
+                Files.createDirectories(appDir);
+            }
+            return appDir;
+        } catch (Exception ignored) {
+        }
+        // In the wrong case, try using the user home directory
+        configDir = Paths.get(getUserHome(), appName);
+        try {
+            if (!Files.exists(appDir)) {
+                Files.createDirectories(appDir);
+            }
+            return configDir;
+        } catch (Exception e) {
+            throw new AppException("Failed to get the app config directory", e);
+        }
     }
 }

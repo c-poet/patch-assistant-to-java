@@ -52,6 +52,6 @@ public abstract class ExceptionUtil {
     }
 
     public static void writeErrorFile(String content) {
-        FileUtil.writeFile(OSUtil.getExecDir(), AppConst.ERROR_LOG_FILE, content.getBytes(StandardCharsets.UTF_8));
+        FileUtil.writeFile(OSUtil.getAppConfigPath().resolve(AppConst.ERROR_LOG_FILE).toFile(), content.getBytes(StandardCharsets.UTF_8));
     }
 }
