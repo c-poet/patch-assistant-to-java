@@ -2,11 +2,11 @@ name: Windows
 
 on:
   push:
-    branches: [ master ]
+    branches: [ develop ]
 
 jobs:
   build:
-    runs-on: windows-2019
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -42,7 +42,7 @@ jobs:
 
       - name: Gluon Build and Package
         shell: cmd
-        run: .\mvnw -Pwin gluonfx:build gluonfx:package
+        run: .\mvnw gluonfx:build gluonfx:package
 
       - name: Copy native bundles to staging
         run: |

@@ -74,47 +74,6 @@
         </dependency>
     </dependencies>
 
-   <!-- <profiles>
-        <profile>
-            <id>win</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>org.openjfx</groupId>
-                    <artifactId>javafx-graphics</artifactId>
-                    <version>${javafx.version}</version>
-                    <classifier>win</classifier>
-                </dependency>
-            </dependencies>
-        </profile>
-
-        <profile>
-            <id>linux</id>
-            <dependencies>
-                <dependency>
-                    <groupId>org.openjfx</groupId>
-                    <artifactId>javafx-graphics</artifactId>
-                    <version>${javafx.version}</version>
-                    <classifier>linux</classifier>
-                </dependency>
-            </dependencies>
-        </profile>
-
-        <profile>
-            <id>mac</id>
-            <dependencies>
-                <dependency>
-                    <groupId>org.openjfx</groupId>
-                    <artifactId>javafx-graphics</artifactId>
-                    <version>${javafx.version}</version>
-                    <classifier>mac</classifier>
-                </dependency>
-            </dependencies>
-        </profile>
-    </profiles>-->
-
     <build>
         <finalName>${project.artifactId}</finalName>
 
@@ -194,7 +153,7 @@
                         <list>javafx.scene.input.Dragboard</list>
                     </reflectionList>
                     <nativeImageArgs>
-                        <arg>-O0</arg>
+                        <arg>-O3</arg>
                     </nativeImageArgs>
                 </configuration>
             </plugin>
