@@ -65,4 +65,9 @@ public interface AppConst {
      * 补丁记录存放目录
      */
     String PATCH_UP_DIR = "patch-up";
+
+    /**
+     * 错误日志记录文件
+     */
+    String ERROR_LOG_FILE = "error.log";
 }

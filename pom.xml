@@ -165,6 +165,9 @@
                     <reflectionList>
                         <list>javafx.scene.input.Dragboard</list>
                     </reflectionList>
+                    <nativeImageArgs>
+                        <arg>-O3</arg>
+                    </nativeImageArgs>
                 </configuration>
             </plugin>
         </plugins>

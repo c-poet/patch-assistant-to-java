@@ -5,6 +5,7 @@ import cn.cpoet.patch.assistant.constant.IConConst;
 import cn.cpoet.patch.assistant.core.AppContext;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.core.TemporaryFileClear;
+import cn.cpoet.patch.assistant.util.ExceptionUtil;
 import cn.cpoet.patch.assistant.util.I18nUtil;
 import cn.cpoet.patch.assistant.util.ImageUtil;
 import cn.cpoet.patch.assistant.util.OSUtil;
@@ -36,8 +37,10 @@ public class PatchAssistantApplication extends Application {
     }
 
     public static void main(String[] args) {
-        AppContext.getInstance().initArgs(args);
-        TemporaryFileClear.asyncClean();
-        launch();
+        ExceptionUtil.runAsTryCatch(() -> {
+            AppContext.getInstance().initArgs(args);
+            TemporaryFileClear.asyncClean();
+            launch();
+        });
     }
 }

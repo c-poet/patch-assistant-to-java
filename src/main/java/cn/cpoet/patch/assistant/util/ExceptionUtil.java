@@ -1,10 +1,12 @@
 package cn.cpoet.patch.assistant.util;
 
+import cn.cpoet.patch.assistant.constant.AppConst;
 import cn.cpoet.patch.assistant.exception.AppException;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 
 /**
  * 异常工具
@@ -28,7 +30,28 @@ public abstract class ExceptionUtil {
             printWriter.flush();
             return stringWriter.toString();
         } catch (IOException ex) {
-            throw new AppException("转换异常堆栈为字符串失败", e);
+            throw new AppException("Converting an exception stack to a string failed", e);
         }
+    }
+
+    /**
+     * 捕获异常并输出到文件中
+     *
+     * @param runnable 运行的方法
+     */
+    public static void runAsTryCatch(Runnable runnable) {
+        try {
+            runnable.run();
+        } catch (Throwable e) {
+            writeErrorFile(e);
+        }
+    }
+
+    public static void writeErrorFile(Throwable e) {
+        writeErrorFile(asString(e));
+    }
+
+    public static void writeErrorFile(String content) {
+        FileUtil.writeFile(OSUtil.getExecDir(), AppConst.ERROR_LOG_FILE, content.getBytes(StandardCharsets.UTF_8));
     }
 }
