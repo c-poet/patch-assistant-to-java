@@ -168,22 +168,9 @@
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>
-                <executions>
-                    <execution>
-                        <id>default-cli</id>
-                        <configuration>
-                            <mainClass>
-                                cn.cpoet.patch.assistant/cn.cpoet.patch.assistant.PatchAssistantApplication
-                            </mainClass>
-                            <launcher>starter</launcher>
-                            <jlinkZipName>patch-assistant-to-java</jlinkZipName>
-                            <jlinkImageName>patch-assistant-to-java</jlinkImageName>
-                            <noManPages>true</noManPages>
-                            <stripDebug>false</stripDebug>
-                            <noHeaderFiles>true</noHeaderFiles>
-                        </configuration>
-                    </execution>
-                </executions>
+                <configuration>
+                    <mainClass>cn.cpoet.patch.assistant.PatchAssistantApplication</mainClass>
+                </configuration>
             </plugin>
 
             <!-- GluonFX 插件 -->
@@ -206,7 +193,7 @@
                         <list>javafx.scene.input.Dragboard</list>
                     </reflectionList>
                     <nativeImageArgs>
-                        <arg>-O3</arg>
+                        <arg>-O0</arg>
                     </nativeImageArgs>
                 </configuration>
             </plugin>
