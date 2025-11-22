@@ -22,11 +22,12 @@ jobs:
         run: |
           sudo apt update
           sudo apt install libasound2-dev libavcodec-dev libavformat-dev libavutil-dev libgl-dev libgtk-3-dev libpango1.0-dev libxtst-dev
+          sudo apt install xmllint
           
       - name: Extract version from pom.xml
         id: get-version
         run: |
-          version=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)
+          version=$(xmllint --xpath "string(//project/version)" pom.xml)
           echo "version=$version" >> $GITHUB_OUTPUT
 
       - name: Make staging directory
