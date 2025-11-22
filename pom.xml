@@ -182,6 +182,7 @@
                     <mainClass>cn.cpoet.patch.assistant.PatchAssistantApplication</mainClass>
                     <target>host</target>
                     <verbose>true</verbose>
+                    <enableSWRendering>true</enableSWRendering>
                     <releaseConfiguration>
                         <description>Patch Assistant, quickly perform patch matching and replacement for Jar
                             applications.
@@ -191,9 +192,6 @@
                     </releaseConfiguration>
                     <reflectionList>
                         <list>javafx.scene.input.Dragboard</list>
-                        <list>com.sun.prism.sw.SWPipeline</list>
-                        <list>com.sun.prism.sw.SWResourceFactory</list>
-                        <list>com.sun.prism.sw.SWPainter</list>
                     </reflectionList>
                     <nativeImageArgs>
                         <arg>-O0</arg>
