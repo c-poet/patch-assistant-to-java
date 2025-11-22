@@ -38,6 +38,12 @@ public class PatchAssistantApplication extends Application {
 
     public static void main(String[] args) {
         ExceptionUtil.runAsTryCatch(() -> {
+            System.setProperty("java.awt.headless", "true");
+            System.setProperty("javafx.headless", "true");
+            System.setProperty("javafx.verbose", "true");
+            System.setProperty("javafx.platform.traceProperties", "true");
+            System.setProperty("prism.verbose", "true");
+
             AppContext.getInstance().initArgs(args);
             TemporaryFileClear.asyncClean();
             launch();
