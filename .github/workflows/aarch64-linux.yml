@@ -28,7 +28,7 @@ jobs:
         id: get-version
         run: |
           sudo DEBIAN_FRONTEND=noninteractive apt install xmlstarlet
-          version=$(xmlstarlet sel -t -v "/project/version" pom.xml)
+          version=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)
           echo "version=$version" >> $GITHUB_OUTPUT
 
       - name: Make staging directory
