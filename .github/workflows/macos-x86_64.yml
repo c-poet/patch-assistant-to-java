@@ -47,12 +47,16 @@ jobs:
 
       - name: Gluon Build and Package
         id: outputfile
+        run: ./mvnw -Pdesktop,mac gluonfx:build gluonfx:package
+
+      - name: Update version number
+        id: update-version
         run: |
-          ./mvnw -Pdesktop,mac gluonfx:build gluonfx:package
-          echo ::set-output name=path::target/gluonfx/x86_64-darwin/PatchAssistant2J-${{ steps.get-version.outputs.version }}.dmg
+          mv target/gluonfx/x86_64-darwin/PatchAssistant2J-1.0.0.dmg target/gluonfx/x86_64-darwin/PatchAssistant2J-${{ steps.get-version.outputs.version }}.dmg
+          echo "path=target/gluonfx/x86_64-darwin/PatchAssistant2J-${{ steps.get-version.outputs.version }}.dmg" >> $GITHUB_OUTPUT
 
       - name: Upload (pkg)
         uses: actions/upload-artifact@v4
         with:
-          name: Package
-          path: ${{ steps.outputfile.outputs.path }}
+          name: PatchAssistant2J-macos-${{ steps.get-version.outputs.version }}
+          path: ${{ steps.update-version.outputs.path }}
