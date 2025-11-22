@@ -42,7 +42,7 @@ jobs:
 
       - name: Gluon Build and Package
         shell: cmd
-        run: .\mvnw gluonfx:build gluonfx:package
+        run: .\mvnw -Pwin gluonfx:build gluonfx:package
 
       - name: Copy native bundles to staging
         run: |

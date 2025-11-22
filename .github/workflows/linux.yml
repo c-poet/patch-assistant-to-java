@@ -2,7 +2,7 @@ name: Linux
 
 on:
   push:
-    branches: [ master ]
+    branches: [ develop ]
 
 jobs:
   build:
@@ -27,7 +27,17 @@ jobs:
       - name: Extract version from pom.xml
         id: get-version
         run: |
-          version=$(xmllint --xpath "string(//project/version)" pom.xml)
+          version=$(python3 -c "
+          import xml.etree.ElementTree as ET
+          tree = ET.parse('pom.xml')
+          root = tree.getroot()
+          # 处理命名空间
+          for elem in root.iter():
+            if '}' in elem.tag:
+              elem.tag = elem.tag.split('}', 1)[1]
+          version = root.find('version').text
+          print(version)
+          ")
           echo "version=$version" >> $GITHUB_OUTPUT
 
       - name: Make staging directory
@@ -43,7 +53,7 @@ jobs:
           chmod +x ./mvnw
 
       - name: Gluon Build
-        run: ./mvnw gluonfx:build gluonfx:package
+        run: ./mvnw -Plinux gluonfx:build gluonfx:package
 
       - name: Copy native image to staging
         run: cp -r target/gluonfx/x86_64-linux/PatchAssistant2J* staging

@@ -74,6 +74,47 @@
         </dependency>
     </dependencies>
 
+    <profiles>
+        <profile>
+            <id>win</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>org.openjfx</groupId>
+                    <artifactId>javafx-graphics</artifactId>
+                    <version>${javafx.version}</version>
+                    <classifier>win</classifier>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <profile>
+            <id>linux</id>
+            <dependencies>
+                <dependency>
+                    <groupId>org.openjfx</groupId>
+                    <artifactId>javafx-graphics</artifactId>
+                    <version>${javafx.version}</version>
+                    <classifier>linux</classifier>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <profile>
+            <id>mac</id>
+            <dependencies>
+                <dependency>
+                    <groupId>org.openjfx</groupId>
+                    <artifactId>javafx-graphics</artifactId>
+                    <version>${javafx.version}</version>
+                    <classifier>mac</classifier>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
+
     <build>
         <finalName>${project.artifactId}</finalName>
 
@@ -155,7 +196,6 @@
                     <target>host</target>
                     <verbose>true</verbose>
                     <releaseConfiguration>
-                        <packageType>exe</packageType>
                         <description>Patch Assistant, quickly perform patch matching and replacement for Jar
                             applications.
                         </description>
