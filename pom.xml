@@ -183,6 +183,7 @@
                         <version>${project.version}</version>
                         <!-- for macOS -->
                         <macAppStore>false</macAppStore>
+                        <skipSigning>true</skipSigning>
                     </releaseConfiguration>
                     <reflectionList>
                         <list>javafx.scene.input.Dragboard</list>
