@@ -27,7 +27,8 @@ jobs:
       - name: Extract version from pom.xml
         id: get-version
         run: |
-          version=$(grep -oP '<version>\K.*(?=</version>)' pom.xml)
+          sudo apt-get install -y xmlstarlet
+          version=$(xmlstarlet sel -t -v "/project/version" pom.xml)
           echo "version=$version" >> $GITHUB_OUTPUT
 
       - name: Make staging directory
