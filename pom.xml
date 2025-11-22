@@ -157,6 +157,15 @@
                 <groupId>com.gluonhq</groupId>
                 <artifactId>gluonfx-maven-plugin</artifactId>
                 <version>1.0.27</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>cn.cpoet.patch.assistant</groupId>
+                        <artifactId>patch-assistant-to-java-gluonfx</artifactId>
+                        <version>1.0</version>
+                        <scope>system</scope>
+                        <systemPath>${project.basedir}/lib/patch-assistant-to-java-gluonfx-1.0.jar</systemPath>
+                    </dependency>
+                </dependencies>
                 <configuration>
                     <mainClass>cn.cpoet.patch.assistant.PatchAssistantApplication</mainClass>
                     <target>host</target>
