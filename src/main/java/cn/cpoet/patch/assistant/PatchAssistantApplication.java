@@ -39,13 +39,8 @@ public class PatchAssistantApplication extends Application {
     public static void main(String[] args) {
         ExceptionUtil.runAsTryCatch(() -> {
             // 禁用 GPU 渲染，强制使用软件渲染
-            System.setProperty("prism.order", "sw");  // sw = software
+            System.setProperty("prism.order", "sw");
             System.setProperty("prism.forceGPU", "false");
-
-            // 可选：添加更多调试信息
-            System.setProperty("prism.verbose", "true");
-            System.setProperty("javafx.verbose", "true");
-
             AppContext.getInstance().initArgs(args);
             TemporaryFileClear.asyncClean();
             launch();
