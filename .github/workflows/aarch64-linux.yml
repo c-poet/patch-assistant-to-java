@@ -53,7 +53,7 @@ jobs:
           chmod +x ./mvnw
 
       - name: Gluon Build
-        run: ./mvnw -Pi gluonfx:build gluonfx:package
+        run: ./mvnw -Ppi gluonfx:build gluonfx:package
 
       - name: Copy native image to staging
         run: cp -r target/gluonfx/aarch64-linux/PatchAssistant2J* staging
