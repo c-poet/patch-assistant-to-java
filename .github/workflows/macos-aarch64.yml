@@ -1,4 +1,4 @@
-name: macOS x86_64
+name: macOS AArch64
 
 on:
   push:
@@ -6,17 +6,18 @@ on:
 
 jobs:
   build:
-    runs-on: macos-13
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
 
       - name: Setup Gluon's GraalVM
         uses: gluonhq/setup-graalvm@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           graalvm: '22.1.0.1-Final'
           jdk: 'java17'
+          arch: 'aarch64'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract version from pom.xml
         id: get-version
@@ -49,11 +50,11 @@ jobs:
       - name: Update version number
         id: update-version
         run: |
-          mv target/gluonfx/x86_64-darwin/PatchAssistant2J-1.0.0.dmg target/gluonfx/x86_64-darwin/PatchAssistant2J-${{ steps.get-version.outputs.version }}.dmg
-          echo "path=target/gluonfx/x86_64-darwin/PatchAssistant2J-${{ steps.get-version.outputs.version }}.dmg" >> $GITHUB_OUTPUT
+          mv target/gluonfx/aarch64-darwin/PatchAssistant2J-1.0.0.dmg target/gluonfx/aarch64-darwin/PatchAssistant2J-${{ steps.get-version.outputs.version }}.dmg
+          echo "path=target/gluonfx/aarch64-darwin/PatchAssistant2J-${{ steps.get-version.outputs.version }}.dmg" >> $GITHUB_OUTPUT
 
       - name: Upload (dmg)
         uses: actions/upload-artifact@v4
         with:
-          name: PatchAssistant2J-darwin-${{ steps.get-version.outputs.version }}
+          name: PatchAssistant2J-aarch64-darwin-${{ steps.get-version.outputs.version }}
           path: ${{ steps.update-version.outputs.path }}
