@@ -39,6 +39,10 @@ jobs:
         with:
           gluon-license: ${{ secrets.GLUON_LICENSE }}
 
+      - name: Add execute permission for Maven Wrapper
+        run: |
+          chmod +x ./mvnw
+
       - name: Gluon Build
         run: ./mvnw -Ppi gluonfx:build gluonfx:package
 
