@@ -182,8 +182,12 @@
                         <vendor>CPoet</vendor>
                         <version>${project.version}</version>
                         <!-- for macOS -->
+                        <macSigningUserName>CPoet</macSigningUserName>
                         <macAppStore>false</macAppStore>
                         <skipSigning>true</skipSigning>
+                        <bundleName>${project.artifactId}</bundleName>
+                        <bundleVersion>${project.version}</bundleVersion>
+                        <bundleShortVersion>${project.version}</bundleShortVersion>
                     </releaseConfiguration>
                     <reflectionList>
                         <list>javafx.scene.input.Dragboard</list>

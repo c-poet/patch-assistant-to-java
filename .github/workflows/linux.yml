@@ -30,7 +30,6 @@ jobs:
           import xml.etree.ElementTree as ET
           tree = ET.parse('pom.xml')
           root = tree.getroot()
-          # 处理命名空间
           for elem in root.iter():
             if '}' in elem.tag:
               elem.tag = elem.tag.split('}', 1)[1]
