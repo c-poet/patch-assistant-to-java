@@ -282,7 +282,8 @@ public abstract class TreeNodeUtil {
      * @return 查询到的节点信息
      */
     public static TreeNode findNodeByPath(TreeNode node, String path) {
-        if (path.replaceAll("\\\\", FileNameUtil.SEPARATOR).equals(node.getPath().replaceAll("\\\\", FileNameUtil.SEPARATOR))) {
+        if (path.replaceAll(FileNameUtil.SEPARATOR_WIN + FileNameUtil.SEPARATOR_WIN, FileNameUtil.SEPARATOR)
+                .equals(node.getPath().replaceAll(FileNameUtil.SEPARATOR_WIN + FileNameUtil.SEPARATOR_WIN, FileNameUtil.SEPARATOR))) {
             return node;
         }
         if (node.getChildren() != null && !node.getChildren().isEmpty()) {

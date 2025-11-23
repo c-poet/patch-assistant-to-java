@@ -221,7 +221,7 @@ public abstract class FileUtil {
             out.write(bytes);
             out.flush();
         } catch (Exception e) {
-            throw new AppException("写入文件失败", e);
+            throw new AppException("Failed to write to the file", e);
         }
     }
 
@@ -247,7 +247,7 @@ public abstract class FileUtil {
             return;
         }
         if (!file.mkdirs()) {
-            throw new AppException("目录创建失败");
+            throw new AppException("Directory creation failed");
         }
     }
 
@@ -318,7 +318,7 @@ public abstract class FileUtil {
         try {
             Files.move(source, target, options);
         } catch (Exception e) {
-            throw new AppException("移动文件失败", e);
+            throw new AppException("Moving files failed", e);
         }
     }
 

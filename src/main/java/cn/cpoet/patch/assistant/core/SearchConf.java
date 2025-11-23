@@ -43,9 +43,12 @@ public class SearchConf implements Cloneable {
         }
         history.add(item);
         if (history.size() > historyLimit) {
+            int num = history.size() - historyLimit;
             Iterator<SearchItem> iterator = history.iterator();
-            for (int i = 0; i < history.size() - historyLimit; ++i, iterator.next()) {
+            while (num > 0 && iterator.hasNext()) {
+                iterator.next();
                 iterator.remove();
+                --num;
             }
         }
     }

@@ -5,12 +5,14 @@ import cn.cpoet.patch.assistant.constant.ThemeEnum;
 import cn.cpoet.patch.assistant.exception.AppException;
 import cn.cpoet.patch.assistant.util.FileTempUtil;
 import cn.cpoet.patch.assistant.util.FileUtil;
+import cn.cpoet.patch.assistant.util.OSUtil;
 import cn.cpoet.patch.assistant.util.XMLUtil;
 import javafx.scene.Scene;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -123,25 +125,28 @@ public class AppContext {
     }
 
     public AppContext reload() {
-        try (InputStream in = FileUtil.getFileAsStream(AppConst.CONFIG_FILE_NAME)) {
-            if (in == null) {
-                configuration = new Configuration();
-                syncConf2File();
-            } else {
-                configuration = XMLUtil.read(in, Configuration.class);
-            }
-        } catch (Exception e) {
-            throw new AppException("配置文件读取失败", e);
-        }
+        loadConfig();
         return this;
+    }
+
+    private void loadConfig() {
+        File file = OSUtil.getAppConfigPath().resolve(AppConst.CONFIG_FILE_NAME).toFile();
+        try (InputStream in = new FileInputStream(file)) {
+            configuration = XMLUtil.read(in, Configuration.class);
+        } catch (FileNotFoundException e) {
+            configuration = new Configuration();
+            syncConf2File();
+        } catch (Exception e) {
+            throw new AppException("Config file read failed", e);
+        }
     }
 
     public void syncConf2File() {
         try {
             byte[] bytes = XMLUtil.writeAsBytes(configuration);
-            FileUtil.writeFile(AppConst.CONFIG_FILE_NAME, bytes);
+            FileUtil.writeFile(OSUtil.getAppConfigPath().resolve(AppConst.CONFIG_FILE_NAME).toFile(), bytes);
         } catch (Exception e) {
-            throw new AppException("配置文件写入失败", e);
+            throw new AppException("Config file write failed", e);
         }
     }
 

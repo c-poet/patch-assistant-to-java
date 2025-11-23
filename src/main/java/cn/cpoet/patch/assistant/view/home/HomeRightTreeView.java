@@ -2,14 +2,13 @@ package cn.cpoet.patch.assistant.view.home;
 
 import cn.cpoet.patch.assistant.constant.FileExtConst;
 import cn.cpoet.patch.assistant.constant.FocusTreeStatusConst;
-import cn.cpoet.patch.assistant.constant.ParamNameConst;
 import cn.cpoet.patch.assistant.control.menu.MenuItemClaim;
 import cn.cpoet.patch.assistant.control.tree.*;
 import cn.cpoet.patch.assistant.control.tree.node.CompressNode;
 import cn.cpoet.patch.assistant.control.tree.node.FileNode;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
-import cn.cpoet.patch.assistant.core.AppContext;
 import cn.cpoet.patch.assistant.core.Configuration;
+import cn.cpoet.patch.assistant.core.StartUpInfo;
 import cn.cpoet.patch.assistant.service.PatchPackService;
 import cn.cpoet.patch.assistant.service.compress.FileDecompressor;
 import cn.cpoet.patch.assistant.util.*;
@@ -518,42 +517,16 @@ public class HomeRightTreeView extends HomeTreeView {
         patchTree.setOnKeyPressed(this::onKeyPressed);
         patchTree.setOnKeyReleased(this::onKeyReleased);
         initPatchTreeDrag();
-        UIUtil.runNotUI(() -> {
-            File file = getInitPatchFile();
-            if (file != null) {
-                refreshPatchTree(file);
+        StartUpInfo.consume(sui -> {
+            File patchFile = sui.getPatchFile();
+            if (patchFile != null) {
+                refreshPatchTree(patchFile);
             }
         });
         StackPane stackPane = new StackPane();
         stackPane.getChildren().add(patchTree);
         fastSearchControl.fillNode(stackPane);
         return stackPane;
-    }
-
-    private File getInitPatchFile() {
-        File file = null;
-        String patchPath = AppContext.getInstance().getArg(ParamNameConst.PATCH);
-        if (!StringUtil.isBlank(patchPath)) {
-            file = FileUtil.getExistsDirOrFile(patchPath);
-        }
-        if (file != null) {
-            return file;
-        }
-        String targetPath = AppContext.getInstance().getArg(ParamNameConst.TARGET);
-        if (!StringUtil.isBlank(targetPath) && !targetPath.endsWith(FileExtConst.DOT_JAR)) {
-            file = FileUtil.getExistsDirOrFile(targetPath);
-        }
-        if (file != null) {
-            return file;
-        }
-        // 判断是否需要加载最后操作的补丁信息
-        if (Boolean.TRUE.equals(Configuration.getInstance().getPatch().getLoadLastPatch())) {
-            String lastPatchPackPath = Configuration.getInstance().getLastPatchPackPath();
-            if (!StringUtil.isBlank(lastPatchPackPath)) {
-                file = FileUtil.getExistsDirOrFile(lastPatchPackPath);
-            }
-        }
-        return file;
     }
 
     private void updatePatchPathLabel(TextField textField) {

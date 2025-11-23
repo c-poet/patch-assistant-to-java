@@ -179,7 +179,7 @@ public class PatchPackService extends BasePackService {
             appNodePath = pathInfo.getPath1();
         }
         pc.step("app node path: " + appNodePath);
-        String[] paths = appNodePath.split(FileNameUtil.SEPARATOR);
+        String[] paths = FileNameUtil.splitPath(appNodePath);
         doMatchMappedNodeChildrenWithReadme(totalInfo, appTreeInfo, pathInfo, paths, 0, appTreeInfo.getRootNode(), patchNode);
     }
 

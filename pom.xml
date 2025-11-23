@@ -6,19 +6,24 @@
 
     <groupId>cn.cpoet.patch.assistant</groupId>
     <artifactId>patch-assistant-to-java</artifactId>
-    <version>1.3.2</version>
+    <version>1.4.0</version>
     <name>PatchAssistant2J</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <junit.version>5.10.0</junit.version>
+
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <javafx.version>19.0.2.1</javafx.version>
+        <package.type/>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>
-            <version>17.0.15</version>
+            <version>${javafx.version}</version>
         </dependency>
 
         <dependency>
@@ -68,8 +73,32 @@
         </dependency>
     </dependencies>
 
+    <profiles>
+        <profile>
+            <id>desktop</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <gluonfx.target>host</gluonfx.target>
+            </properties>
+        </profile>
+        <profile>
+            <id>mac</id>
+            <properties>
+                <package.type>dmg</package.type>
+            </properties>
+        </profile>
+        <profile>
+            <id>pi</id>
+            <properties>
+                <gluonfx.target>linux-aarch64</gluonfx.target>
+            </properties>
+        </profile>
+    </profiles>
+
     <build>
-        <finalName>${artifactId}</finalName>
+        <finalName>${project.artifactId}</finalName>
 
         <resources>
             <resource>
@@ -121,22 +150,53 @@
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>
-                <executions>
-                    <execution>
-                        <id>default-cli</id>
-                        <configuration>
-                            <mainClass>
-                                cn.cpoet.patch.assistant/cn.cpoet.patch.assistant.PatchAssistantApplication
-                            </mainClass>
-                            <launcher>starter</launcher>
-                            <jlinkZipName>patch-assistant-to-java</jlinkZipName>
-                            <jlinkImageName>patch-assistant-to-java</jlinkImageName>
-                            <noManPages>true</noManPages>
-                            <stripDebug>false</stripDebug>
-                            <noHeaderFiles>true</noHeaderFiles>
-                        </configuration>
-                    </execution>
-                </executions>
+                <configuration>
+                    <mainClass>cn.cpoet.patch.assistant.PatchAssistantApplication</mainClass>
+                </configuration>
+            </plugin>
+
+            <!-- GluonFX 插件 -->
+            <plugin>
+                <groupId>com.gluonhq</groupId>
+                <artifactId>gluonfx-maven-plugin</artifactId>
+                <version>1.0.27</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>cn.cpoet.patch.assistant</groupId>
+                        <artifactId>patch-assistant-to-java-gluonfx</artifactId>
+                        <version>0</version>
+                        <scope>system</scope>
+                        <systemPath>${project.basedir}/lib/patch-assistant-to-java-gluonfx.jar</systemPath>
+                    </dependency>
+                </dependencies>
+                <configuration>
+                    <appIdentifier>${project.groupId}</appIdentifier>
+                    <mainClass>cn.cpoet.patch.assistant.PatchAssistantApplication</mainClass>
+                    <target>${gluonfx.target}</target>
+                    <verbose>true</verbose>
+                    <enableSWRendering>true</enableSWRendering>
+                    <releaseConfiguration>
+                        <packageType>${package.type}</packageType>
+                        <description>Patch Assistant, quickly perform patch matching and replacement for Jar
+                            applications.
+                        </description>
+                        <vendor>CPoet</vendor>
+                        <version>${project.version}</version>
+                        <!-- for macOS -->
+                        <macSigningUserName>CPoet</macSigningUserName>
+                        <macAppStore>false</macAppStore>
+                        <skipSigning>true</skipSigning>
+                        <bundleName>${project.name}</bundleName>
+                        <bundleVersion>${project.version}</bundleVersion>
+                        <bundleShortVersion>${project.version}</bundleShortVersion>
+                    </releaseConfiguration>
+                    <reflectionList>
+                        <list>javafx.scene.input.Dragboard</list>
+                    </reflectionList>
+                    <nativeImageArgs>
+                        <arg>-O3</arg>
+                    </nativeImageArgs>
+                </configuration>
             </plugin>
         </plugins>
     </build>

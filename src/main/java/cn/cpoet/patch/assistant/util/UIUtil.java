@@ -4,7 +4,6 @@ import javafx.application.Platform;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
 
 /**
  * UI工具

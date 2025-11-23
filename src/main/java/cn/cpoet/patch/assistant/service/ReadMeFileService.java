@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
  */
 public class ReadMeFileService {
 
-    private final Pattern pattern = Pattern.compile("([!+-]?)([a-zA-Z-/.0-9]+)(\\s+([a-zA-Z-/.0-9]+))?(\\s+([a-zA-Z-/.0-9]*))?");
+    private final Pattern pattern = Pattern.compile("([!+-]?)[\\\\/]?([a-zA-Z-\\\\/.0-9]+)(\\s+[\\\\/]?([a-zA-Z-\\\\/.0-9]+))?(\\s+([a-zA-Z-\\\\/.0-9]*))?");
 
     public final static ReadMeFileService INSTANCE = new ReadMeFileService();
 

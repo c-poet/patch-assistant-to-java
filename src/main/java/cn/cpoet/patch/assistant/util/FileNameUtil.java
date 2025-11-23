@@ -1,5 +1,7 @@
 package cn.cpoet.patch.assistant.util;
 
+import java.util.regex.Pattern;
+
 /**
  * 文件名工具
  *
@@ -23,6 +25,11 @@ public abstract class FileNameUtil {
     public final static String SEPARATOR = Character.toString(C_SEPARATOR);
 
     /**
+     * 统一分隔符Windows
+     */
+    public final static String SEPARATOR_WIN = Character.toString(C_SEPARATOR_WIN);
+
+    /**
      * 后缀名分隔符
      */
     public final static char C_EXT_SEPARATOR = '.';
@@ -33,6 +40,14 @@ public abstract class FileNameUtil {
     public final static String EXT_SEPARATOR = Character.toString(C_EXT_SEPARATOR);
 
     private FileNameUtil() {
+    }
+
+    private static final class PathSeparatorPatternHolder {
+        private static final Pattern pathSeparatorPattern = Pattern.compile("[" + SEPARATOR + SEPARATOR_WIN + SEPARATOR_WIN + "]");
+    }
+
+    public static Pattern getPathSeparatorPattern() {
+        return PathSeparatorPatternHolder.pathSeparatorPattern;
     }
 
     public static String getName(String fileName) {
@@ -55,9 +70,8 @@ public abstract class FileNameUtil {
         if (path == null || path.isBlank()) {
             return path;
         }
-        if (path.charAt(path.length() - 1) == C_SEPARATOR) {
-            path = path.substring(0, path.length() - 1);
-        }
+        path = unPerfectDirPath(path);
+        path = path.replace(C_SEPARATOR_WIN, C_SEPARATOR);
         int i = path.lastIndexOf(C_SEPARATOR);
         return i == -1 ? path : path.substring(i + 1);
     }
@@ -72,10 +86,8 @@ public abstract class FileNameUtil {
         if (path == null || path.isBlank()) {
             return path;
         }
+        path = unPerfectDirPath(path);
         path = path.replace(C_SEPARATOR_WIN, C_SEPARATOR);
-        if (path.charAt(path.length() - 1) == C_SEPARATOR) {
-            path = path.substring(0, path.length() - 1);
-        }
         int i = path.lastIndexOf(C_SEPARATOR);
         return i == -1 ? "" : path.substring(0, i);
     }
@@ -101,10 +113,10 @@ public abstract class FileNameUtil {
      * @return 以 {@link  #SEPARATOR}结束的路径
      */
     public static String perfectDirPath(String path) {
-        if (path.endsWith(FileNameUtil.SEPARATOR)) {
+        if (path.endsWith(SEPARATOR) || path.endsWith(SEPARATOR_WIN)) {
             return path;
         }
-        return path + FileNameUtil.SEPARATOR;
+        return path + SEPARATOR;
     }
 
     /**
@@ -114,7 +126,7 @@ public abstract class FileNameUtil {
      * @return 非 {@link #SEPARATOR}结束的路径
      */
     public static String unPerfectDirPath(String path) {
-        if (path.endsWith(FileNameUtil.SEPARATOR)) {
+        if (path.endsWith(SEPARATOR) || path.endsWith(SEPARATOR_WIN)) {
             return path.substring(0, path.length() - 1);
         }
         return path;
@@ -130,5 +142,15 @@ public abstract class FileNameUtil {
         String fileName = getName(name) + "_" + UUIDUtil.random32();
         String fileExt = getExt(name);
         return StringUtil.isBlank(fileExt) ? fileName : fileName + EXT_SEPARATOR + fileExt;
+    }
+
+    /**
+     * 拆分路径
+     *
+     * @param path 路径
+     * @return 拆分结果
+     */
+    public static String[] splitPath(String path) {
+        return getPathSeparatorPattern().split(path);
     }
 }
