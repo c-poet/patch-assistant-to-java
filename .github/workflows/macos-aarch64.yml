@@ -2,7 +2,7 @@ name: macOS AArch64
 
 on:
   push:
-    branches: [ develop ]
+    branches: [ master ]
 
 jobs:
   build:
