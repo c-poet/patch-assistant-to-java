@@ -11,6 +11,7 @@ import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.control.tree.node.VirtualNode;
 import cn.cpoet.patch.assistant.core.AppContext;
 import cn.cpoet.patch.assistant.core.Configuration;
+import cn.cpoet.patch.assistant.core.StartUpInfo;
 import cn.cpoet.patch.assistant.service.AppPackService;
 import cn.cpoet.patch.assistant.util.*;
 import cn.cpoet.patch.assistant.view.content.ContentView;
@@ -370,32 +371,16 @@ public class HomeLeftTreeView extends HomeTreeView {
         appTree.setOnMouseClicked(this::onMouseClicked);
         appTree.setOnKeyReleased(this::onKeyReleased);
         initAppTreeDrag();
-        UIUtil.runNotUI(() -> {
-            File file = getInitAppPackFile();
-            if (file != null) {
-                refreshAppTree(file);
+        StartUpInfo.consume(sui -> {
+            File appFile = sui.getAppFile();
+            if (appFile != null) {
+                refreshAppTree(appFile);
             }
         });
         StackPane stackPane = new StackPane();
         stackPane.getChildren().add(appTree);
         fastSearchControl.fillNode(stackPane);
         return stackPane;
-    }
-
-    private File getInitAppPackFile() {
-        File file = null;
-        String targetPath = AppContext.getInstance().getArg(ParamNameConst.TARGET);
-        if (!StringUtil.isBlank(targetPath) && targetPath.endsWith(FileExtConst.DOT_JAR)) {
-            file = FileUtil.getExistsFile(targetPath);
-        }
-        if (file != null) {
-            return file;
-        }
-        String lastAppPackPath = Configuration.getInstance().getLastAppPackPath();
-        if (!StringUtil.isBlank(lastAppPackPath)) {
-            file = FileUtil.getExistsFile(lastAppPackPath);
-        }
-        return file;
     }
 
     private void updatePackPathLabel(TextField textField) {

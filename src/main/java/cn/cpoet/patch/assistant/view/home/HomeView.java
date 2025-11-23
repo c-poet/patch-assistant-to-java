@@ -15,8 +15,6 @@ import cn.cpoet.patch.assistant.view.about.AboutView;
 import cn.cpoet.patch.assistant.view.config.ConfigView;
 import cn.cpoet.patch.assistant.view.progress.ProgressView;
 import cn.cpoet.patch.assistant.view.search.SearchView;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.Event;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
@@ -35,11 +33,9 @@ import java.io.File;
 public class HomeView extends HomeContext {
 
     private final Stage stage;
-    private final BooleanProperty showPatchInfo;
 
     public HomeView(Stage stage) {
         this.stage = stage;
-        showPatchInfo = new SimpleBooleanProperty(Boolean.TRUE.equals(Configuration.getInstance().getShowPatchInfo()));
     }
 
     private Node buildHeader() {
@@ -163,6 +159,15 @@ public class HomeView extends HomeContext {
         }
     }
 
+    private void buildFocusTree(SplitPane topPane, Node leftTree, Node rightTree) {
+        focusTree(topPane, leftTree, rightTree, focusTreeStatus.get());
+        focusTreeStatus.addListener((observableValue, oldVal, newVal) -> {
+            int focusStatus = newVal.intValue();
+            Configuration.getInstance().setFocusTreeStatus(focusStatus);
+            focusTree(topPane, leftTree, rightTree, focusStatus);
+        });
+    }
+
     private void handleShowPatchInfo(SplitPane centrePane, Node top, Node bottom, boolean showPatchInfo) {
         centrePane.getItems().clear();
         centrePane.getItems().add(top);
@@ -171,25 +176,24 @@ public class HomeView extends HomeContext {
         }
     }
 
+    private void buildShowPatchInfo(SplitPane centrePane, Node top, Node bottom) {
+        handleShowPatchInfo(centrePane, top, bottom, showPatchInfo.get());
+        showPatchInfo.addListener((observableValue, oldVal, newVal) -> {
+            Configuration.getInstance().setShowPatchInfo(newVal);
+            handleShowPatchInfo(centrePane, top, bottom, newVal);
+        });
+    }
+
     private Node buildCentre() {
         StackPane treeStackPane = new StackPane();
         Node leftTree = new HomeLeftTreeView(stage, this).build();
         Node rightTree = new HomeRightTreeView(stage, this).build();
         SplitPane topPane = new SplitPane();
-        focusTree(topPane, leftTree, rightTree, focusTreeStatus.get());
-        focusTreeStatus.addListener((observableValue, oldVal, newVal) -> {
-            int focusStatus = newVal.intValue();
-            Configuration.getInstance().setFocusTreeStatus(focusStatus);
-            focusTree(topPane, leftTree, rightTree, focusStatus);
-        });
+        buildFocusTree(topPane, leftTree, rightTree);
         treeStackPane.getChildren().add(topPane);
         Node patchInfo = buildBottomCentre();
         SplitPane centrePane = new SplitPane(treeStackPane, patchInfo);
-        handleShowPatchInfo(centrePane, treeStackPane, patchInfo, showPatchInfo.get());
-        showPatchInfo.addListener((observableValue, oldVal, newVal) -> {
-            Configuration.getInstance().setShowPatchInfo(newVal);
-            handleShowPatchInfo(centrePane, treeStackPane, patchInfo, newVal);
-        });
+        buildShowPatchInfo(centrePane, treeStackPane, patchInfo);
         centrePane.setOrientation(Orientation.VERTICAL);
         centrePane.setDividerPositions(0.7);
         return centrePane;
