@@ -170,6 +170,7 @@
                     </dependency>
                 </dependencies>
                 <configuration>
+                    <appIdentifier>${project.groupId}</appIdentifier>
                     <mainClass>cn.cpoet.patch.assistant.PatchAssistantApplication</mainClass>
                     <target>${gluonfx.target}</target>
                     <verbose>true</verbose>
