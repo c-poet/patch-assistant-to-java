@@ -186,7 +186,7 @@
                         <macSigningUserName>CPoet</macSigningUserName>
                         <macAppStore>false</macAppStore>
                         <skipSigning>true</skipSigning>
-                        <bundleName>${project.artifactId}</bundleName>
+                        <bundleName>${project.name}</bundleName>
                         <bundleVersion>${project.version}</bundleVersion>
                         <bundleShortVersion>${project.version}</bundleShortVersion>
                     </releaseConfiguration>
