@@ -14,6 +14,8 @@ Windows提供绿色版本的`exe`单文件和安装版本的`msi`文件，建议
 
 MacOS提供ARM和X86的DMG映像包，可根据自己的电脑架构下载，以X86为例。双击打开下载好的dmg文件，将左侧图标拖入右侧目录。
 
+![macos-install.png](assets/macos-install.png)
+
 安装完成后，打开**启动台**找到PatchAssistant2J程序打开。
 > **注意：** 因为程序未经过签名，所以首次安装PatchAssistant2J打开时需要在”设置->隐私和安全性“中点击允许。
 

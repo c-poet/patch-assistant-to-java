@@ -30,6 +30,7 @@
 
 ### 特别鸣谢
 
+- gluonfx
 - Fernflower
 - richtextfx
 - java-diff-utils
