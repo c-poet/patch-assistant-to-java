@@ -23,7 +23,9 @@ import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
-import java.util.*;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.Stack;
 import java.util.regex.Pattern;
 
 /**
@@ -105,7 +107,7 @@ public class SearchView {
             searchHistory(results);
             return;
         }
-        String[] paths = keyword.split("[/\\\\]");
+        String[] paths = FileNameUtil.splitPath(keyword);
         AppTreeInfo appTreeInfo = context.getAppTree().getTreeInfo();
         PatchTreeInfo patchTreeInfo = context.getPatchTree().getTreeInfo();
         if (paths.length > 1) {
