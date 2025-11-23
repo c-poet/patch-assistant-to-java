@@ -32,7 +32,7 @@ public abstract class XMLUtil {
         try {
             return getXmlMapper().readValue(in, clazz);
         } catch (Exception e) {
-            throw new AppException("反序列化失败", e);
+            throw new AppException("Deserialization failed", e);
         }
     }
 
@@ -40,7 +40,7 @@ public abstract class XMLUtil {
         try {
             return getXmlMapper().readValue(bytes, typeReference);
         } catch (Exception e) {
-            throw new AppException("反序列化失败", e);
+            throw new AppException("Deserialization failed", e);
         }
     }
 
@@ -48,7 +48,7 @@ public abstract class XMLUtil {
         try {
             return getXmlMapper().writeValueAsBytes(obj);
         } catch (Exception e) {
-            throw new AppException("序列化失败", e);
+            throw new AppException("Serialization failed", e);
         }
     }
 
