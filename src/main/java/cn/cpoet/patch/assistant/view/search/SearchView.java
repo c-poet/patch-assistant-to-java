@@ -7,10 +7,8 @@ import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.core.SearchConf;
 import cn.cpoet.patch.assistant.core.SearchItem;
-import cn.cpoet.patch.assistant.util.FileNameUtil;
-import cn.cpoet.patch.assistant.util.I18nUtil;
-import cn.cpoet.patch.assistant.util.StringUtil;
-import cn.cpoet.patch.assistant.util.UIUtil;
+import cn.cpoet.patch.assistant.service.AppPackService;
+import cn.cpoet.patch.assistant.util.*;
 import cn.cpoet.patch.assistant.view.home.HomeContext;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
@@ -26,6 +24,7 @@ import javafx.stage.Stage;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.Stack;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 
 /**
@@ -156,11 +155,21 @@ public class SearchView {
         }
     }
 
-    private void searchNodeWithPath(TreeNode node, SearchKeyword[] keywords, Stack<String> pathStack, Set<SearchItem> results) {
-        searchNodeWithPath(node, keywords, 0, pathStack, results);
+    private boolean searchNodeWithPath(TreeNode node, SearchKeyword[] keywords, Stack<String> pathStack, Set<SearchItem> results) {
+        return searchNodeWithPath(node, keywords, 0, pathStack, results);
     }
 
-    private void searchNodeWithPath(TreeNode node, SearchKeyword[] keywords, int index, Stack<String> paths, Set<SearchItem> results) {
+    private boolean collectChildrenMatchResult(TreeNode node, Function<TreeNode, Boolean> func) {
+        boolean flag = false;
+        for (TreeNode child : node.getChildren()) {
+            if (func.apply(child)) {
+                flag = true;
+            }
+        }
+        return flag;
+    }
+
+    private boolean searchNodeWithPath(TreeNode node, SearchKeyword[] keywords, int index, Stack<String> paths, Set<SearchItem> results) {
         if (index < keywords.length) {
             if (matchKeyword(keywords[index], node.getName())) {
                 if (index == keywords.length - 1) {
@@ -169,18 +178,36 @@ public class SearchView {
                     item.setNode(node);
                     item.setPath(String.join(FileNameUtil.SEPARATOR, paths));
                     results.add(item);
-                } else if (node.getChildren() != null) {
+                    return true;
+                }
+                if (CollectionUtil.isNotEmpty(node.getChildren())) {
                     paths.push(node.getName());
-                    node.getChildren().forEach(child -> searchNodeWithPath(child, keywords, index + 1, paths, results));
+                    boolean flag = collectChildrenMatchResult(node, child -> searchNodeWithPath(child, keywords, index + 1, paths, results));
                     paths.pop();
+                    return flag;
+                }
+                if (TreeNodeUtil.isCompressNode(node)) {
+                    // Matching to the compressed file after attempting to decompress it
+                    if (AppPackService.INSTANCE.buildChildrenWithCompress(node, node.isPatch()) && CollectionUtil.isNotEmpty(node.getChildren())) {
+                        paths.push(node.getName());
+                        boolean flag = collectChildrenMatchResult(node, child -> searchNodeWithPath(child, keywords, index + 1, paths, results));
+                        paths.pop();
+                        if (flag) {
+                            TreeNodeUtil.buildNodeChildren(node.getTreeItem(), node);
+                        }
+                        return flag;
+                    }
                 }
             }
         }
         if (node.getChildren() != null) {
             paths.push(node.getName());
             node.getChildren().forEach(child -> searchNodeWithPath(child, keywords, paths, results));
+            boolean flag = collectChildrenMatchResult(node, child -> searchNodeWithPath(child, keywords, paths, results));
             paths.pop();
+            return flag;
         }
+        return false;
     }
 
     private boolean matchKeyword(SearchKeyword keyword, String name) {
