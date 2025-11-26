@@ -1,0 +1,158 @@
+package cn.cpoet.patch.assistant.util;
+
+import java.util.regex.Pattern;
+
+/**
+ * 文件名工具
+ *
+ * @author CPoet
+ */
+public abstract class FileNameUtil {
+
+    /**
+     * 统一分隔符
+     */
+    public final static char C_SEPARATOR = '/';
+
+    /**
+     * 统一分隔符Windows
+     */
+    public final static char C_SEPARATOR_WIN = '\\';
+
+    /**
+     * 统一分隔符
+     */
+    public final static String SEPARATOR = Character.toString(C_SEPARATOR);
+
+    /**
+     * 统一分隔符Windows
+     */
+    public final static String SEPARATOR_WIN = Character.toString(C_SEPARATOR_WIN);
+
+    /**
+     * 后缀名分隔符
+     */
+    public final static char C_EXT_SEPARATOR = '.';
+
+    /**
+     * 后缀名分隔符
+     */
+    public final static String EXT_SEPARATOR = Character.toString(C_EXT_SEPARATOR);
+
+    public final static String FILE_NAME_REGEX = "[a-zA-Z-\\\\/.0-9\\u4e00-\\u9fa5_-]";
+
+    private FileNameUtil() {
+    }
+
+    private static final class PathSeparatorPatternHolder {
+        private static final Pattern pathSeparatorPattern = Pattern.compile("[" + SEPARATOR + SEPARATOR_WIN + SEPARATOR_WIN + "]");
+    }
+
+    public static Pattern getPathSeparatorPattern() {
+        return PathSeparatorPatternHolder.pathSeparatorPattern;
+    }
+
+    public static String getName(String fileName) {
+        int i = fileName.lastIndexOf(C_EXT_SEPARATOR);
+        return i == -1 ? fileName : fileName.substring(0, i);
+    }
+
+    public static String getExt(String fileName) {
+        int i = fileName.lastIndexOf(C_EXT_SEPARATOR);
+        return i == -1 ? null : fileName.substring(i + 1);
+    }
+
+    /**
+     * 获取文件名（包括后缀）
+     *
+     * @param path 路径
+     * @return 文件名
+     */
+    public static String getFileName(String path) {
+        if (path == null || path.isBlank()) {
+            return path;
+        }
+        path = unPerfectDirPath(path);
+        path = path.replace(C_SEPARATOR_WIN, C_SEPARATOR);
+        int i = path.lastIndexOf(C_SEPARATOR);
+        return i == -1 ? path : path.substring(i + 1);
+    }
+
+    /**
+     * 获取文件所在目录路径
+     *
+     * @param path 文件名
+     * @return 目录路径
+     */
+    public static String getDirPath(String path) {
+        if (path == null || path.isBlank()) {
+            return path;
+        }
+        path = unPerfectDirPath(path);
+        path = path.replace(C_SEPARATOR_WIN, C_SEPARATOR);
+        int i = path.lastIndexOf(C_SEPARATOR);
+        return i == -1 ? "" : path.substring(0, i);
+    }
+
+    /**
+     * 拼接路径
+     *
+     * @param path1 路径1
+     * @param path2 路径2
+     * @return 拼接后的路径
+     */
+    public static String joinPath(String path1, String path2) {
+        if (path1.endsWith(SEPARATOR)) {
+            return path1 + (path2.startsWith(SEPARATOR) ? path2.substring(SEPARATOR.length()) : path2);
+        }
+        return path1 + (path2.startsWith(SEPARATOR) ? path2 : SEPARATOR + path2);
+    }
+
+    /**
+     * 路径后面拼接{@link  #SEPARATOR}
+     *
+     * @param path 路径
+     * @return 以 {@link  #SEPARATOR}结束的路径
+     */
+    public static String perfectDirPath(String path) {
+        if (path.endsWith(SEPARATOR) || path.endsWith(SEPARATOR_WIN)) {
+            return path;
+        }
+        return path + SEPARATOR;
+    }
+
+    /**
+     * 和 {@link #perfectDirPath(String)}执行相反的操作
+     *
+     * @param path 路径
+     * @return 非 {@link #SEPARATOR}结束的路径
+     */
+    public static String unPerfectDirPath(String path) {
+        if (path.endsWith(SEPARATOR) || path.endsWith(SEPARATOR_WIN)) {
+            return path.substring(0, path.length() - 1);
+        }
+        return path;
+    }
+
+    /**
+     * 生成唯一文件名
+     *
+     * @param name 名称
+     * @return 唯一文件名
+     */
+    public static String uniqueFileName(String name) {
+        String fileName = getName(name) + "_" + UUIDUtil.random32();
+        String fileExt = getExt(name);
+        return StringUtil.isBlank(fileExt) ? fileName : fileName + EXT_SEPARATOR + fileExt;
+    }
+
+    /**
+     * 拆分路径
+     *
+     * @param path 路径
+     * @return 拆分结果
+     */
+    public static String[] splitPath(String path) {
+        return getPathSeparatorPattern().split(path);
+    }
+}

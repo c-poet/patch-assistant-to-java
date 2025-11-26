@@ -1,0 +1,18 @@
+.code-area .xml-tag {
+    -fx-fill: #800000;
+    -fx-font-weight: bold;
+}
+
+.code-area .xml-attribute {
+    -fx-fill: #000080;
+    -fx-font-weight: bold;
+}
+
+.code-area .xml-string {
+    -fx-fill: #008000;
+}
+
+.code-area .xml-comment {
+    -fx-fill: #808080;
+    -fx-font-style: italic;
+}

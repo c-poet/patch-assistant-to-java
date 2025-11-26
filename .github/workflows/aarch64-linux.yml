@@ -1,0 +1,64 @@
+name: Embedded - AArch64 Linux
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Gluon's GraalVM
+        uses: gluonhq/setup-graalvm@master
+        with:
+          graalvm: '22.1.0.1-Final'
+          jdk: 'java17'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install libraries
+        run: |
+          sudo apt-get update
+          sudo apt install libasound2-dev libavcodec-dev libavformat-dev libavutil-dev libgl-dev libgtk-3-dev libpango1.0-dev libxtst-dev
+          sudo apt install g++-aarch64-linux-gnu 
+
+      - name: Extract version from pom.xml
+        id: get-version
+        run: |
+          version=$(python3 -c "
+          import xml.etree.ElementTree as ET
+          tree = ET.parse('pom.xml')
+          root = tree.getroot()
+          for elem in root.iter():
+            if '}' in elem.tag:
+              elem.tag = elem.tag.split('}', 1)[1]
+          version = root.find('version').text
+          print(version)
+          ")
+          echo "version=$version" >> $GITHUB_OUTPUT
+
+      - name: Make staging directory
+        run: mkdir staging
+
+      - name: Gluon License
+        uses: gluonhq/gluon-build-license@v1
+        with:
+          gluon-license: ${{ secrets.GLUON_LICENSE }}
+
+      - name: Add execute permission for Maven Wrapper
+        run: |
+          chmod +x ./mvnw
+
+      - name: Gluon Build
+        run: ./mvnw -Ppi gluonfx:build gluonfx:package
+
+      - name: Copy native image to staging
+        run: cp -r target/gluonfx/aarch64-linux/PatchAssistant2J* staging
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: PatchAssistant2J-aarch64-linux-${{ steps.get-version.outputs.version }}
+          path: staging

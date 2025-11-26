@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<Application>
+    <name>${project.name}</name>
+    <version>${project.version}</version>
+    <grouopId>${project.groupId}</grouopId>
+    <artifactId>${project.artifactId}</artifactId>
+    <userName>${user.name}</userName>
+    <buildTime>${maven.build.timestamp}</buildTime>
+</Application>

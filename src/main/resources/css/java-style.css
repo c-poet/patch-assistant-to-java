@@ -1,0 +1,35 @@
+.code-area .keyword {
+    -fx-fill: purple;
+    -fx-font-weight: bold;
+}
+
+.code-area .semicolon {
+    -fx-font-weight: bold;
+}
+
+.code-area .paren {
+    -fx-fill: firebrick;
+    -fx-font-weight: bold;
+}
+
+.code-area .bracket {
+    -fx-fill: darkgreen;
+    -fx-font-weight: bold;
+}
+
+.code-area .brace {
+    -fx-fill: teal;
+    -fx-font-weight: bold;
+}
+
+.code-area .string {
+    -fx-fill: blue;
+}
+
+.code-area .comment {
+    -fx-fill: cadetblue;
+}
+
+.code-area .paragraph-box:has-caret {
+    -fx-background-color: #f2f9fc;
+}
