@@ -1,0 +1,59 @@
+name: macOS x86_64
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: macos-13
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Gluon's GraalVM
+        uses: gluonhq/setup-graalvm@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          graalvm: '22.1.0.1-Final'
+          jdk: 'java17'
+
+      - name: Extract version from pom.xml
+        id: get-version
+        run: |
+          version=$(python -c "
+          import xml.etree.ElementTree as ET
+          tree = ET.parse('pom.xml')
+          root = tree.getroot()
+          for elem in root.iter():
+            if '}' in elem.tag:
+              elem.tag = elem.tag.split('}', 1)[1]
+          version = root.find('version').text
+          print(version)
+          ")
+          echo "version=$version" >> $GITHUB_OUTPUT
+
+      - name: Gluon License
+        uses: gluonhq/gluon-build-license@v1
+        with:
+          gluon-license: ${{ secrets.GLUON_LICENSE }}
+
+      - name: Add execute permission for Maven Wrapper
+        run: |
+          chmod +x ./mvnw
+
+      - name: Gluon Build and Package
+        id: outputfile
+        run: ./mvnw -Pdesktop,mac gluonfx:build gluonfx:package
+
+      - name: Update version number
+        id: update-version
+        run: |
+          mv target/gluonfx/x86_64-darwin/PatchAssistant2J-1.0.0.dmg target/gluonfx/x86_64-darwin/PatchAssistant2J-${{ steps.get-version.outputs.version }}.dmg
+          echo "path=target/gluonfx/x86_64-darwin/PatchAssistant2J-${{ steps.get-version.outputs.version }}.dmg" >> $GITHUB_OUTPUT
+
+      - name: Upload (dmg)
+        uses: actions/upload-artifact@v4
+        with:
+          name: PatchAssistant2J-darwin-${{ steps.get-version.outputs.version }}
+          path: ${{ steps.update-version.outputs.path }}

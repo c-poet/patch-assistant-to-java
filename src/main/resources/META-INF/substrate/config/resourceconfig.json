@@ -1,0 +1,10 @@
+[
+  {
+    "resources": [
+      [
+        {"pattern": ".*\\.ico$"},
+        {"pattern": ".*\\.properties$"}
+      ]
+    ]
+  }
+]

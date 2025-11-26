@@ -1,0 +1,30 @@
+.code-area .yaml-keyword {
+    -fx-fill: #569CD6;
+    -fx-font-weight: bold;
+}
+
+.code-area .yaml-string {
+    -fx-fill: #CE9178;
+}
+
+.code-area .yaml-comment {
+    -fx-fill: #6A9955;
+}
+
+.code-area .yaml-number {
+    -fx-fill: #B5CEA8;
+}
+
+.code-area .yaml-key {
+    -fx-fill: #9CDCFE;
+}
+
+.code-area .yaml-anchor {
+    -fx-fill: #DCDCAA;
+    -fx-font-style: italic;
+}
+
+.code-area .yaml-alias {
+    -fx-fill: #DCDCAA;
+    -fx-font-weight: bold;
+}

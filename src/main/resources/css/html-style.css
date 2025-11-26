@@ -1,0 +1,23 @@
+.code-area .html-tag {
+    -fx-fill: #800000;
+    -fx-font-weight: bold;
+}
+
+.code-area .html-attribute {
+    -fx-fill: #008000;
+    -fx-font-weight: bold;
+}
+
+.code-area .html-comment {
+    -fx-fill: #808080;
+    -fx-font-style: italic;
+}
+
+.code-area .html-string {
+    -fx-fill: #0000FF;
+}
+
+.code-area .html-doctype {
+    -fx-fill: #800080;
+    -fx-font-style: italic;
+}

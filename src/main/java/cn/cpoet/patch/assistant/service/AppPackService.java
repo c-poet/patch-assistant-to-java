@@ -1,0 +1,104 @@
+package cn.cpoet.patch.assistant.service;
+
+import cn.cpoet.patch.assistant.control.tree.AppTreeInfo;
+import cn.cpoet.patch.assistant.control.tree.TreeNodeType;
+import cn.cpoet.patch.assistant.control.tree.node.FileNode;
+import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
+import cn.cpoet.patch.assistant.core.Configuration;
+import cn.cpoet.patch.assistant.exception.AppException;
+import cn.cpoet.patch.assistant.model.AppPackSign;
+import cn.cpoet.patch.assistant.model.HashInfo;
+import cn.cpoet.patch.assistant.util.DateUtil;
+import cn.cpoet.patch.assistant.util.FileUtil;
+import cn.cpoet.patch.assistant.util.I18nUtil;
+import cn.cpoet.patch.assistant.view.home.HomeContext;
+import cn.cpoet.patch.assistant.view.progress.ProgressContext;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.time.LocalDateTime;
+import java.util.Objects;
+
+/**
+ * 应用包处理
+ *
+ * @author CPoet
+ */
+public class AppPackService extends BasePackService {
+
+    public static final AppPackService INSTANCE = new AppPackService();
+
+    /**
+     * 获取树形节点
+     *
+     * @param file 文件
+     * @return 树形信息
+     */
+    public AppTreeInfo getTreeNode(File file) {
+        AppTreeInfo treeInfo = new AppTreeInfo();
+        FileNode rootNode = new FileNode();
+        rootNode.setName(file.getName());
+        rootNode.setPath(file.getPath());
+        rootNode.setFile(file);
+        rootNode.setType(TreeNodeType.ROOT);
+        treeInfo.setRootNode(rootNode);
+        HashInfo hashInfo = FileUtil.getHashInfo(file);
+        rootNode.setSize(hashInfo.getLength());
+        rootNode.setMd5(hashInfo.getMd5());
+        AppPackSign appPackSign = new AppPackSign();
+        appPackSign.setMd5(hashInfo.getMd5());
+        appPackSign.setSha1(hashInfo.getSha1());
+        treeInfo.setAppPackSign(appPackSign);
+        try (InputStream in = new FileInputStream(file)) {
+            getTreeNode(in, rootNode);
+            return treeInfo;
+        } catch (IOException ex) {
+            throw new AppException("Failed to read the contents of the app package", ex);
+        }
+    }
+
+    private void getTreeNode(InputStream in, TreeNode rootNode) {
+        try {
+            buildChildrenWithCompress(rootNode, in, false);
+        } catch (Exception ex) {
+            throw new AppException("Failed to read application package", ex);
+        }
+    }
+
+    /**
+     * 生成并保存应用包
+     *
+     * @param context         上下文
+     * @param progressContext 进度上下文
+     * @param file            文件名
+     */
+    public void savePack(HomeContext context, ProgressContext progressContext, File file) {
+        new AppPackWriteProcessor(context, progressContext).exec(file);
+    }
+
+    /**
+     * 创建补丁比较信息
+     *
+     * @param appTreeInfo 应用信息
+     * @param appNode     应用节点
+     * @param patchNode   补丁节点
+     */
+    public void createPatchDiffInfo(AppTreeInfo appTreeInfo, TreeNode appNode, TreeNode patchNode) {
+        if (!Boolean.TRUE.equals(Configuration.getInstance().getPatch().getPatchFileDiff())) {
+            return;
+        }
+        String appMd5 = appNode.getMd5OrInit();
+        String patchMd5 = patchNode.getMd5OrInit();
+        if (Objects.equals(appMd5, patchMd5)) {
+            appTreeInfo.appendPatchDiffInfo(I18nUtil.tr("app.service.app-pack.diff-file-tip.hash", appNode.getPath(), patchNode.getPath()));
+            return;
+        }
+        LocalDateTime appModifyTime = appNode.getModifyTime();
+        LocalDateTime patchModifyTime = patchNode.getModifyTime();
+        if (appModifyTime != null && patchModifyTime != null && !appModifyTime.isBefore(patchModifyTime)) {
+            appTreeInfo.appendPatchDiffInfo(I18nUtil.tr("app.service.app-pack.diff-file-tip.time", appNode.getPath(), DateUtil.formatDateTime(appModifyTime), patchNode.getPath(), DateUtil.formatDateTime(patchModifyTime)));
+        }
+    }
+}

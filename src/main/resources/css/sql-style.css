@@ -1,0 +1,17 @@
+.code-area .keyword {
+    -fx-fill: #0000FF;
+    -fx-font-weight: bold;
+}
+
+.code-area .string {
+    -fx-fill: #008000;
+}
+
+.code-area .number {
+    -fx-fill: #FF4500;
+}
+
+.code-area .comment {
+    -fx-fill: #808080;
+    -fx-font-style: italic;
+}
