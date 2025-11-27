@@ -59,6 +59,8 @@ public class PatchPackService extends BasePackService {
             }
             if (readmeFileName.equalsIgnoreCase(child.getName())) {
                 readmeNode = child;
+            } else if (readmeNode == null && child.getName().endsWith(FileExtConst.DOT_TXT)) {
+                readmeNode = child;
             }
         }
         if (readmeNode != null) {
