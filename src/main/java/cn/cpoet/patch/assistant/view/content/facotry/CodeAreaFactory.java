@@ -1,5 +1,6 @@
 package cn.cpoet.patch.assistant.view.content.facotry;
 
+import cn.cpoet.patch.assistant.constant.StyleConst;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.core.ContentConf;
 import cn.cpoet.patch.assistant.util.FileUtil;
@@ -24,8 +25,6 @@ import java.util.regex.Matcher;
  * @author CPoet
  */
 public abstract class CodeAreaFactory {
-
-    protected static final String CODE_AREA_CSS = FileUtil.getResourceAndExternalForm("/css/code-area.css");
 
     public static final EventType<?> SHOW_MODE_CHANGE = new EventType<>("SHOW_MODE_CHANGE");
     public static final EventType<?> EDIT_MODE_CHANGE = new EventType<>("EDIT_MODE_CHANGE");
@@ -140,7 +139,10 @@ public abstract class CodeAreaFactory {
         NodeCodeArea codeArea = new NodeCodeArea();
         codeArea.setEditable(false);
         codeArea.setParagraphGraphicFactory(LineNumberFactory.get(codeArea));
-        codeArea.getStylesheets().addAll(CODE_AREA_CSS);
+        String codeAreaStylePath = FileUtil.getResourceAndExternalForm(StyleConst.STYLE_FILE_CODE_AREA);
+        if (codeAreaStylePath != null) {
+            codeArea.getStylesheets().add(codeAreaStylePath);
+        }
         String styleSheetPath = getStyleSheetPath();
         if (!StringUtil.isBlank(styleSheetPath)) {
             String stylesheetPath = FileUtil.getResourceAndExternalForm(styleSheetPath);

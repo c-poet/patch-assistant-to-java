@@ -10,9 +10,7 @@ import cn.cpoet.patch.assistant.util.StringUtil;
 
 import java.io.BufferedReader;
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,6 +24,34 @@ public class ReadMeFileService {
     private final Pattern pattern = Pattern.compile("([!+-?]?)[\\\\/]?(" + FileNameUtil.FILE_NAME_REGEX + "+)(\\s+[\\\\/]?(" + FileNameUtil.FILE_NAME_REGEX + "+))?(\\s+(" + FileNameUtil.FILE_NAME_REGEX + "*))?");
 
     public final static ReadMeFileService INSTANCE = new ReadMeFileService();
+
+    /**
+     * 获取文本中关于补丁的类型
+     *
+     * @param text 文件
+     * @return 类型绑定关系
+     */
+    public Map<Integer, ChangeTypeEnum> getTextLineChangeType(String text) {
+        if (StringUtil.isBlank(text)) {
+            return Collections.emptyMap();
+        }
+        int lineNo = 1;
+        Map<Integer, ChangeTypeEnum> lineChangeTypeMap = new HashMap<>();
+        try (StringReader reader = new StringReader(text);
+             BufferedReader bufferedReader = new BufferedReader(reader)) {
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                Matcher matcher = pattern.matcher(line);
+                if (matcher.find()) {
+                    ChangeTypeEnum changeType = ChangeTypeEnum.ofCode(matcher.group(1));
+                    lineChangeTypeMap.put(lineNo, changeType);
+                }
+                ++lineNo;
+            }
+        } catch (Exception ignored) {
+        }
+        return lineChangeTypeMap;
+    }
 
     /**
      * 获取补丁文件的路径信息

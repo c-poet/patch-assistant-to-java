@@ -3,9 +3,11 @@ package cn.cpoet.patch.assistant.view.node_mapped;
 import cn.cpoet.patch.assistant.constant.AppConst;
 import cn.cpoet.patch.assistant.constant.ChangeTypeEnum;
 import cn.cpoet.patch.assistant.constant.FileExtConst;
+import cn.cpoet.patch.assistant.constant.StyleConst;
 import cn.cpoet.patch.assistant.control.tree.TreeNodeType;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.core.Configuration;
+import cn.cpoet.patch.assistant.service.ReadMeFileService;
 import cn.cpoet.patch.assistant.util.*;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
@@ -18,12 +20,11 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
+import org.fxmisc.richtext.model.StyleSpans;
+import org.fxmisc.richtext.model.StyleSpansBuilder;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -33,7 +34,7 @@ public abstract class AbsNodeMappedView {
 
     protected String delInfo;
     protected String mappedInfo;
-    protected CodeArea textArea;
+    protected CodeArea codeArea;
     protected final TreeNode appRootNode;
     protected final TreeNode patchRootNode;
     protected final boolean isGenMappedInfo;
@@ -56,36 +57,104 @@ public abstract class AbsNodeMappedView {
         CodeArea codeArea = new CodeArea();
         codeArea.setPadding(Insets.EMPTY);
         codeArea.setParagraphGraphicFactory(LineNumberFactory.get(codeArea));
-        codeArea.setStyle("-fx-font-size: 12pt;");
+        String codeAreaStylePath = FileUtil.getResourceAndExternalForm(StyleConst.STYLE_FILE_CODE_AREA);
+        if (codeAreaStylePath != null) {
+            codeArea.getStylesheets().add(codeAreaStylePath);
+        }
+        codeAreaStylePath = FileUtil.getResourceAndExternalForm(StyleConst.STYLE_FILE_README);
+        if (codeAreaStylePath != null) {
+            codeArea.getStylesheets().add(codeAreaStylePath);
+        }
+        codeArea.richChanges()
+                .filter(ch -> !ch.getInserted().equals(ch.getRemoved()))
+                .subscribe(change -> codeArea.setStyleSpans(0, computeHighlighting(codeArea.getText())));
         return codeArea;
     }
 
+    public StyleSpans<Collection<String>> computeHighlighting(String text) {
+        if (StringUtil.isBlank(text)) {
+            return null;
+        }
+        Map<Integer, ChangeTypeEnum> lineChangeTypeMap = ReadMeFileService.INSTANCE.getTextLineChangeType(text);
+        if (CollectionUtil.isEmpty(lineChangeTypeMap)) {
+            return null;
+        }
+        int start = 0, end = 0, lineNo = 0;
+        StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();
+        while (end < text.length()) {
+            if (text.charAt(end) == '\n') {
+                ++lineNo;
+                addLineStyle(lineNo, start, end, spansBuilder, lineChangeTypeMap);
+                start = end;
+            }
+            ++end;
+        }
+        if (start != end) {
+            addLineStyle(++lineNo, start, end, spansBuilder, lineChangeTypeMap);
+        }
+        return spansBuilder.create();
+    }
+
+    private void addLineStyle(int lineNo, int start, int end, StyleSpansBuilder<Collection<String>> spansBuilder,
+                              Map<Integer, ChangeTypeEnum> lineChangeTypeMap) {
+        String lineStyleClass = getLineStyleClass(lineChangeTypeMap, lineNo);
+        if (StringUtil.isBlank(lineStyleClass)) {
+            spansBuilder.add(Collections.singleton(lineStyleClass), end - start);
+        } else {
+            spansBuilder.add(Collections.singleton(lineStyleClass), end - start);
+        }
+    }
+
+    private String getLineStyleClass(Map<Integer, ChangeTypeEnum> lineChangeTypeMap, int line) {
+        ChangeTypeEnum changeTypeEnum = lineChangeTypeMap.get(line);
+        if (changeTypeEnum == null) {
+            return null;
+        }
+        return getLineStyleClass(changeTypeEnum);
+    }
+
+    private String getLineStyleClass(ChangeTypeEnum changeTypeEnum) {
+        switch (changeTypeEnum) {
+            case ADD:
+                return "add";
+            case MOD:
+                return "mod";
+            case DEL:
+                return "del";
+            case IGNORE:
+                return "ignore";
+            case NONE:
+            default:
+                return null;
+        }
+    }
+
     protected Node build() {
-        textArea = createTextArea();
+        codeArea = createTextArea();
         ContextMenu contentMenu = createContentMenu();
         if (contentMenu != null) {
-            textArea.setContextMenu(contentMenu);
+            codeArea.setContextMenu(contentMenu);
         }
         if (isGenMappedInfo) {
             buildMappedInfo();
         }
-        return textArea;
+        return codeArea;
     }
 
     protected ContextMenu createContentMenu() {
         ContextMenu contextMenu = new ContextMenu();
         MenuItem copyItem = new MenuItem(I18nUtil.t("app.common.copy"));
-        copyItem.setOnAction(e -> textArea.copy());
+        copyItem.setOnAction(e -> codeArea.copy());
         contextMenu.getItems().add(copyItem);
-        if (textArea.isEditable()) {
+        if (codeArea.isEditable()) {
             MenuItem pasteItem = new MenuItem(I18nUtil.t("app.common.paste"));
-            pasteItem.setOnAction(e -> textArea.paste());
+            pasteItem.setOnAction(e -> codeArea.paste());
             MenuItem cutItem = new MenuItem(I18nUtil.t("app.common.cut"));
-            cutItem.setOnAction(e -> textArea.cut());
+            cutItem.setOnAction(e -> codeArea.cut());
             contextMenu.getItems().addAll(pasteItem, cutItem);
         }
         MenuItem selectAllItem = new MenuItem(I18nUtil.t("app.common.select-all"));
-        selectAllItem.setOnAction(e -> textArea.selectAll());
+        selectAllItem.setOnAction(e -> codeArea.selectAll());
         contextMenu.getItems().add(selectAllItem);
         if (isGenMappedInfo) {
             RadioMenuItem includeDelMenuItem = getIncludeDelMenuItem();
@@ -121,7 +190,7 @@ public abstract class AbsNodeMappedView {
     }
 
     protected void updateText(String text) {
-        UIUtil.runNotUI(() -> UIUtil.runUI(() -> textArea.replaceText(text)));
+        UIUtil.runNotUI(() -> UIUtil.runUI(() -> codeArea.replaceText(text)));
     }
 
     private void buildDelInfo() {
@@ -222,7 +291,7 @@ public abstract class AbsNodeMappedView {
     protected void handleCopyInfo() {
         Clipboard systemClipboard = Clipboard.getSystemClipboard();
         ClipboardContent content = new ClipboardContent();
-        content.putString(textArea.getText());
+        content.putString(codeArea.getText());
         systemClipboard.setContent(content);
     }
 
@@ -237,7 +306,7 @@ public abstract class AbsNodeMappedView {
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("README FILE", "*" + FileExtConst.DOT_TXT));
         File file = fileChooser.showSaveDialog(stage);
         if (file != null) {
-            FileUtil.writeFile(file, textArea.getText().getBytes());
+            FileUtil.writeFile(file, codeArea.getText().getBytes());
         }
     }
 }

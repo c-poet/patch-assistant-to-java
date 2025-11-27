@@ -1,0 +1,16 @@
+.code-area .add {
+    -fx-fill: #4fc75c;
+}
+
+.code-area .mod {
+    -fx-fill: #4c89fb;
+}
+
+.code-area .del {
+    -fx-fill: #979797;
+    -fx-font-weight: bold;
+}
+
+.code-area .ignore {
+    -fx-fill: #f8a055;
+}
