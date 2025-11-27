@@ -1,6 +1,8 @@
 package cn.cpoet.patch.assistant.util;
 
 import cn.cpoet.patch.assistant.common.InputBufConsumer;
+import cn.cpoet.patch.assistant.constant.IConConst;
+import cn.cpoet.patch.assistant.constant.JarInfoConst;
 import cn.cpoet.patch.assistant.control.tree.FileTreeItem;
 import cn.cpoet.patch.assistant.control.tree.TotalInfo;
 import cn.cpoet.patch.assistant.control.tree.TreeNodeType;
@@ -10,6 +12,7 @@ import cn.cpoet.patch.assistant.control.tree.node.VirtualNode;
 import cn.cpoet.patch.assistant.exception.AppException;
 import cn.cpoet.patch.assistant.service.compress.FileDecompressor;
 import javafx.scene.control.TreeItem;
+import javafx.scene.image.Image;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -436,5 +439,31 @@ public abstract class TreeNodeUtil {
         }
         parentNode = parentNode.getParent();
         return isCompressNode(parentNode) ? FileNameUtil.SEPARATOR : FileNameUtil.joinPath(parentNode.getPath(), node.getName());
+    }
+
+    /**
+     * 获取节点类型对应的图标
+     *
+     * @param node 节点
+     * @return 图标Image
+     */
+    public static Image getIconImage(TreeNode node) {
+        if (TreeNodeType.CUSTOM_ROOT.equals(node.getType())) {
+            return ImageUtil.loadImageCache(IConConst.FILE_MARK);
+        }
+        if (TreeNodeType.README.equals(node.getType())) {
+            return ImageUtil.loadImageCache(IConConst.FILE_README);
+        }
+        if (JarInfoConst.PATCH_UP_PATH.equals(node.getPath())) {
+            return ImageUtil.loadImageCache(IConConst.OPER_LOG);
+        }
+        Image image = IConUtil.loadIconByFileExt(node.getName());
+        if (image != null) {
+            return image;
+        }
+        if (node.isDir()) {
+            return ImageUtil.loadImageCache(IConConst.DIRECTORY);
+        }
+        return ImageUtil.loadImageCache(IConConst.FILE);
     }
 }

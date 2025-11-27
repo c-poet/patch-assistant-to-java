@@ -1,5 +1,7 @@
 package cn.cpoet.patch.assistant.constant;
 
+import javafx.scene.paint.Color;
+
 /**
  * 常用样式
  *
@@ -14,20 +16,20 @@ public interface StyleConst {
     /**
      * 蓝色
      */
-    String COLOR_BLUE = "#4c89fb";
+    Color COLOR_BLUE = Color.web("#4c89fb");
 
     /**
      * 绿色
      */
-    String COLOR_GREEN = "#4fc75c";
+    Color COLOR_GREEN = Color.web("#4fc75c");
 
     /**
      * 灰色
      */
-    String COLOR_GRAY = "#979797";
+    Color COLOR_GRAY = Color.web("#979797");
 
     /**
      * 灰色（详情）
      */
-    String COLOR_GRAY_1 = "#6c707e";
+    Color COLOR_GRAY_1 = Color.web("#6c707e");
 }

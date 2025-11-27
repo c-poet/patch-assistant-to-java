@@ -106,4 +106,9 @@ public interface IConConst {
      * 操作日志
      */
     String OPER_LOG = "/icons/oper-log.png";
+
+    /**
+     * 时间钟
+     */
+    String TIME = "/icons/time.png";
 }

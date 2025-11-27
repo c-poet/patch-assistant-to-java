@@ -1,5 +1,8 @@
 package cn.cpoet.patch.assistant.core;
 
+import cn.cpoet.patch.assistant.util.DateUtil;
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import java.util.Date;
 import java.util.Objects;
 
@@ -10,6 +13,7 @@ public class SearchHisItem extends SearchItem {
     /**
      * 搜索时间
      */
+    @JsonFormat(pattern = DateUtil.DATE_TIME_FORMAT, timezone = "UTC+8")
     private Date searchTime;
 
     /**

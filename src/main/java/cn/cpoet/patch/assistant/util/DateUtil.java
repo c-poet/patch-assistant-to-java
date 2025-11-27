@@ -1,11 +1,13 @@
 package cn.cpoet.patch.assistant.util;
 
 import java.nio.file.attribute.FileTime;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
+import java.util.Date;
 
 /**
  * 时间工具
@@ -74,6 +76,16 @@ public abstract class DateUtil {
      */
     public static String formatDateTime(TemporalAccessor temporal) {
         return getDateTimeFormatter().format(temporal);
+    }
+
+    /**
+     * 格式化时间
+     *
+     * @param date 时间
+     * @return 格式化的时间
+     */
+    public static String formatDateTime(Date date) {
+        return new SimpleDateFormat(DATE_TIME_FORMAT).format(date);
     }
 
     /**

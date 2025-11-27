@@ -1,7 +1,5 @@
 package cn.cpoet.patch.assistant.control.tree;
 
-import cn.cpoet.patch.assistant.constant.IConConst;
-import cn.cpoet.patch.assistant.constant.JarInfoConst;
 import cn.cpoet.patch.assistant.constant.StyleConst;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.core.AppContext;
@@ -16,7 +14,6 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.*;
 import javafx.scene.layout.HBox;
-import javafx.scene.paint.Color;
 
 import java.io.File;
 import java.util.List;
@@ -203,36 +200,16 @@ public class FileTreeCell extends TreeCell<TreeNode> {
         ImageView icon = new ImageView();
         icon.setFitWidth(16);
         icon.setFitHeight(16);
-        icon.setImage(getIconImage(node));
+        icon.setImage(TreeNodeUtil.getIconImage(node));
         box.getChildren().add(icon);
     }
 
     private Image getDragIconImage(TreeNode node) {
-        ImageView imageView = new ImageView(getIconImage(node));
+        ImageView imageView = new ImageView(TreeNodeUtil.getIconImage(node));
         imageView.setFitHeight(50);
         imageView.setFitWidth(50);
         imageView.setPreserveRatio(false);
         return imageView.snapshot(new SnapshotParameters(), null);
-    }
-
-    private Image getIconImage(TreeNode node) {
-        if (TreeNodeType.CUSTOM_ROOT.equals(node.getType())) {
-            return ImageUtil.loadImageCache(IConConst.FILE_MARK);
-        }
-        if (TreeNodeType.README.equals(node.getType())) {
-            return ImageUtil.loadImageCache(IConConst.FILE_README);
-        }
-        if (JarInfoConst.PATCH_UP_PATH.equals(node.getPath())) {
-            return ImageUtil.loadImageCache(IConConst.OPER_LOG);
-        }
-        Image image = IConUtil.loadIconByFileExt(node.getName());
-        if (image != null) {
-            return image;
-        }
-        if (node.isDir()) {
-            return ImageUtil.loadImageCache(IConConst.DIRECTORY);
-        }
-        return ImageUtil.loadImageCache(IConConst.FILE);
     }
 
     private void addFileDetail(TreeNode node) {
@@ -243,7 +220,7 @@ public class FileTreeCell extends TreeCell<TreeNode> {
             String sizeReadability = FileUtil.getSizeReadability(node.getSizeOrInit());
             String dateTime = DateUtil.formatDateTime(node.getModifyTime());
             Label fileDetailLbl = new Label("\t" + dateTime + "  " + sizeReadability + "  " + node.getMd5OrInit());
-            fileDetailLbl.setTextFill(Color.web(StyleConst.COLOR_GRAY_1));
+            fileDetailLbl.setTextFill(StyleConst.COLOR_GRAY_1);
             box.getChildren().add(fileDetailLbl);
         }
     }
@@ -252,13 +229,13 @@ public class FileTreeCell extends TreeCell<TreeNode> {
         TreeNodeType status = node.getType();
         switch (status) {
             case ADD:
-                textLbl.setTextFill(Color.web(StyleConst.COLOR_GREEN));
+                textLbl.setTextFill(StyleConst.COLOR_GREEN);
                 break;
             case MOD:
-                textLbl.setTextFill(Color.web(StyleConst.COLOR_BLUE));
+                textLbl.setTextFill(StyleConst.COLOR_BLUE);
                 break;
             case DEL:
-                textLbl.setTextFill(Color.web(StyleConst.COLOR_GRAY));
+                textLbl.setTextFill(StyleConst.COLOR_GRAY);
                 break;
             default:
         }

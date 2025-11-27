@@ -1,5 +1,7 @@
 package cn.cpoet.patch.assistant.view.search;
 
+import cn.cpoet.patch.assistant.constant.IConConst;
+import cn.cpoet.patch.assistant.constant.StyleConst;
 import cn.cpoet.patch.assistant.control.DialogPurePane;
 import cn.cpoet.patch.assistant.control.tree.AppTreeInfo;
 import cn.cpoet.patch.assistant.control.tree.PatchTreeInfo;
@@ -14,11 +16,13 @@ import cn.cpoet.patch.assistant.view.home.HomeContext;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
@@ -297,16 +301,48 @@ public class SearchView {
             if (empty || item == null) {
                 setText(null);
                 setGraphic(null);
-            } else {
-                HBox box = new HBox();
-                box.setSpacing(10);
-                Label nameLbl = new Label(item.getName());
-                box.getChildren().add(nameLbl);
-                Label pathLbl = new Label(item.getPath());
-                pathLbl.setTextFill(Color.web("#6c707e"));
-                box.getChildren().add(pathLbl);
-                setGraphic(box);
+                return;
             }
+            HBox box = new HBox();
+            box.setSpacing(10);
+            Label nameLbl = new Label(item.getName());
+            box.getChildren().add(nameLbl);
+            Label pathLbl = new Label(item.getPath());
+            pathLbl.setTextFill(StyleConst.COLOR_GRAY_1);
+            box.getChildren().add(pathLbl);
+            Region region = new Region();
+            HBox.setHgrow(region, Priority.ALWAYS);
+            box.getChildren().add(region);
+            if (item instanceof SearchHisItem) {
+                addSearchHisInfo(box, (SearchHisItem) item);
+            }
+            if (item instanceof SearchNodeItem) {
+                addSearchNodeInfo(box, (SearchNodeItem) item);
+            }
+            setGraphic(box);
+        }
+
+        private void addSearchHisInfo(HBox box, SearchHisItem item) {
+            if (item.getSearchTime() != null) {
+                Label timeLbl = new Label(DateUtil.formatDateTime(item.getSearchTime()));
+                timeLbl.setTextFill(StyleConst.COLOR_GRAY_1);
+                box.getChildren().add(timeLbl);
+                ImageView icon = getImageView(ImageUtil.loadImageCache(IConConst.TIME));
+                box.getChildren().add(icon);
+            }
+        }
+
+        private void addSearchNodeInfo(HBox box, SearchNodeItem item) {
+            ImageView icon = getImageView(TreeNodeUtil.getIconImage(item.getNode()));
+            box.getChildren().add(icon);
+        }
+
+        private ImageView getImageView(Image image) {
+            ImageView icon = new ImageView();
+            icon.setFitWidth(16);
+            icon.setFitHeight(16);
+            icon.setImage(image);
+            return icon;
         }
     }
 }
