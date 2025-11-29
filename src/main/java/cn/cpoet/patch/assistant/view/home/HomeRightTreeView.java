@@ -92,7 +92,8 @@ public class HomeRightTreeView extends HomeTreeView {
     }
 
     private void handleOpenReadme(TreeNode readmeNode) {
-        new ReadmeView(readmeNode, patchTree, appTree.getTreeInfo().getRootNode(),
+        AppTreeInfo treeInfo = appTree.getTreeInfo();
+        new ReadmeView(readmeNode, patchTree, treeInfo == null ? null : treeInfo.getRootNode(),
                 TreeNodeUtil.getUnderRootNode(readmeNode == null ? patchTree.getSingleSelectedNode() : readmeNode),
                 isOk -> {
                     if (isOk) {
@@ -149,6 +150,7 @@ public class HomeRightTreeView extends HomeTreeView {
         patchTree.setTreeInfo(null);
         patchTree.setRoot(null);
         patchTree.fireEvent(new Event(PatchTreeView.PATCH_TREE_REFRESH));
+        Configuration.getInstance().setLastPatchPackPath(null);
     }
 
     private void buildPatchTreeContextMenu() {

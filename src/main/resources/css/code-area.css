@@ -1,5 +1,13 @@
 .code-area {
     -fx-font-family: monospace;
     -fx-font-size: 14px;
-    -fx-background-color: #f8f8f8;
+    -fx-background-color: #ffffff;
+}
+
+.code-area .lineno {
+    -fx-font-size: 14px;
+    -fx-text-fill: #aeb3c2;
+    -fx-background-color: #ffffff;
+    -fx-border-color: #ebecf0;
+    -fx-border-width: 0 1px 0 0;
 }

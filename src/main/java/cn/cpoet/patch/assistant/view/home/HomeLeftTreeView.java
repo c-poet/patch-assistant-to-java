@@ -163,6 +163,7 @@ public class HomeLeftTreeView extends HomeTreeView {
         appTree.fireEvent(new Event(AppTreeView.APP_TREE_REFRESHING));
         appTree.setRoot(null);
         appTree.fireEvent(new Event(AppTreeView.APP_TREE_REFRESH));
+        Configuration.getInstance().setLastAppPackPath(null);
     }
 
     private void buildAppTreeContextMenu() {
