@@ -1,12 +1,10 @@
 package cn.cpoet.patch.assistant.view.readme;
 
-import cn.cpoet.patch.assistant.constant.StyleConst;
 import cn.cpoet.patch.assistant.control.tree.PatchTreeView;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.service.PatchPackService;
 import cn.cpoet.patch.assistant.util.AlterUtil;
-import cn.cpoet.patch.assistant.util.FileUtil;
 import cn.cpoet.patch.assistant.util.I18nUtil;
 import cn.cpoet.patch.assistant.util.UIUtil;
 import cn.cpoet.patch.assistant.view.node_mapped.AbsNodeMappedView;
@@ -41,7 +39,7 @@ public class ReadmeView extends AbsNodeMappedView {
     protected Node build() {
         Node node = super.build();
         if (readmeNode != null) {
-            codeArea.replaceText(patchTree.getTreeInfo().getReadmeText());
+            codeEditor.getCodeArea().replaceText(patchTree.getTreeInfo().getReadmeText());
         }
         return node;
     }
@@ -67,7 +65,7 @@ public class ReadmeView extends AbsNodeMappedView {
 
     @Override
     protected void updateText(String text) {
-        UIUtil.runUI(() -> codeArea.replaceSelection(text));
+        UIUtil.runUI(() -> codeEditor.getCodeArea().replaceSelection(text));
     }
 
     private boolean handleUpdateReadme(Stage stage) {
@@ -77,7 +75,7 @@ public class ReadmeView extends AbsNodeMappedView {
                 return false;
             }
         }
-        String text = codeArea.getText();
+        String text = codeEditor.getCodeArea().getText();
         new ProgressView(I18nUtil.t(readmeNode == null ? "app.view.readme.create-task-name" : "app.view.readme.update-task-name"))
                 .showDialog(stage, progressContext -> PatchPackService.INSTANCE.updatePatchReadme(progressContext, patchTree, patchRootNode, text, callback));
         return true;

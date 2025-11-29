@@ -4,6 +4,7 @@ import cn.cpoet.patch.assistant.constant.AppConst;
 import cn.cpoet.patch.assistant.constant.ChangeTypeEnum;
 import cn.cpoet.patch.assistant.constant.FileExtConst;
 import cn.cpoet.patch.assistant.constant.StyleConst;
+import cn.cpoet.patch.assistant.control.code.CodeEditor;
 import cn.cpoet.patch.assistant.control.tree.TreeNodeType;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.core.Configuration;
@@ -34,7 +35,7 @@ public abstract class AbsNodeMappedView {
 
     protected String delInfo;
     protected String mappedInfo;
-    protected CodeArea codeArea;
+    protected CodeEditor codeEditor;
     protected final TreeNode appRootNode;
     protected final TreeNode patchRootNode;
     protected final boolean isGenMappedInfo;
@@ -53,22 +54,23 @@ public abstract class AbsNodeMappedView {
         return JarVerPatternHolder.JAR_VER_PATTERN;
     }
 
-    protected CodeArea createTextArea() {
-        CodeArea codeArea = new CodeArea();
-        codeArea.setPadding(Insets.EMPTY);
+    protected CodeEditor createTextEditor() {
+        CodeEditor codeEditor = new CodeEditor();
+        codeEditor.setPadding(Insets.EMPTY);
+        CodeArea codeArea = codeEditor.getCodeArea();
         codeArea.setParagraphGraphicFactory(LineNumberFactory.get(codeArea));
         String codeAreaStylePath = FileUtil.getResourceAndExternalForm(StyleConst.STYLE_FILE_CODE_AREA);
         if (codeAreaStylePath != null) {
-            codeArea.getStylesheets().add(codeAreaStylePath);
+            codeEditor.getStylesheets().add(codeAreaStylePath);
         }
         codeAreaStylePath = FileUtil.getResourceAndExternalForm(StyleConst.STYLE_FILE_README);
         if (codeAreaStylePath != null) {
-            codeArea.getStylesheets().add(codeAreaStylePath);
+            codeEditor.getStylesheets().add(codeAreaStylePath);
         }
         codeArea.richChanges()
                 .filter(ch -> !ch.getInserted().equals(ch.getRemoved()))
                 .subscribe(change -> codeArea.setStyleSpans(0, computeHighlighting(codeArea.getText())));
-        return codeArea;
+        return codeEditor;
     }
 
     public StyleSpans<Collection<String>> computeHighlighting(String text) {
@@ -130,18 +132,19 @@ public abstract class AbsNodeMappedView {
     }
 
     protected Node build() {
-        codeArea = createTextArea();
+        codeEditor = createTextEditor();
         ContextMenu contentMenu = createContentMenu();
         if (contentMenu != null) {
-            codeArea.setContextMenu(contentMenu);
+            codeEditor.getCodeArea().setContextMenu(contentMenu);
         }
         if (isGenMappedInfo) {
             buildMappedInfo();
         }
-        return codeArea;
+        return codeEditor;
     }
 
     protected ContextMenu createContentMenu() {
+        CodeArea codeArea = codeEditor.getCodeArea();
         ContextMenu contextMenu = new ContextMenu();
         MenuItem copyItem = new MenuItem(I18nUtil.t("app.common.copy"));
         copyItem.setOnAction(e -> codeArea.copy());
@@ -190,7 +193,7 @@ public abstract class AbsNodeMappedView {
     }
 
     protected void updateText(String text) {
-        UIUtil.runNotUI(() -> UIUtil.runUI(() -> codeArea.replaceText(text)));
+        UIUtil.runNotUI(() -> UIUtil.runUI(() -> codeEditor.getCodeArea().replaceText(text)));
     }
 
     private void buildDelInfo() {
@@ -291,7 +294,7 @@ public abstract class AbsNodeMappedView {
     protected void handleCopyInfo() {
         Clipboard systemClipboard = Clipboard.getSystemClipboard();
         ClipboardContent content = new ClipboardContent();
-        content.putString(codeArea.getText());
+        content.putString(codeEditor.getCodeArea().getText());
         systemClipboard.setContent(content);
     }
 
@@ -306,7 +309,7 @@ public abstract class AbsNodeMappedView {
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("README FILE", "*" + FileExtConst.DOT_TXT));
         File file = fileChooser.showSaveDialog(stage);
         if (file != null) {
-            FileUtil.writeFile(file, codeArea.getText().getBytes());
+            FileUtil.writeFile(file, codeEditor.getCodeArea().getText().getBytes());
         }
     }
 }

@@ -1,5 +1,6 @@
 package cn.cpoet.patch.assistant.view.node_mapped;
 
+import cn.cpoet.patch.assistant.control.code.CodeEditor;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.util.I18nUtil;
@@ -8,7 +9,6 @@ import javafx.event.ActionEvent;
 import javafx.scene.control.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import org.fxmisc.richtext.CodeArea;
 
 import java.util.concurrent.TimeUnit;
 
@@ -24,10 +24,10 @@ public class NodeMappedView extends AbsNodeMappedView {
     }
 
     @Override
-    protected CodeArea createTextArea() {
-        CodeArea textArea = super.createTextArea();
-        textArea.setEditable(false);
-        return textArea;
+    protected CodeEditor createTextEditor() {
+        CodeEditor textEditor = super.createTextEditor();
+        textEditor.getCodeArea().setEditable(false);
+        return textEditor;
     }
 
     private DialogPane createDialogPane(Stage stage) {
