@@ -140,32 +140,15 @@ public class PatchPackService extends BasePackService {
         if (CollectionUtil.isEmpty(pathInfos)) {
             return;
         }
-        String pathPrefix = null;
-        if ((TreeNodeType.CUSTOM_ROOT.equals(treeNode.getType()) && treeNode.isDir()) || (treeNode instanceof FileNode && treeNode.isDir())) {
-            pathPrefix = treeNode.getPath();
-        }
         for (ReadMePathInfo pathInfo : pathInfos) {
-            TreeNode patchNode = null;
-            if (!ChangeTypeEnum.DEL.equals(pathInfo.getType())) {
-                String filePath = pathPrefix == null ? pathInfo.getPath1() : FileNameUtil.joinPath(pathPrefix, pathInfo.getPath1());
-                patchNode = TreeNodeUtil.findNodeByPath(treeNode, filePath);
-                if (patchNode == null && StringUtil.isEmpty(pathInfo.getPath2())) {
-                    String fileName = FileNameUtil.getFileName(pathInfo.getPath1());
-                    if (!Objects.equals(fileName, pathInfo.getPath1())) {
-                        filePath = pathPrefix == null ? fileName : FileNameUtil.joinPath(pathPrefix, fileName);
-                        patchNode = TreeNodeUtil.findNodeByPath(treeNode, filePath);
-                    }
-                }
-                if (patchNode == null) {
-                    continue;
-                }
-                pc.step("patch file: " + patchNode.getName());
+            if (ChangeTypeEnum.IGNORE.equals(pathInfo.getType())) {
+                continue;
             }
-            matchMappedNodeWithReadme(totalInfo, pathInfo, appTreeInfo, patchNode, pc);
+            matchMappedNodeWithReadme(totalInfo, pathInfo, appTreeInfo, pc);
         }
     }
 
-    private void matchMappedNodeWithReadme(TotalInfo totalInfo, ReadMePathInfo pathInfo, AppTreeInfo appTreeInfo, TreeNode patchNode, ProgressContext pc) {
+    private void matchMappedNodeWithReadme(TotalInfo totalInfo, ReadMePathInfo pathInfo, AppTreeInfo appTreeInfo, ProgressContext pc) {
         String appNodePath;
         if (!StringUtil.isEmpty(pathInfo.getPath3())) {
             appNodePath = FileNameUtil.joinPath(pathInfo.getPath2(), pathInfo.getPath3());
@@ -184,18 +167,18 @@ public class PatchPackService extends BasePackService {
         }
         pc.step("app node path: " + appNodePath);
         String[] paths = FileNameUtil.splitPath(appNodePath);
-        doMatchMappedNodeChildrenWithReadme(totalInfo, appTreeInfo, pathInfo, paths, 0, appTreeInfo.getRootNode(), patchNode);
+        doMatchMappedNodeChildrenWithReadme(totalInfo, appTreeInfo, pathInfo, paths, 0, appTreeInfo.getRootNode());
     }
 
     private boolean doMatchMappedNodeChildrenWithReadme(TotalInfo totalInfo, AppTreeInfo appTreeInfo, ReadMePathInfo pathInfo,
-                                                        String[] paths, int index, TreeNode appNode, TreeNode patchNode) {
+                                                        String[] paths, int index, TreeNode appNode) {
         if (index >= paths.length) {
             return false;
         }
         List<TreeNode> children = appNode.getChildren();
         if (CollectionUtil.isNotEmpty(children)) {
             for (TreeNode child : children) {
-                if (doMatchMappedNodeWithReadme(totalInfo, appTreeInfo, pathInfo, paths, index, child, patchNode)) {
+                if (doMatchMappedNodeWithReadme(totalInfo, appTreeInfo, pathInfo, paths, index, child)) {
                     return true;
                 }
             }
@@ -208,7 +191,7 @@ public class PatchPackService extends BasePackService {
         TreeNode newAppNode = null;
         while (index < paths.length) {
             if (index + 1 == paths.length) {
-                newAppNode = new MappedNode(patchNode);
+                newAppNode = new MappedNode(pathInfo.getPatchNode());
             } else {
                 VirtualNode virtualNode = new VirtualNode();
                 virtualNode.setName(paths[index]);
@@ -222,8 +205,8 @@ public class PatchPackService extends BasePackService {
             parent = newAppNode;
             ++index;
         }
-        TreeNodeUtil.mappedNode(totalInfo, newAppNode, patchNode, TreeNodeType.ADD);
-        addMappedNodeChildren(totalInfo, newAppNode, patchNode);
+        TreeNodeUtil.mappedNode(totalInfo, newAppNode, pathInfo.getPatchNode(), TreeNodeType.ADD);
+        addMappedNodeChildren(totalInfo, newAppNode, pathInfo.getPatchNode());
         return true;
     }
 
@@ -257,36 +240,35 @@ public class PatchPackService extends BasePackService {
     }
 
     private boolean doMatchMappedNodeWithReadme(TotalInfo totalInfo, AppTreeInfo appTreeInfo, ReadMePathInfo pathInfo,
-                                                String[] paths, int index, TreeNode appNode, TreeNode patchNode) {
+                                                String[] paths, int index, TreeNode appNode) {
         if (!matchPatchName(appNode, paths[index])) {
             return false;
         }
         if (index == paths.length - 1) {
-            mappedNodeWithType(totalInfo, appTreeInfo, pathInfo, appNode, patchNode);
+            mappedNodeWithType(totalInfo, appTreeInfo, pathInfo, appNode);
             return true;
         }
         if (CollectionUtil.isNotEmpty(appNode.getChildren())) {
-            return doMatchMappedNodeChildrenWithReadme(totalInfo, appTreeInfo, pathInfo, paths, ++index, appNode, patchNode);
+            return doMatchMappedNodeChildrenWithReadme(totalInfo, appTreeInfo, pathInfo, paths, ++index, appNode);
         }
         if (appNode.getName().endsWith(FileExtConst.DOT_JAR) && buildChildrenWithCompress(appNode, false)) {
-            return doMatchMappedNodeChildrenWithReadme(totalInfo, appTreeInfo, pathInfo, paths, ++index, appNode, patchNode);
+            return doMatchMappedNodeChildrenWithReadme(totalInfo, appTreeInfo, pathInfo, paths, ++index, appNode);
         }
         return false;
     }
 
-    private void mappedNodeWithType(TotalInfo totalInfo, AppTreeInfo appTreeInfo, ReadMePathInfo pathInfo, TreeNode appNode,
-                                    TreeNode patchNode) {
+    private void mappedNodeWithType(TotalInfo totalInfo, AppTreeInfo appTreeInfo, ReadMePathInfo pathInfo, TreeNode appNode) {
         switch (pathInfo.getType()) {
             case DEL:
                 mappedDelNodeWithType(totalInfo, appNode);
                 break;
             case ADD:
-                mappedAddNodeWithType(totalInfo, appNode, patchNode);
+                mappedAddNodeWithType(totalInfo, appNode, pathInfo.getPatchNode());
                 break;
             case MOD:
             case NONE:
             default:
-                mappedModNodeWithType(totalInfo, appTreeInfo, appNode, patchNode);
+                mappedModNodeWithType(totalInfo, appTreeInfo, appNode, pathInfo.getPatchNode());
         }
     }
 

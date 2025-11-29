@@ -8,6 +8,7 @@ import cn.cpoet.patch.assistant.control.code.CodeEditor;
 import cn.cpoet.patch.assistant.control.tree.TreeNodeType;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.core.Configuration;
+import cn.cpoet.patch.assistant.model.ReadMePathInfo;
 import cn.cpoet.patch.assistant.service.ReadMeFileService;
 import cn.cpoet.patch.assistant.util.*;
 import javafx.geometry.Insets;
@@ -77,42 +78,25 @@ public abstract class AbsNodeMappedView {
         if (StringUtil.isBlank(text)) {
             return null;
         }
-        Map<Integer, ChangeTypeEnum> lineChangeTypeMap = ReadMeFileService.INSTANCE.getTextLineChangeType(text);
-        if (CollectionUtil.isEmpty(lineChangeTypeMap)) {
+        List<ReadMePathInfo> pathInfos = ReadMeFileService.INSTANCE.getPathInfos(text, patchRootNode);
+        if (CollectionUtil.isEmpty(pathInfos)) {
             return null;
         }
-        int start = 0, end = 0, lineNo = 0;
+        int index = 0;
         StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();
-        while (end < text.length()) {
-            if (text.charAt(end) == '\n') {
-                ++lineNo;
-                addLineStyle(lineNo, start, end, spansBuilder, lineChangeTypeMap);
-                start = end;
+        for (ReadMePathInfo pathInfo : pathInfos) {
+            if (index < pathInfo.getStartIndex()) {
+                spansBuilder.add(Collections.emptyList(), pathInfo.getStartIndex() - index);
             }
-            ++end;
-        }
-        if (start != end) {
-            addLineStyle(++lineNo, start, end, spansBuilder, lineChangeTypeMap);
+            String lineStyleClass = getLineStyleClass(pathInfo.getType());
+            if (StringUtil.isBlank(lineStyleClass)) {
+                spansBuilder.add(Collections.emptyList(), pathInfo.getEndIndex() - pathInfo.getStartIndex());
+            } else {
+                spansBuilder.add(Collections.singleton(lineStyleClass), pathInfo.getEndIndex() - pathInfo.getStartIndex());
+            }
+            index = pathInfo.getEndIndex();
         }
         return spansBuilder.create();
-    }
-
-    private void addLineStyle(int lineNo, int start, int end, StyleSpansBuilder<Collection<String>> spansBuilder,
-                              Map<Integer, ChangeTypeEnum> lineChangeTypeMap) {
-        String lineStyleClass = getLineStyleClass(lineChangeTypeMap, lineNo);
-        if (StringUtil.isBlank(lineStyleClass)) {
-            spansBuilder.add(Collections.singleton(lineStyleClass), end - start);
-        } else {
-            spansBuilder.add(Collections.singleton(lineStyleClass), end - start);
-        }
-    }
-
-    private String getLineStyleClass(Map<Integer, ChangeTypeEnum> lineChangeTypeMap, int line) {
-        ChangeTypeEnum changeTypeEnum = lineChangeTypeMap.get(line);
-        if (changeTypeEnum == null) {
-            return null;
-        }
-        return getLineStyleClass(changeTypeEnum);
     }
 
     private String getLineStyleClass(ChangeTypeEnum changeTypeEnum) {

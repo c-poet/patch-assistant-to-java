@@ -1,6 +1,7 @@
 package cn.cpoet.patch.assistant.model;
 
 import cn.cpoet.patch.assistant.constant.ChangeTypeEnum;
+import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 
 /**
  * Readme填写的路径信息
@@ -28,6 +29,21 @@ public class ReadMePathInfo {
      * 二级路径
      */
     private String path3;
+
+    /**
+     * 关联的补丁节点
+     */
+    private TreeNode patchNode;
+
+    /**
+     * 路径起始下标
+     */
+    private int startIndex;
+
+    /**
+     * 路径结束下标
+     */
+    private int endIndex;
 
     public ChangeTypeEnum getType() {
         return type;
@@ -59,5 +75,29 @@ public class ReadMePathInfo {
 
     public void setPath3(String path3) {
         this.path3 = path3;
+    }
+
+    public TreeNode getPatchNode() {
+        return patchNode;
+    }
+
+    public void setPatchNode(TreeNode patchNode) {
+        this.patchNode = patchNode;
+    }
+
+    public int getStartIndex() {
+        return startIndex;
+    }
+
+    public void setStartIndex(int startIndex) {
+        this.startIndex = startIndex;
+    }
+
+    public int getEndIndex() {
+        return endIndex;
+    }
+
+    public void setEndIndex(int endIndex) {
+        this.endIndex = endIndex;
     }
 }
