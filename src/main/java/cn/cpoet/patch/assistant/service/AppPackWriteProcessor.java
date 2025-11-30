@@ -209,6 +209,13 @@ public class AppPackWriteProcessor {
         if (!node.isDir() && node.getName().endsWith(FileExtConst.DOT_JAR)) {
             progressContext.step("Write:" + node.getName());
             writeTreeNode2PackWithJar(zipOut, node);
+            if (node.getMappedNode() != null) {
+                if (TreeNodeType.ADD.equals(node.getType())) {
+                    addAddInfo(node, node.getMappedNode());
+                } else {
+                    addModInfo(node, node.getMappedNode());
+                }
+            }
             return;
         }
         if (node.getMappedNode() == null) {
