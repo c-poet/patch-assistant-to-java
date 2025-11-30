@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
 /**
@@ -285,19 +286,39 @@ public abstract class TreeNodeUtil {
      * @return 查询到的节点信息
      */
     public static TreeNode findNodeByPath(TreeNode node, String path) {
-        if (path.replaceAll(FileNameUtil.SEPARATOR_WIN + FileNameUtil.SEPARATOR_WIN, FileNameUtil.SEPARATOR)
-                .equals(node.getPath().replaceAll(FileNameUtil.SEPARATOR_WIN + FileNameUtil.SEPARATOR_WIN, FileNameUtil.SEPARATOR))) {
-            return node;
-        }
-        if (node.getChildren() != null && !node.getChildren().isEmpty()) {
+        return findNodeByPath(node, path, (child, name) -> child.getName().equals(name));
+    }
+
+    /**
+     * 根据路径查询节点
+     *
+     * @param node      节点
+     * @param path      路径
+     * @param predicate 路径名称匹配
+     * @return 查询到的节点信息
+     */
+    public static TreeNode findNodeByPath(TreeNode node, String path, BiPredicate<TreeNode, String> predicate) {
+        int i = 0;
+        boolean flag;
+        String[] paths = FileNameUtil.splitPath(path);
+        while (i < paths.length) {
+            if (CollectionUtil.isEmpty(node.getChildren())) {
+                return null;
+            }
+            flag = false;
             for (TreeNode child : node.getChildren()) {
-                TreeNode target = findNodeByPath(child, path);
-                if (target != null) {
-                    return target;
+                if (predicate.test(child, paths[i])) {
+                    node = child;
+                    flag = true;
+                    break;
                 }
             }
+            if (!flag) {
+                return null;
+            }
+            ++i;
         }
-        return null;
+        return node;
     }
 
     /**

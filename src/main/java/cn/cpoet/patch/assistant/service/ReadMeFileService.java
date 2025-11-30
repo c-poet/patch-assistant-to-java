@@ -3,8 +3,6 @@ package cn.cpoet.patch.assistant.service;
 import cn.cpoet.patch.assistant.constant.ChangeTypeEnum;
 import cn.cpoet.patch.assistant.control.tree.PatchRootInfo;
 import cn.cpoet.patch.assistant.control.tree.PatchTreeInfo;
-import cn.cpoet.patch.assistant.control.tree.TreeNodeType;
-import cn.cpoet.patch.assistant.control.tree.node.FileNode;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.model.ReadMePathInfo;
 import cn.cpoet.patch.assistant.util.FileNameUtil;
@@ -72,11 +70,6 @@ public class ReadMeFileService {
      */
     public List<ReadMePathInfo> getPathInfos(String readmeText, TreeNode patchRootNode, TreeNode appRootNode) {
         List<ReadMePathInfo> pathInfos = new ArrayList<>();
-        String pathPrefix = null;
-        if ((TreeNodeType.CUSTOM_ROOT.equals(patchRootNode.getType()) && patchRootNode.isDir())
-                || (patchRootNode instanceof FileNode && patchRootNode.isDir())) {
-            pathPrefix = patchRootNode.getPath();
-        }
         try (StringReader reader = new StringReader(readmeText);
              BufferedReader bufferedReader = new BufferedReader(reader)) {
             String line;
@@ -98,7 +91,7 @@ public class ReadMeFileService {
                             }
                         }
                     } else {
-                        pathInfo.setPatchNode(findPatchNode(patchRootNode, pathPrefix, pathInfo));
+                        pathInfo.setPatchNode(findPatchNode(patchRootNode, pathInfo));
                         if (pathInfo.getPatchNode() == null) {
                             continue;
                         }
@@ -114,17 +107,15 @@ public class ReadMeFileService {
     }
 
     private TreeNode findAppNode(TreeNode appRootNode, ReadMePathInfo pathInfo) {
-        return TreeNodeUtil.findNodeByPath(appRootNode, pathInfo.getAppNodePath());
+        return TreeNodeUtil.findNodeByPath(appRootNode, pathInfo.getAppNodePath(), PatchPackService.INSTANCE::matchPatchName);
     }
 
-    private TreeNode findPatchNode(TreeNode patchRootNode, String pathPrefix, ReadMePathInfo pathInfo) {
-        String filePath = pathPrefix == null ? pathInfo.getPath1() : FileNameUtil.joinPath(pathPrefix, pathInfo.getPath1());
-        TreeNode patchNode = TreeNodeUtil.findNodeByPath(patchRootNode, filePath);
+    private TreeNode findPatchNode(TreeNode patchRootNode, ReadMePathInfo pathInfo) {
+        TreeNode patchNode = TreeNodeUtil.findNodeByPath(patchRootNode, pathInfo.getPath1());
         if (patchNode == null && StringUtil.isEmpty(pathInfo.getPath2())) {
             String fileName = FileNameUtil.getFileName(pathInfo.getPath1());
             if (!Objects.equals(fileName, pathInfo.getPath1())) {
-                filePath = pathPrefix == null ? fileName : FileNameUtil.joinPath(pathPrefix, fileName);
-                patchNode = TreeNodeUtil.findNodeByPath(patchRootNode, filePath);
+                patchNode = TreeNodeUtil.findNodeByPath(patchRootNode, fileName);
             }
         }
         return patchNode;
