@@ -59,6 +59,12 @@ public class CodeEditor extends Region {
         );
     }
 
+    /**
+     * 代码编辑器应用代码高亮
+     *
+     * @param codeArea            代码域
+     * @param computeHighlighting 代码高亮计算函数
+     */
     public static void applyHighlighting(CodeArea codeArea, Function<String, StyleSpans<Collection<String>>> computeHighlighting) {
         codeArea.richChanges()
                 .filter(ch -> !ch.getInserted().equals(ch.getRemoved()))
