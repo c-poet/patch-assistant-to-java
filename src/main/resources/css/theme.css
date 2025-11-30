@@ -1,3 +1,24 @@
 .tree-cell:selected {
     -fx-background-color: #d4e2ff;
 }
+
+.code-editor .search-box {
+    -fx-padding: 0 3px 0 3px;
+    -fx-background-color: #ffffff;
+    -fx-border-width: 0 0 1px 0;
+    -fx-border-color: #ebecf0;
+}
+
+.code-editor .search-box .label {
+    -fx-text-fill: #aeb3c2;
+}
+
+.code-editor .search-box .button {
+    -fx-background-color: none;
+    -fx-text-fill: #aeb3c2;
+}
+
+.code-editor .search-box .text-field {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+}

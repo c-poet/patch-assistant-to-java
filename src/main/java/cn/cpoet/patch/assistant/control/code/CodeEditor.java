@@ -1,6 +1,8 @@
 package cn.cpoet.patch.assistant.control.code;
 
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
@@ -15,6 +17,7 @@ import java.util.function.Function;
  */
 public class CodeEditor extends Region {
 
+    private SearchBox searchBox;
     private final CodeArea codeArea;
     private final StackPane stackPane;
 
@@ -23,12 +26,14 @@ public class CodeEditor extends Region {
     }
 
     public CodeEditor(CodeArea codeArea) {
+        getStyleClass().add("code-editor");
         this.codeArea = codeArea;
         stackPane = new StackPane();
+        stackPane.setAlignment(Pos.TOP_LEFT);
         getChildren().add(stackPane);
         stackPane.getChildren().add(this.codeArea);
-
         this.setOnKeyPressed(this::onKeyPressed);
+        this.setOnKeyReleased(this::onKeyReleased);
     }
 
     public CodeArea getCodeArea() {
@@ -36,14 +41,26 @@ public class CodeEditor extends Region {
     }
 
     public void onKeyPressed(KeyEvent event) {
-        /*if (event.isControlDown() && event.getCode() == KeyCode.F) {
-            System.out.println("搜索");
-            HBox searchBox = new HBox();
-            TextField searchField = new TextField();
-            searchBox.getChildren().add(searchField);
+        if (event.isControlDown() && event.getCode() == KeyCode.F) {
+            SearchBox searchBox = getAndInitSearchBox();
             stackPane.getChildren().add(searchBox);
             event.consume();
-        }*/
+        }
+    }
+
+    private SearchBox getAndInitSearchBox() {
+        if (searchBox == null) {
+            searchBox = new SearchBox(this);
+            searchBox.setCloseCallback(this::closeSearchBox);
+        }
+        return searchBox;
+    }
+
+    private void closeSearchBox(SearchBox searchBox) {
+        if (searchBox != null) {
+            searchBox.clear();
+            stackPane.getChildren().remove(searchBox);
+        }
     }
 
     @Override
@@ -57,6 +74,15 @@ public class CodeEditor extends Region {
                 width,
                 height
         );
+    }
+
+    private void onKeyReleased(KeyEvent event) {
+        if (event.getCode() == KeyCode.ESCAPE) {
+            if (searchBox != null && stackPane.getChildren().contains(searchBox)) {
+                closeSearchBox(searchBox);
+                event.consume();
+            }
+        }
     }
 
     /**
