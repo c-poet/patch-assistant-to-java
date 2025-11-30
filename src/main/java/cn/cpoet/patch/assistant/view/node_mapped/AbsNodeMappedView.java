@@ -68,9 +68,7 @@ public abstract class AbsNodeMappedView {
         if (codeAreaStylePath != null) {
             codeEditor.getStylesheets().add(codeAreaStylePath);
         }
-        codeArea.richChanges()
-                .filter(ch -> !ch.getInserted().equals(ch.getRemoved()))
-                .subscribe(change -> codeArea.setStyleSpans(0, computeHighlighting(codeArea.getText())));
+        CodeEditor.applyHighlighting(codeArea, this::computeHighlighting);
         return codeEditor;
     }
 

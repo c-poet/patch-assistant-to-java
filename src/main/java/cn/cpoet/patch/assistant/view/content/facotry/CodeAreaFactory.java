@@ -1,6 +1,7 @@
 package cn.cpoet.patch.assistant.view.content.facotry;
 
 import cn.cpoet.patch.assistant.constant.StyleConst;
+import cn.cpoet.patch.assistant.control.code.CodeEditor;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.core.ContentConf;
 import cn.cpoet.patch.assistant.util.FileUtil;
@@ -148,14 +149,7 @@ public abstract class CodeAreaFactory {
             String stylesheetPath = FileUtil.getResourceAndExternalForm(styleSheetPath);
             codeArea.getStylesheets().add(stylesheetPath);
         }
-        codeArea.richChanges()
-                .filter(ch -> !ch.getInserted().equals(ch.getRemoved()))
-                .subscribe(change -> {
-                    StyleSpans<Collection<String>> styleSpans = computeHighlighting(codeArea.getText());
-                    if (styleSpans != null) {
-                        codeArea.setStyleSpans(0, styleSpans);
-                    }
-                });
+        CodeEditor.applyHighlighting(codeArea, this::computeHighlighting);
         ContextMenu contextMenu = getContextMenu(codeArea, hasDiffMode);
         codeArea.setContextMenu(contextMenu);
         return codeArea;

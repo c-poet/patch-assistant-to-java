@@ -5,6 +5,10 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import org.fxmisc.richtext.CodeArea;
+import org.fxmisc.richtext.model.StyleSpans;
+
+import java.util.Collection;
+import java.util.function.Function;
 
 /**
  * @author CPoet
@@ -53,5 +57,16 @@ public class CodeEditor extends Region {
                 width,
                 height
         );
+    }
+
+    public static void applyHighlighting(CodeArea codeArea, Function<String, StyleSpans<Collection<String>>> computeHighlighting) {
+        codeArea.richChanges()
+                .filter(ch -> !ch.getInserted().equals(ch.getRemoved()))
+                .subscribe(change -> {
+                    StyleSpans<Collection<String>> styleSpans = computeHighlighting.apply(codeArea.getText());
+                    if (styleSpans != null) {
+                        codeArea.setStyleSpans(0, styleSpans);
+                    }
+                });
     }
 }
