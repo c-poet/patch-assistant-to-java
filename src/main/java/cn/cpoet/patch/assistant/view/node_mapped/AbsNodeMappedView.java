@@ -256,6 +256,9 @@ public abstract class AbsNodeMappedView {
         sb.append(node.getName());
         List<String> paths = new ArrayList<>();
         TreeNode parent = node.getMappedNode();
+        // 解决目标文件是jar文件导致版本号被移出问题
+        paths.add(parent.getName());
+        parent = parent.getParent();
         while (parent != null && !TreeNodeType.ROOT.equals(parent.getType())) {
             paths.add(getNameWithoutVersion(parent.getName()));
             parent = parent.getParent();
