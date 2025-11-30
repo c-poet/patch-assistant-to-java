@@ -1,5 +1,6 @@
 package cn.cpoet.patch.assistant.view.readme;
 
+import cn.cpoet.patch.assistant.control.tree.PatchRootInfo;
 import cn.cpoet.patch.assistant.control.tree.PatchTreeView;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.core.Configuration;
@@ -29,8 +30,8 @@ public class ReadmeView extends AbsNodeMappedView {
     private final PatchTreeView patchTree;
     private final Consumer<Boolean> callback;
 
-    public ReadmeView(TreeNode readmeNode, PatchTreeView patchTree, TreeNode appRootNode, TreeNode patchTreeNode, Consumer<Boolean> callback) {
-        super(appRootNode, patchTreeNode, readmeNode == null);
+    public ReadmeView(TreeNode readmeNode, PatchTreeView patchTree, TreeNode appRootNode, TreeNode patchRootNode, Consumer<Boolean> callback) {
+        super(appRootNode, patchRootNode, readmeNode == null);
         this.readmeNode = readmeNode;
         this.patchTree = patchTree;
         this.callback = callback;
@@ -39,7 +40,10 @@ public class ReadmeView extends AbsNodeMappedView {
     protected Node build() {
         Node node = super.build();
         if (readmeNode != null) {
-            codeEditor.getCodeArea().replaceText(patchTree.getTreeInfo().getReadmeText());
+            PatchRootInfo rootInfo = patchTree.getTreeInfo().getRootInfoByNode(patchRootNode);
+            if (rootInfo != null && rootInfo.getPatchSign() != null) {
+                codeEditor.getCodeArea().replaceText(rootInfo.getPatchSign().getReadme());
+            }
         }
         return node;
     }
