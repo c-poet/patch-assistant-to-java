@@ -2,6 +2,8 @@ package cn.cpoet.patch.assistant.model;
 
 import cn.cpoet.patch.assistant.constant.ChangeTypeEnum;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
+import cn.cpoet.patch.assistant.util.FileNameUtil;
+import cn.cpoet.patch.assistant.util.StringUtil;
 
 /**
  * Readme填写的路径信息
@@ -29,6 +31,11 @@ public class ReadMePathInfo {
      * 二级路径
      */
     private String path3;
+
+    /**
+     * 应用节点
+     */
+    private TreeNode appNode;
 
     /**
      * 关联的补丁节点
@@ -77,6 +84,14 @@ public class ReadMePathInfo {
         this.path3 = path3;
     }
 
+    public TreeNode getAppNode() {
+        return appNode;
+    }
+
+    public void setAppNode(TreeNode appNode) {
+        this.appNode = appNode;
+    }
+
     public TreeNode getPatchNode() {
         return patchNode;
     }
@@ -99,5 +114,30 @@ public class ReadMePathInfo {
 
     public void setEndIndex(int endIndex) {
         this.endIndex = endIndex;
+    }
+
+    /**
+     * 拼接 AppNodePath
+     *
+     * @return AppNodePath
+     */
+    public String getAppNodePath() {
+        String appNodePath;
+        if (!StringUtil.isEmpty(path3)) {
+            appNodePath = FileNameUtil.joinPath(path2, path3);
+            String fileName = FileNameUtil.getFileName(path1);
+            if (!appNodePath.endsWith(fileName)) {
+                appNodePath = FileNameUtil.joinPath(appNodePath, fileName);
+            }
+        } else if (!StringUtil.isEmpty(path2)) {
+            appNodePath = path2;
+            String fileName = FileNameUtil.getFileName(path1);
+            if (!appNodePath.endsWith(fileName)) {
+                appNodePath = FileNameUtil.joinPath(appNodePath, fileName);
+            }
+        } else {
+            appNodePath = path1;
+        }
+        return appNodePath;
     }
 }

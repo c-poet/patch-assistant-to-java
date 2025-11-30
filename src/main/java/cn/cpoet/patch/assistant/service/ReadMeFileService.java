@@ -35,11 +35,23 @@ public class ReadMeFileService {
      * 获取补丁文件的路径信息
      *
      * @param patchTreeInfo 补丁树信息
-     * @param rootNode      根节点
+     * @param patchRootNode 补丁根节点
      * @return 补丁文件路径信息列表
      */
-    public List<ReadMePathInfo> getPathInfos(PatchTreeInfo patchTreeInfo, TreeNode rootNode) {
-        PatchRootInfo patchRootInfo = patchTreeInfo.getRootInfoByNode(rootNode);
+    public List<ReadMePathInfo> getPathInfos(PatchTreeInfo patchTreeInfo, TreeNode patchRootNode) {
+        return getPathInfos(patchTreeInfo, patchRootNode, null);
+    }
+
+    /**
+     * 获取补丁文件的路径信息
+     *
+     * @param patchTreeInfo 补丁树信息
+     * @param patchRootNode 补丁根节点
+     * @param appRootNode   应用根节点，可为空
+     * @return 补丁文件路径信息列表
+     */
+    public List<ReadMePathInfo> getPathInfos(PatchTreeInfo patchTreeInfo, TreeNode patchRootNode, TreeNode appRootNode) {
+        PatchRootInfo patchRootInfo = patchTreeInfo.getRootInfoByNode(patchRootNode);
         if (patchRootInfo == null) {
             return Collections.emptyList();
         }
@@ -47,22 +59,23 @@ public class ReadMeFileService {
         if (StringUtil.isBlank(readmeText)) {
             return Collections.emptyList();
         }
-        return getPathInfos(readmeText, rootNode);
+        return getPathInfos(readmeText, patchRootNode, appRootNode);
     }
 
     /**
      * 获取补丁文件的路径信息
      *
-     * @param readmeText 说明文件
-     * @param rootNode   补丁根节点
+     * @param readmeText    说明文件
+     * @param patchRootNode 补丁根节点
+     * @param appRootNode   应用根节点（可为空）
      * @return 补丁文件路径信息列表
      */
-    public List<ReadMePathInfo> getPathInfos(String readmeText, TreeNode rootNode) {
+    public List<ReadMePathInfo> getPathInfos(String readmeText, TreeNode patchRootNode, TreeNode appRootNode) {
         List<ReadMePathInfo> pathInfos = new ArrayList<>();
         String pathPrefix = null;
-        if ((TreeNodeType.CUSTOM_ROOT.equals(rootNode.getType()) && rootNode.isDir())
-                || (rootNode instanceof FileNode && rootNode.isDir())) {
-            pathPrefix = rootNode.getPath();
+        if ((TreeNodeType.CUSTOM_ROOT.equals(patchRootNode.getType()) && patchRootNode.isDir())
+                || (patchRootNode instanceof FileNode && patchRootNode.isDir())) {
+            pathPrefix = patchRootNode.getPath();
         }
         try (StringReader reader = new StringReader(readmeText);
              BufferedReader bufferedReader = new BufferedReader(reader)) {
@@ -72,22 +85,24 @@ public class ReadMeFileService {
                 index = index + line.length() + 1;
                 Matcher matcher = pattern.matcher(line);
                 if (matcher.find()) {
-                    TreeNode patchNode = null;
-                    String path1 = matcher.group(2);
-                    String path2 = matcher.group(4);
-                    ChangeTypeEnum changeType = ChangeTypeEnum.ofCode(matcher.group(1));
-                    if (!ChangeTypeEnum.DEL.equals(changeType)) {
-                        patchNode = findPatchNode(rootNode, pathPrefix, path1, path2);
-                        if (patchNode == null) {
+                    ReadMePathInfo pathInfo = new ReadMePathInfo();
+                    pathInfo.setType(ChangeTypeEnum.ofCode(matcher.group(1)));
+                    pathInfo.setPath1(matcher.group(2));
+                    pathInfo.setPath2(matcher.group(4));
+                    pathInfo.setPath3(matcher.group(6));
+                    if (ChangeTypeEnum.DEL.equals(pathInfo.getType())) {
+                        if (appRootNode != null) {
+                            pathInfo.setAppNode(findAppNode(appRootNode, pathInfo));
+                            if (pathInfo.getAppNode() == null) {
+                                continue;
+                            }
+                        }
+                    } else {
+                        pathInfo.setPatchNode(findPatchNode(patchRootNode, pathPrefix, pathInfo));
+                        if (pathInfo.getPatchNode() == null) {
                             continue;
                         }
                     }
-                    ReadMePathInfo pathInfo = new ReadMePathInfo();
-                    pathInfo.setType(changeType);
-                    pathInfo.setPath1(path1);
-                    pathInfo.setPath2(path2);
-                    pathInfo.setPath3(matcher.group(6));
-                    pathInfo.setPatchNode(patchNode);
                     pathInfo.setStartIndex(index - line.length() - 1);
                     pathInfo.setEndIndex(index);
                     pathInfos.add(pathInfo);
@@ -98,14 +113,18 @@ public class ReadMeFileService {
         return pathInfos;
     }
 
-    private TreeNode findPatchNode(TreeNode rootNode, String pathPrefix, String path1, String path2) {
-        String filePath = pathPrefix == null ? path1 : FileNameUtil.joinPath(pathPrefix, path1);
-        TreeNode patchNode = TreeNodeUtil.findNodeByPath(rootNode, filePath);
-        if (patchNode == null && StringUtil.isEmpty(path2)) {
-            String fileName = FileNameUtil.getFileName(path1);
-            if (!Objects.equals(fileName, path1)) {
+    private TreeNode findAppNode(TreeNode appRootNode, ReadMePathInfo pathInfo) {
+        return TreeNodeUtil.findNodeByPath(appRootNode, pathInfo.getAppNodePath());
+    }
+
+    private TreeNode findPatchNode(TreeNode patchRootNode, String pathPrefix, ReadMePathInfo pathInfo) {
+        String filePath = pathPrefix == null ? pathInfo.getPath1() : FileNameUtil.joinPath(pathPrefix, pathInfo.getPath1());
+        TreeNode patchNode = TreeNodeUtil.findNodeByPath(patchRootNode, filePath);
+        if (patchNode == null && StringUtil.isEmpty(pathInfo.getPath2())) {
+            String fileName = FileNameUtil.getFileName(pathInfo.getPath1());
+            if (!Objects.equals(fileName, pathInfo.getPath1())) {
                 filePath = pathPrefix == null ? fileName : FileNameUtil.joinPath(pathPrefix, fileName);
-                patchNode = TreeNodeUtil.findNodeByPath(rootNode, filePath);
+                patchNode = TreeNodeUtil.findNodeByPath(patchRootNode, filePath);
             }
         }
         return patchNode;

@@ -149,22 +149,7 @@ public class PatchPackService extends BasePackService {
     }
 
     private void matchMappedNodeWithReadme(TotalInfo totalInfo, ReadMePathInfo pathInfo, AppTreeInfo appTreeInfo, ProgressContext pc) {
-        String appNodePath;
-        if (!StringUtil.isEmpty(pathInfo.getPath3())) {
-            appNodePath = FileNameUtil.joinPath(pathInfo.getPath2(), pathInfo.getPath3());
-            String fileName = FileNameUtil.getFileName(pathInfo.getPath1());
-            if (!appNodePath.endsWith(fileName)) {
-                appNodePath = FileNameUtil.joinPath(appNodePath, fileName);
-            }
-        } else if (!StringUtil.isEmpty(pathInfo.getPath2())) {
-            appNodePath = pathInfo.getPath2();
-            String fileName = FileNameUtil.getFileName(pathInfo.getPath1());
-            if (!appNodePath.endsWith(fileName)) {
-                appNodePath = FileNameUtil.joinPath(appNodePath, fileName);
-            }
-        } else {
-            appNodePath = pathInfo.getPath1();
-        }
+        String appNodePath = pathInfo.getAppNodePath();
         pc.step("app node path: " + appNodePath);
         String[] paths = FileNameUtil.splitPath(appNodePath);
         doMatchMappedNodeChildrenWithReadme(totalInfo, appTreeInfo, pathInfo, paths, 0, appTreeInfo.getRootNode());

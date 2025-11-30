@@ -78,7 +78,7 @@ public abstract class AbsNodeMappedView {
         if (StringUtil.isBlank(text)) {
             return null;
         }
-        List<ReadMePathInfo> pathInfos = ReadMeFileService.INSTANCE.getPathInfos(text, patchRootNode);
+        List<ReadMePathInfo> pathInfos = ReadMeFileService.INSTANCE.getPathInfos(text, patchRootNode, appRootNode);
         if (CollectionUtil.isEmpty(pathInfos)) {
             return null;
         }
