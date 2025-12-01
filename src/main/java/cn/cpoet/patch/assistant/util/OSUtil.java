@@ -3,6 +3,8 @@ package cn.cpoet.patch.assistant.util;
 import cn.cpoet.patch.assistant.constant.AppConst;
 import cn.cpoet.patch.assistant.exception.AppException;
 import javafx.application.HostServices;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 
 import java.awt.*;
 import java.io.File;
@@ -212,5 +214,25 @@ public abstract class OSUtil {
         } catch (Exception e) {
             throw new AppException("Failed to get the app config directory", e);
         }
+    }
+
+    /**
+     * 设置系统剪切板内容
+     *
+     * @param content 内容
+     */
+    public static void setSystemClipboard(String content) {
+        ClipboardContent clipboardContent = new ClipboardContent();
+        clipboardContent.putString(content);
+        setSystemClipboard(clipboardContent);
+    }
+
+    /**
+     * 设置系统剪切板内容
+     *
+     * @param content 内容
+     */
+    public static void setSystemClipboard(ClipboardContent content) {
+        Clipboard.getSystemClipboard().setContent(content);
     }
 }

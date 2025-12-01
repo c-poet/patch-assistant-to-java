@@ -225,6 +225,8 @@ public class HomeRightTreeView extends HomeTreeView {
             return node != null && !node.isDir() && node.getName().endsWith(FileExtConst.DOT_CLASS);
         }));
 
+        addContextMenuItemClaim(MenuItemClaim.create(() -> createCopyMenu(patchTree), menu -> patchTree.getSingleSelectedNode() != null));
+
         addContextMenuItemClaim(MenuItemClaim.create(() -> {
             MenuItem viewPatchSign = new MenuItem(I18nUtil.t("app.view.right-tree.view-sign"));
             viewPatchSign.setOnAction(this::handleViewPatchSign);

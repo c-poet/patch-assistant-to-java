@@ -6,6 +6,7 @@ import cn.cpoet.patch.assistant.control.menu.MenuItemClaim;
 import cn.cpoet.patch.assistant.control.tree.AppTreeView;
 import cn.cpoet.patch.assistant.control.tree.CustomTreeView;
 import cn.cpoet.patch.assistant.control.tree.PatchTreeView;
+import cn.cpoet.patch.assistant.control.tree.TreeNodeType;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.exception.AppException;
@@ -22,6 +23,8 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -199,5 +202,34 @@ public abstract class HomeTreeView {
             });
         });
         treeView.setContextMenu(contextMenu);
+    }
+
+    protected void handleCopyName(TreeNode treeNode) {
+        OSUtil.setSystemClipboard(treeNode.getName());
+    }
+
+    protected void handleCopyPath(TreeNode treeNode) {
+        List<String> paths = new ArrayList<>();
+        do {
+            paths.add(treeNode.getName());
+        } while ((treeNode = treeNode.getParent()) != null && !TreeNodeType.ROOT.equals(treeNode.getType()));
+        Collections.reverse(paths);
+        OSUtil.setSystemClipboard(String.join(FileNameUtil.SEPARATOR, paths));
+    }
+
+    protected void handleCopyRelativePath(TreeNode treeNode) {
+        OSUtil.setSystemClipboard(treeNode.getPath());
+    }
+
+    protected Menu createCopyMenu(CustomTreeView<?> treeView) {
+        Menu copyMenu = new Menu(I18nUtil.t("app.common.copy"));
+        MenuItem copyNameMenuItem = new MenuItem(I18nUtil.t("app.view.tree.copy-file-name"));
+        copyNameMenuItem.setOnAction(e -> handleCopyName(treeView.getSingleSelectedNode()));
+        MenuItem copyPathMenuItem = new MenuItem(I18nUtil.t("app.view.tree.copy-file-path"));
+        copyPathMenuItem.setOnAction(e -> handleCopyPath(treeView.getSingleSelectedNode()));
+        MenuItem copyRelativePathMenuItem = new MenuItem(I18nUtil.t("app.view.tree.copy-file-relative-path"));
+        copyPathMenuItem.setOnAction(e -> handleCopyRelativePath(treeView.getSingleSelectedNode()));
+        copyMenu.getItems().addAll(copyNameMenuItem, copyPathMenuItem, copyRelativePathMenuItem);
+        return copyMenu;
     }
 }

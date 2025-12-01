@@ -16,8 +16,6 @@ import javafx.scene.Node;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.RadioMenuItem;
-import javafx.scene.input.Clipboard;
-import javafx.scene.input.ClipboardContent;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.fxmisc.richtext.CodeArea;
@@ -277,10 +275,7 @@ public abstract class AbsNodeMappedView {
     }
 
     protected void handleCopyInfo() {
-        Clipboard systemClipboard = Clipboard.getSystemClipboard();
-        ClipboardContent content = new ClipboardContent();
-        content.putString(codeEditor.getCodeArea().getText());
-        systemClipboard.setContent(content);
+        OSUtil.setSystemClipboard(codeEditor.getCodeArea().getText());
     }
 
     protected String getSaveFileName() {

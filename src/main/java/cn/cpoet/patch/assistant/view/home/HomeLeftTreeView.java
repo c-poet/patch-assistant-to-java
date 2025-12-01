@@ -2,14 +2,12 @@ package cn.cpoet.patch.assistant.view.home;
 
 import cn.cpoet.patch.assistant.constant.FileExtConst;
 import cn.cpoet.patch.assistant.constant.FocusTreeStatusConst;
-import cn.cpoet.patch.assistant.constant.ParamNameConst;
 import cn.cpoet.patch.assistant.control.menu.MenuItemClaim;
 import cn.cpoet.patch.assistant.control.tree.*;
 import cn.cpoet.patch.assistant.control.tree.node.CompressNode;
 import cn.cpoet.patch.assistant.control.tree.node.FileNode;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.control.tree.node.VirtualNode;
-import cn.cpoet.patch.assistant.core.AppContext;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.core.StartUpInfo;
 import cn.cpoet.patch.assistant.service.AppPackService;
@@ -199,6 +197,8 @@ public class HomeLeftTreeView extends HomeTreeView {
             TreeNode node = appTree.getSingleSelectedNode();
             return node != null && node.getMappedNode() != null;
         }));
+
+        addContextMenuItemClaim(MenuItemClaim.create(() -> createCopyMenu(appTree), menu -> appTree.getSingleSelectedNode() != null));
 
         addContextMenuItemClaim(MenuItemClaim.create(() -> {
             MenuItem manualDelMenuItem = new MenuItem(I18nUtil.t("app.view.left-tree.delete"));
