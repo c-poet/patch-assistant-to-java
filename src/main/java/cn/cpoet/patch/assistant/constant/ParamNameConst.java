@@ -15,4 +15,9 @@ public interface ParamNameConst {
      * 目标（应用包、补丁包或者目录）
      */
     String TARGET = "target";
+
+    /**
+     * 是否开发模式
+     */
+    String DEV = "dev";
 }

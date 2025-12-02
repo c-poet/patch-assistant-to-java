@@ -237,6 +237,16 @@ public class HomeLeftTreeView extends HomeTreeView {
             return node != null && !node.isDir() && node.getName().endsWith(FileExtConst.DOT_CLASS);
         }));
 
+
+        addContextMenuItemClaim(MenuItemClaim.create(() -> {
+            MenuItem saveProjectMenuItem = new MenuItem(I18nUtil.t("app.view.left-tree.save-project"));
+            saveProjectMenuItem.setOnAction(e -> saveProject(appTree));
+            return saveProjectMenuItem;
+        }, menu -> {
+            TreeNode node = appTree.getSingleSelectedNode();
+            return node != null && !node.isDir() && node.getName().endsWith(FileExtConst.DOT_JAR);
+        }));
+
         addContextMenuItemClaim(MenuItemClaim.create(() -> {
             MenuItem openInExplorerItem = new MenuItem(I18nUtil.t("app.view.left-tree.open-in-explorer"));
             openInExplorerItem.setOnAction(e -> handleOpenInExplorer(e, appTree));

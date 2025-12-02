@@ -225,6 +225,15 @@ public class HomeRightTreeView extends HomeTreeView {
             return node != null && !node.isDir() && node.getName().endsWith(FileExtConst.DOT_CLASS);
         }));
 
+        addContextMenuItemClaim(MenuItemClaim.create(() -> {
+            MenuItem saveProjectMenuItem = new MenuItem(I18nUtil.t("app.view.right-tree.save-project"));
+            saveProjectMenuItem.setOnAction(e -> saveProject(patchTree));
+            return saveProjectMenuItem;
+        }, menu -> {
+            TreeNode node = patchTree.getSingleSelectedNode();
+            return node != null && !node.isDir() && node.getName().endsWith(FileExtConst.DOT_JAR);
+        }));
+
         addContextMenuItemClaim(MenuItemClaim.create(() -> createCopyMenu(patchTree), menu -> patchTree.getSingleSelectedNode() != null));
 
         addContextMenuItemClaim(MenuItemClaim.create(() -> {

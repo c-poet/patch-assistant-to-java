@@ -10,15 +10,18 @@ import cn.cpoet.patch.assistant.control.tree.TreeNodeType;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.exception.AppException;
+import cn.cpoet.patch.assistant.service.JarDecompilerService;
 import cn.cpoet.patch.assistant.util.*;
 import cn.cpoet.patch.assistant.view.content.ContentSupports;
 import cn.cpoet.patch.assistant.view.content.parser.ContentParser;
+import cn.cpoet.patch.assistant.view.progress.ProgressView;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.ActionEvent;
 import javafx.scene.control.*;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.KeyEvent;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -142,6 +145,16 @@ public abstract class HomeTreeView {
         }, FileExtConst.JAVA);
     }
 
+    protected void saveProject(CustomTreeView<?> treeView) {
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        directoryChooser.setTitle(I18nUtil.t("app.view.tree.select-project-dir"));
+        File file = directoryChooser.showDialog(stage);
+        if (file != null) {
+            new ProgressView(I18nUtil.t("app.view.tree.save-to-project"))
+                    .showDialog(stage, context -> JarDecompilerService.INSTANCE.decompile(context, treeView.getSingleSelectedNode(), file));
+        }
+    }
+
     protected boolean isDragFromTreeCell(DragEvent event) {
         return event.getGestureSource() instanceof TreeCell;
     }
@@ -221,6 +234,10 @@ public abstract class HomeTreeView {
         OSUtil.setSystemClipboard(treeNode.getPath());
     }
 
+    protected void handleCopyMD5(TreeNode treeNode) {
+        OSUtil.setSystemClipboard(treeNode.getMd5OrInit());
+    }
+
     protected Menu createCopyMenu(CustomTreeView<?> treeView) {
         Menu copyMenu = new Menu(I18nUtil.t("app.common.copy"));
         MenuItem copyNameMenuItem = new MenuItem(I18nUtil.t("app.view.tree.copy-file-name"));
@@ -228,8 +245,14 @@ public abstract class HomeTreeView {
         MenuItem copyPathMenuItem = new MenuItem(I18nUtil.t("app.view.tree.copy-file-path"));
         copyPathMenuItem.setOnAction(e -> handleCopyPath(treeView.getSingleSelectedNode()));
         MenuItem copyRelativePathMenuItem = new MenuItem(I18nUtil.t("app.view.tree.copy-file-relative-path"));
-        copyPathMenuItem.setOnAction(e -> handleCopyRelativePath(treeView.getSingleSelectedNode()));
-        copyMenu.getItems().addAll(copyNameMenuItem, copyPathMenuItem, copyRelativePathMenuItem);
+        copyRelativePathMenuItem.setOnAction(e -> handleCopyRelativePath(treeView.getSingleSelectedNode()));
+        MenuItem copyMd5MenuItem = new MenuItem(I18nUtil.t("app.view.tree.copy-file-md5"));
+        copyMd5MenuItem.setOnAction(e -> handleCopyMD5(treeView.getSingleSelectedNode()));
+        copyMenu.getItems().addAll(copyNameMenuItem, copyPathMenuItem, copyRelativePathMenuItem, copyMd5MenuItem);
+        copyMenu.setOnShowing(e -> {
+            TreeNode singleSelectedNode = treeView.getSingleSelectedNode();
+            copyMd5MenuItem.setDisable(singleSelectedNode == null || singleSelectedNode.isDir());
+        });
         return copyMenu;
     }
 }

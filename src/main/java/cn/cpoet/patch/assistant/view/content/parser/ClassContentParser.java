@@ -20,7 +20,7 @@ public class ClassContentParser extends ContentParser {
     public String parse(TreeNode node, Charset charset) {
         SingleClassDecompiler decompiler = new SingleClassDecompiler(Collections.emptyMap());
         if (CollectionUtil.isEmpty(node.getChildren())) {
-            return decompiler.decompile(TreeNodeUtil.readNodeBytes(node));
+            return decompiler.decompile(TreeNodeUtil.readNodeBytes(node)).getClassSource();
         }
         Stack<TreeNode> childStack = new Stack<>();
         List<byte[]> innerBytes = new ArrayList<>();
@@ -32,6 +32,6 @@ public class ClassContentParser extends ContentParser {
                 childStack.addAll(innerClassNode.getChildren());
             }
         }
-        return decompiler.decompile(TreeNodeUtil.readNodeBytes(node), innerBytes);
+        return decompiler.decompile(TreeNodeUtil.readNodeBytes(node), innerBytes).getClassSource();
     }
 }

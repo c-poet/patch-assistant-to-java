@@ -181,6 +181,7 @@ public abstract class FileUtil {
      * @param consumer 消费者
      */
     public static void writeFile(File file, Consumer<InputBufConsumer> consumer) {
+        mkdir(file.getParentFile());
         try (OutputStream out = new FileOutputStream(file)) {
             consumer.accept(((len, buf) -> out.write(buf, 0, len)));
         } catch (IOException e) {
@@ -217,6 +218,7 @@ public abstract class FileUtil {
      * @param bytes 数据
      */
     public static void writeFile(File file, byte[] bytes) {
+        mkdir(file.getParentFile());
         try (OutputStream out = new FileOutputStream(file)) {
             out.write(bytes);
             out.flush();
@@ -389,6 +391,7 @@ public abstract class FileUtil {
      * @param targetFile 目标文件
      */
     public static void copyTo(File sourceFile, File targetFile) {
+        mkdir(targetFile.getParentFile());
         try (InputStream in = new FileInputStream(sourceFile);
              OutputStream out = new FileOutputStream(targetFile)) {
             readBuf(in, (len, buf) -> out.write(buf, 0, len));

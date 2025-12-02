@@ -1,12 +1,10 @@
 package cn.cpoet.patch.assistant.core;
 
 import cn.cpoet.patch.assistant.constant.AppConst;
+import cn.cpoet.patch.assistant.constant.ParamNameConst;
 import cn.cpoet.patch.assistant.constant.ThemeEnum;
 import cn.cpoet.patch.assistant.exception.AppException;
-import cn.cpoet.patch.assistant.util.FileTempUtil;
-import cn.cpoet.patch.assistant.util.FileUtil;
-import cn.cpoet.patch.assistant.util.OSUtil;
-import cn.cpoet.patch.assistant.util.XMLUtil;
+import cn.cpoet.patch.assistant.util.*;
 import javafx.scene.Scene;
 
 import java.io.File;
@@ -27,11 +25,21 @@ public class AppContext {
 
     private static AppContext INSTANCE;
 
+    /**
+     * 开发模式
+     */
+    private boolean isDev;
+
+    /**
+     * 主Scene
+     */
     private Scene mainScene;
+
     /**
      * 全局缓存目录
      */
     private File globalTempDir;
+
     /**
      * 启动参数，一次性解析不考虑线程安全问题
      */
@@ -122,6 +130,7 @@ public class AppContext {
             }
             params.put(matcher.group(1), matcher.group(2));
         }
+        this.isDev = !StringUtil.isEmpty(getArg(ParamNameConst.DEV));
     }
 
     public AppContext reload() {
@@ -161,6 +170,15 @@ public class AppContext {
             }
         }
         return globalTempDir;
+    }
+
+    /**
+     * 判断是否开发模式
+     *
+     * @return 是否开发模式
+     */
+    public boolean isDev() {
+        return isDev;
     }
 
     public void destroy() {

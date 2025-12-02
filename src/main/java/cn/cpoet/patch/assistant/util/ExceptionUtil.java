@@ -1,6 +1,7 @@
 package cn.cpoet.patch.assistant.util;
 
 import cn.cpoet.patch.assistant.constant.AppConst;
+import cn.cpoet.patch.assistant.core.AppContext;
 import cn.cpoet.patch.assistant.exception.AppException;
 
 import java.io.IOException;
@@ -54,5 +55,8 @@ public abstract class ExceptionUtil {
     public static void writeErrorFile(Thread thread, String content) {
         String message = String.format("%s %s %s", DateUtil.curDateTime(), thread.getName(), content);
         FileUtil.writeFile(OSUtil.getAppConfigPath().resolve(AppConst.ERROR_LOG_FILE).toFile(), message.getBytes(StandardCharsets.UTF_8));
+        if (AppContext.getInstance().isDev()) {
+            System.err.println(message);
+        }
     }
 }
