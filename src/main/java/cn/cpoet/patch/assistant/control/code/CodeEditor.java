@@ -45,23 +45,25 @@ public class CodeEditor extends Region implements Virtualized {
 
     public void onKeyPressed(KeyEvent event) {
         if (event.isControlDown() && event.getCode() == KeyCode.F) {
-            SearchBox searchBox = getAndInitSearchBox();
-            stackPane.getChildren().add(searchBox);
+            showSearchBox();
             event.consume();
         }
     }
 
-    private SearchBox getAndInitSearchBox() {
+    private void showSearchBox() {
         if (searchBox == null) {
             searchBox = new SearchBox(this);
-            searchBox.setCloseCallback(this::closeSearchBox);
+            searchBox.setCloseCallback(this::hideSearchBox);
         }
-        return searchBox;
+        if (!stackPane.getChildren().contains(searchBox)) {
+            stackPane.getChildren().add(searchBox);
+        }
+        searchBox.start();
     }
 
-    private void closeSearchBox(SearchBox searchBox) {
+    private void hideSearchBox(SearchBox searchBox) {
         if (searchBox != null) {
-            searchBox.clear();
+            searchBox.end();
             stackPane.getChildren().remove(searchBox);
         }
     }
@@ -82,7 +84,7 @@ public class CodeEditor extends Region implements Virtualized {
     private void onKeyReleased(KeyEvent event) {
         if (event.getCode() == KeyCode.ESCAPE) {
             if (searchBox != null && stackPane.getChildren().contains(searchBox)) {
-                closeSearchBox(searchBox);
+                hideSearchBox(searchBox);
                 event.consume();
             }
         }

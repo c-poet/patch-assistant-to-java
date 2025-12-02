@@ -14,11 +14,25 @@
 }
 
 .code-editor .search-box .button {
-    -fx-background-color: none;
+    -fx-background-color: transparent;
+    -fx-text-fill: #6c707e;
+}
+
+.code-editor .search-box .button:disabled {
+    -fx-background-color: transparent;
     -fx-text-fill: #aeb3c2;
 }
 
 .code-editor .search-box .text-field {
     -fx-background-color: transparent;
     -fx-border-width: 0;
+}
+
+.code-editor .search-box .split-pane {
+    -fx-background-color: transparent;
+}
+
+.code-editor .search-box .split-pane > .split-pane-divider {
+    -fx-background-color: #ebecf0;
+    -fx-padding: 0 0.5;
 }
