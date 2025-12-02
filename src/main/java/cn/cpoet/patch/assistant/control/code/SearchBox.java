@@ -80,6 +80,7 @@ public class SearchBox extends HBox {
         if (searchResult != null && searchResult.getTotal() > 0) {
             SearchResult.SearchItem pre = searchResult.getItem().getPre();
             selectResultItem(pre);
+            searchResult.setItem(pre);
         }
     }
 
@@ -87,17 +88,18 @@ public class SearchBox extends HBox {
         if (searchResult != null && searchResult.getTotal() > 0) {
             SearchResult.SearchItem next = searchResult.getItem().getNext();
             selectResultItem(next);
+            searchResult.setItem(next);
         }
     }
 
     private void selectResultItem(SearchResult.SearchItem searchItem) {
-        int startIndex = searchItem.getStartIndex();
-        int endIndex = searchItem.getEndIndex();
-        CodeArea codeArea = codeEditor.getCodeArea();
-        codeArea.deselect();
-        codeArea.selectRange(startIndex, endIndex);
-        codeArea.moveTo(endIndex);
-        countLbl.setText(searchItem.getNo() + FileNameUtil.SEPARATOR + searchResult.getTotal());
+        UIUtil.runUI(() -> {
+            int startIndex = searchItem.getStartIndex();
+            int endIndex = searchItem.getEndIndex();
+            CodeArea codeArea = codeEditor.getCodeArea();
+            codeArea.selectRange(startIndex, endIndex);
+            countLbl.setText(searchItem.getNo() + FileNameUtil.SEPARATOR + searchResult.getTotal());
+        });
     }
 
     private void searchKeyword(String keyword) {
@@ -159,18 +161,16 @@ public class SearchBox extends HBox {
                 return;
             }
             searchResult = newResult;
-            UIUtil.runUI(() -> {
-                if (searchResult.getTotal() > 0) {
-                    selectResultItem(searchResult.getItem());
-                } else {
-                    countToZero();
-                }
-            });
+            if (searchResult.getTotal() > 0) {
+                selectResultItem(searchResult.getItem());
+            } else {
+                countToZero();
+            }
         }
     }
 
     private void countToZero() {
-        countLbl.setText(0 + "结果");
+        UIUtil.runUI(() -> countLbl.setText(0 + "结果"));
     }
 
     public void setCloseCallback(Consumer<SearchBox> closeCallback) {

@@ -6,8 +6,11 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
+import org.fxmisc.flowless.Virtualized;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.model.StyleSpans;
+import org.reactfx.value.Val;
+import org.reactfx.value.Var;
 
 import java.util.Collection;
 import java.util.function.Function;
@@ -15,7 +18,7 @@ import java.util.function.Function;
 /**
  * @author CPoet
  */
-public class CodeEditor extends Region {
+public class CodeEditor extends Region implements Virtualized {
 
     private SearchBox searchBox;
     private final CodeArea codeArea;
@@ -100,5 +103,45 @@ public class CodeEditor extends Region {
                         codeArea.setStyleSpans(0, styleSpans);
                     }
                 });
+    }
+
+    @Override
+    public Val<Double> totalWidthEstimateProperty() {
+        return codeArea.totalWidthEstimateProperty();
+    }
+
+    @Override
+    public Val<Double> totalHeightEstimateProperty() {
+        return codeArea.totalHeightEstimateProperty();
+    }
+
+    @Override
+    public Var<Double> estimatedScrollXProperty() {
+        return codeArea.estimatedScrollXProperty();
+    }
+
+    @Override
+    public Var<Double> estimatedScrollYProperty() {
+        return codeArea.estimatedScrollYProperty();
+    }
+
+    @Override
+    public void scrollXBy(double v) {
+        codeArea.scrollXBy(v);
+    }
+
+    @Override
+    public void scrollYBy(double v) {
+        codeArea.scrollYBy(v);
+    }
+
+    @Override
+    public void scrollXToPixel(double v) {
+        codeArea.scrollXToPixel(v);
+    }
+
+    @Override
+    public void scrollYToPixel(double v) {
+        codeArea.scrollYToPixel(v);
     }
 }

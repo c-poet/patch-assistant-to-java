@@ -136,23 +136,24 @@ public abstract class CodeAreaFactory {
      * @param hasDiffMode 是否存在比较模式
      * @return 代码域
      */
-    public NodeCodeArea create(boolean hasDiffMode) {
-        NodeCodeArea codeArea = new NodeCodeArea();
+    public NodeCodeEditor create(boolean hasDiffMode) {
+        NodeCodeEditor codeEditor = new NodeCodeEditor();
+        CodeArea codeArea = codeEditor.getCodeArea();
         codeArea.setEditable(false);
         codeArea.setParagraphGraphicFactory(LineNumberFactory.get(codeArea));
         String codeAreaStylePath = FileUtil.getResourceAndExternalForm(StyleConst.STYLE_FILE_CODE_AREA);
         if (codeAreaStylePath != null) {
-            codeArea.getStylesheets().add(codeAreaStylePath);
+            codeEditor.getStylesheets().add(codeAreaStylePath);
         }
         String styleSheetPath = getStyleSheetPath();
         if (!StringUtil.isBlank(styleSheetPath)) {
             String stylesheetPath = FileUtil.getResourceAndExternalForm(styleSheetPath);
-            codeArea.getStylesheets().add(stylesheetPath);
+            codeEditor.getStylesheets().add(stylesheetPath);
         }
         CodeEditor.applyHighlighting(codeArea, this::computeHighlighting);
         ContextMenu contextMenu = getContextMenu(codeArea, hasDiffMode);
         codeArea.setContextMenu(contextMenu);
-        return codeArea;
+        return codeEditor;
     }
 
     protected Matcher createMatcher(String text) {

@@ -13,7 +13,7 @@ import cn.cpoet.patch.assistant.util.TextDiffUtil;
 import cn.cpoet.patch.assistant.view.content.facotry.CharsetChangeEvent;
 import cn.cpoet.patch.assistant.view.content.facotry.CodeAreaFactory;
 import cn.cpoet.patch.assistant.view.content.facotry.DiffLineNumberFactory;
-import cn.cpoet.patch.assistant.view.content.facotry.NodeCodeArea;
+import cn.cpoet.patch.assistant.view.content.facotry.NodeCodeEditor;
 import cn.cpoet.patch.assistant.view.content.parser.ContentParser;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
@@ -73,7 +73,7 @@ public class ContentView {
     public Node build() {
         codeAreaFactory = ContentSupports.getCodeAreaFactory(leftNode);
         if (!isLoadDiffMode()) {
-            VirtualizedScrollPane<NodeCodeArea> scrollPane = crateCodeAreaPane(leftNode, leftContent);
+            VirtualizedScrollPane<NodeCodeEditor> scrollPane = crateCodeAreaPane(leftNode, leftContent);
             scrollPane.scrollYToPixel(0);
             return scrollPane;
         }
@@ -85,16 +85,17 @@ public class ContentView {
         Node tarNode;
         if (Boolean.TRUE.equals(contentConf.getDiffModel())) {
             String diff = TextDiffUtil.diff2Str(leftContent, rightContent, leftNode.getPath(), rightNode.getPath());
-            VirtualizedScrollPane<NodeCodeArea> diffPane = crateCodeAreaPane(codeArea -> {
+            VirtualizedScrollPane<NodeCodeEditor> diffPane = crateCodeAreaPane(codeEditor -> {
+                CodeArea codeArea = codeEditor.getCodeArea();
                 codeArea.setParagraphGraphicFactory(new DiffLineNumberFactory<>(codeArea));
                 codeArea.replaceText(diff);
             });
             VBox.setVgrow(diffPane, Priority.ALWAYS);
             tarNode = diffPane;
         } else {
-            VirtualizedScrollPane<NodeCodeArea> leftPane = crateCodeAreaPane(leftNode, leftContent);
+            VirtualizedScrollPane<NodeCodeEditor> leftPane = crateCodeAreaPane(leftNode, leftContent);
             leftPane.scrollYToPixel(0);
-            VirtualizedScrollPane<NodeCodeArea> rightPane = crateCodeAreaPane(rightNode, rightContent);
+            VirtualizedScrollPane<NodeCodeEditor> rightPane = crateCodeAreaPane(rightNode, rightContent);
             rightPane.scrollYToPixel(0);
             SplitPane splitPane = new SplitPane(leftPane, rightPane);
             VBox.setVgrow(splitPane, Priority.ALWAYS);
@@ -104,22 +105,22 @@ public class ContentView {
         return tarNode;
     }
 
-    private void handleCharsetChange(NodeCodeArea codeArea, CharsetChangeEvent event) {
+    private void handleCharsetChange(NodeCodeEditor nodeCodeEditor, CharsetChangeEvent event) {
         Charset charset = event.toCharset();
-        TreeNode node = codeArea.getNode();
+        TreeNode node = nodeCodeEditor.getNode();
         if (rightNode == null || node == leftNode) {
             leftContent = contentParser.parse(node, charset);
-            codeArea.replaceText(leftContent);
+            nodeCodeEditor.getCodeArea().replaceText(leftContent);
         } else {
             rightContent = contentParser.parse(node, charset);
-            codeArea.replaceText(rightContent);
+            nodeCodeEditor.getCodeArea().replaceText(rightContent);
         }
     }
 
-    private VirtualizedScrollPane<NodeCodeArea> crateCodeAreaPane(TreeNode node, String text) {
-        return crateCodeAreaPane(codeArea -> {
-            codeArea.setNode(node);
-            codeArea.replaceText(text);
+    private VirtualizedScrollPane<NodeCodeEditor> crateCodeAreaPane(TreeNode node, String text) {
+        return crateCodeAreaPane(codeEditor -> {
+            codeEditor.setNode(node);
+            codeEditor.getCodeArea().replaceText(text);
         });
     }
 
@@ -127,23 +128,23 @@ public class ContentView {
         // codeArea.setEditable(!codeArea.isEditable());
     }
 
-    private VirtualizedScrollPane<NodeCodeArea> crateCodeAreaPane(Consumer<NodeCodeArea> consumer) {
-        NodeCodeArea codeArea = codeAreaFactory.create(isLoadDiffMode());
-        codeArea.addEventHandler(CodeAreaFactory.CHARSET_CHANGE, event -> {
-            handleCharsetChange(codeArea, event);
+    private VirtualizedScrollPane<NodeCodeEditor> crateCodeAreaPane(Consumer<NodeCodeEditor> consumer) {
+        NodeCodeEditor codeEditor = codeAreaFactory.create(isLoadDiffMode());
+        codeEditor.addEventHandler(CodeAreaFactory.CHARSET_CHANGE, event -> {
+            handleCharsetChange(codeEditor, event);
             event.consume();
         });
-        codeArea.addEventHandler(CodeAreaFactory.SHOW_MODE_CHANGE, event -> {
+        codeEditor.addEventHandler(CodeAreaFactory.SHOW_MODE_CHANGE, event -> {
             Node node = dynamicCodeAreaWithDiffModel();
             dialogPane.setContent(node);
             event.consume();
         });
-        codeArea.addEventHandler(CodeAreaFactory.EDIT_MODE_CHANGE, event -> {
-            handleEditMode(codeArea);
+        codeEditor.addEventHandler(CodeAreaFactory.EDIT_MODE_CHANGE, event -> {
+            handleEditMode(codeEditor.getCodeArea());
             event.consume();
         });
-        consumer.accept(codeArea);
-        return new VirtualizedScrollPane<>(codeArea);
+        consumer.accept(codeEditor);
+        return new VirtualizedScrollPane<>(codeEditor);
     }
 
     private void openWithSystem() {
