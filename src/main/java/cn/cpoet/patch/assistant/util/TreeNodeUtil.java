@@ -3,6 +3,7 @@ package cn.cpoet.patch.assistant.util;
 import cn.cpoet.patch.assistant.common.InputBufConsumer;
 import cn.cpoet.patch.assistant.constant.IConConst;
 import cn.cpoet.patch.assistant.constant.JarInfoConst;
+import cn.cpoet.patch.assistant.constant.SpringConst;
 import cn.cpoet.patch.assistant.control.tree.FileTreeItem;
 import cn.cpoet.patch.assistant.control.tree.TotalInfo;
 import cn.cpoet.patch.assistant.control.tree.TreeNodeType;
@@ -469,6 +470,9 @@ public abstract class TreeNodeUtil {
      * @return 图标Image
      */
     public static Image getIconImage(TreeNode node) {
+        if (TreeNodeType.ROOT.equals(node.getType()) && !node.isPatch() && isSpringBootNode(node)) {
+            return ImageUtil.loadImageCache(IConConst.SPRING_BOOT);
+        }
         if (TreeNodeType.CUSTOM_ROOT.equals(node.getType())) {
             return ImageUtil.loadImageCache(IConConst.FILE_MARK);
         }
@@ -476,7 +480,7 @@ public abstract class TreeNodeUtil {
             return ImageUtil.loadImageCache(IConConst.FILE_README);
         }
         if (JarInfoConst.PATCH_UP_PATH.equals(node.getPath())) {
-            return ImageUtil.loadImageCache(IConConst.OPER_LOG);
+            return ImageUtil.loadImageCache(IConConst.PATCH_UP);
         }
         Image image = IConUtil.loadIconByFileExt(node.getName());
         if (image != null) {
@@ -486,5 +490,16 @@ public abstract class TreeNodeUtil {
             return ImageUtil.loadImageCache(IConConst.DIRECTORY);
         }
         return ImageUtil.loadImageCache(IConConst.FILE);
+    }
+
+    public static boolean isSpringBootNode(TreeNode node) {
+        if (node != null && CollectionUtil.isNotEmpty(node.getChildren())) {
+            for (TreeNode child : node.getChildren()) {
+                if (SpringConst.BOOT_INF_PATH.equals(child.getPath())) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

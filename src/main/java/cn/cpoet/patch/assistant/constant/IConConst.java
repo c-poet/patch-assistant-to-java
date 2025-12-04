@@ -103,12 +103,17 @@ public interface IConConst {
     String PATCH = "/icons/patch.png";
 
     /**
-     * 操作日志
+     * 补丁操作记录
      */
-    String OPER_LOG = "/icons/oper-log.png";
+    String PATCH_UP = "/icons/patch-up.png";
 
     /**
      * 时间钟
      */
     String TIME = "/icons/time.png";
+
+    /**
+     * Spring BOOT应用
+     */
+    String SPRING_BOOT = "/icons/spring-boot.png";
 }
