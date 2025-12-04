@@ -266,6 +266,7 @@ public class HomeView extends HomeContext {
 
     public Pane build() {
         BorderPane rootPane = new BorderPane();
+        rootPane.getStyleClass().add("home-view");
         rootPane.setPadding(new Insets(1, 2, 4, 2));
         rootPane.setTop(buildHeader());
         rootPane.setCenter(buildCentre());

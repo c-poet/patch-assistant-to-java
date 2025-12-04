@@ -44,9 +44,16 @@ public class CodeEditor extends Region implements Virtualized {
     }
 
     public void onKeyPressed(KeyEvent event) {
-        if (event.isControlDown() && event.getCode() == KeyCode.F) {
-            showSearchBox();
-            event.consume();
+        if (event.isControlDown()) {
+            if (event.getCode() == KeyCode.F) {
+                showSearchBox();
+                event.consume();
+            } else if (event.getCode() == KeyCode.G) {
+                GotoRowColDialog gotoRowColDialog = new GotoRowColDialog(this);
+                gotoRowColDialog.initOwner(getScene().getWindow());
+                gotoRowColDialog.showAndWait();
+                event.consume();
+            }
         }
     }
 

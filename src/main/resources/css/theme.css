@@ -1,3 +1,12 @@
+.root {
+    -fx-gb-bg-primary-color: #f7f8fa;
+    -fx-gb-border-color: #ebecf0;
+}
+
+.scroll-pane, .split-pane {
+    -fx-background-color: -fx-gb-bg-primary-color;
+}
+
 .tree-cell:selected {
     -fx-background-color: #d4e2ff;
 }
@@ -6,7 +15,7 @@
     -fx-padding: 0 3px 0 3px;
     -fx-background-color: #ffffff;
     -fx-border-width: 0 0 1px 0;
-    -fx-border-color: #ebecf0;
+    -fx-border-color: -fx-gb-border-color;
 }
 
 .code-editor .search-box .label {
@@ -33,6 +42,11 @@
 }
 
 .code-editor .search-box .split-pane > .split-pane-divider {
-    -fx-background-color: #ebecf0;
+    -fx-background-color: -fx-gb-border-color;
     -fx-padding: 0 0.5;
+}
+
+.home-view .split-pane > .split-pane-divider {
+    -fx-padding: 0 1;
+    -fx-background-color: -fx-gb-border-color;
 }
