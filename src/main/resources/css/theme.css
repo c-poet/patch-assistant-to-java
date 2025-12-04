@@ -1,4 +1,6 @@
 .root {
+    -fx-gb-primary-color: #3574f0;
+    -fx-gb-text-primary-color: #fff;
     -fx-gb-bg-primary-color: #f7f8fa;
     -fx-gb-border-color: #ebecf0;
 }
@@ -47,6 +49,14 @@
 }
 
 .home-view .split-pane > .split-pane-divider {
-    -fx-padding: 0 1;
+    -fx-padding: 0 0.5;
     -fx-background-color: -fx-gb-border-color;
+}
+
+.home-view .check-box:selected .box {
+    -fx-background-color: -fx-gb-primary-color;
+}
+
+.home-view .check-box:selected .mark {
+    -fx-background-color: -fx-gb-text-primary-color;
 }
