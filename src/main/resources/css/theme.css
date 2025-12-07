@@ -16,7 +16,7 @@
     -fx-faint-focus-color: transparent;
 }
 
-.titled-pane, .scroll-pane, .split-pane {
+.titled-pane, .scroll-pane, .split-pane, .dialog-pane {
     -fx-background-color: -fx-color-bg-1;
 }
 
@@ -81,12 +81,12 @@
 }
 
 .code-editor .search-box .text-field {
-    -fx-background-color: -fx-color-bg-trans;
+    -fx-background-color: -fx-color-bg-white;
     -fx-border-width: 0;
 }
 
 .code-editor .search-box .split-pane {
-    -fx-background-color: -fx-color-bg-trans;
+    -fx-background-color: -fx-color-bg-white;
 }
 
 .code-editor .search-box .split-pane > .split-pane-divider {
@@ -98,4 +98,3 @@
     -fx-padding: 0 0.5;
     -fx-background-color: -fx-color-border-1;
 }
-
