@@ -189,6 +189,7 @@ public class FileTreeCell extends TreeCell<TreeNode> {
             box = new HBox();
             addIcon(node);
             textLbl = new Label(node.getName());
+            textLbl.getStyleClass().add("title");
             fillTextColor(node, textLbl);
             box.getChildren().add(textLbl);
             addFileDetail(node);
@@ -220,6 +221,7 @@ public class FileTreeCell extends TreeCell<TreeNode> {
             String sizeReadability = FileUtil.getSizeReadability(node.getSizeOrInit());
             String dateTime = DateUtil.formatDateTime(node.getModifyTime());
             Label fileDetailLbl = new Label("\t" + dateTime + "  " + sizeReadability + "  " + node.getMd5OrInit());
+            fileDetailLbl.getStyleClass().add("detail");
             fileDetailLbl.setTextFill(StyleConst.COLOR_GRAY_1);
             box.getChildren().add(fileDetailLbl);
         }

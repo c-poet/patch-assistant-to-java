@@ -464,10 +464,9 @@ public class HomeRightTreeView extends HomeTreeView {
         }
     }
 
-    private void onKeyPressed(KeyEvent event) {
-        // tab键用于切换根节点
-        if (event.getCode() == KeyCode.TAB) {
-            PatchTreeInfo patchTreeInfo = patchTree.getTreeInfo();
+    private void switchRootNode() {
+        PatchTreeInfo patchTreeInfo = patchTree.getTreeInfo();
+        if (patchTreeInfo != null) {
             Map<TreeNode, PatchRootInfo> customRootInfoMap = patchTreeInfo.getCustomRootInfoMap();
             if (CollectionUtil.isEmpty(customRootInfoMap)) {
                 TreeItem<TreeNode> treeItem = patchTreeInfo.getRootNode().getTreeItem();
@@ -500,6 +499,13 @@ public class HomeRightTreeView extends HomeTreeView {
                 patchTree.scrollTo(row);
                 ++nextRootIndex;
             }
+        }
+    }
+
+    private void onKeyPressed(KeyEvent event) {
+        // tab键用于切换根节点
+        if (event.getCode() == KeyCode.TAB) {
+            switchRootNode();
             event.consume();
         }
     }

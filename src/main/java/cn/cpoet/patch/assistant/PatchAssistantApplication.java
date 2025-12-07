@@ -2,6 +2,7 @@ package cn.cpoet.patch.assistant;
 
 import cn.cpoet.patch.assistant.constant.AppConst;
 import cn.cpoet.patch.assistant.constant.IConConst;
+import cn.cpoet.patch.assistant.control.tree.PatchTreeView;
 import cn.cpoet.patch.assistant.core.AppContext;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.core.StartUpInfo;
@@ -13,8 +14,11 @@ import cn.cpoet.patch.assistant.util.OSUtil;
 import cn.cpoet.patch.assistant.view.home.HomeView;
 import javafx.application.Application;
 import javafx.scene.Scene;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
+
 
 public class PatchAssistantApplication extends Application {
 
@@ -26,6 +30,12 @@ public class PatchAssistantApplication extends Application {
         Pane home = StartUpInfo.run(() -> new HomeView(stage).build());
         Scene scene = new Scene(home, configuration.getHomeWidth(), configuration.getHomeHeight());
         appContext.initTheme(scene);
+        scene.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+            // PatchTreeView 需要通过Tab键切换根节点
+            if (event.getCode() == KeyCode.TAB && !(event.getTarget() instanceof PatchTreeView)) {
+                event.consume();
+            }
+        });
         scene.widthProperty().addListener((observableValue, oldVal, newVal) -> configuration.setHomeWidth(newVal.doubleValue()));
         scene.heightProperty().addListener((observableValue, oldVal, newVal) -> configuration.setHomeHeight(newVal.doubleValue()));
         stage.setTitle(I18nUtil.t("app.name", AppConst.APP_NAME) + " By " + AppConst.APP_AUTHOR_NAME);

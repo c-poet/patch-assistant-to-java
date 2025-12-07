@@ -1,23 +1,69 @@
 .root {
-    -fx-gb-primary-color: #3574f0;
-    -fx-gb-text-primary-color: #fff;
-    -fx-gb-bg-primary-color: #f7f8fa;
-    -fx-gb-border-color: #ebecf0;
+    -fx-primary-1: #3574f0;
+    -fx-primary-2: #4080ff;
+    -fx-color-fill-1: #f7f8fa;
+    -fx-color-fill-2: #f2f3f5;
+    -fx-color-text-1: #1d2129;
+    -fx-color-text-2: #86909c;
+    -fx-color-bg-1: #f7f8fa;
+    -fx-color-bg-white: #fff;
+    -fx-color-bg-trans: transparent;
+    -fx-color-border-1: #f2f3f5;
 }
 
-.scroll-pane, .split-pane {
-    -fx-background-color: -fx-gb-bg-primary-color;
+* {
+    -fx-focus-color: -fx-primary-2;
+    -fx-faint-focus-color: transparent;
+}
+
+.titled-pane, .scroll-pane, .split-pane {
+    -fx-background-color: -fx-color-bg-1;
+}
+
+.tree-view {
+    -fx-focus-color: transparent;
+    -fx-background-color: transparent;
+}
+
+.tree-cell:focused {
+    -fx-background-color: -fx-color-bg-white;
 }
 
 .tree-cell:selected {
-    -fx-background-color: #d4e2ff;
+    -fx-background-color: -fx-primary-1;
+}
+
+.tree-cell:selected {
+    -fx-background-color: -fx-primary-1;
+}
+
+.tree-cell:selected .title {
+    -fx-text-fill: -fx-color-fill-1;
+}
+
+.tree-cell:selected .detail {
+    -fx-text-fill: -fx-color-fill-2;
+}
+
+.check-box:selected .box {
+    -fx-background-color: -fx-primary-1;
+}
+
+.check-box:selected .mark {
+    -fx-background-color: -fx-color-fill-2;
+}
+
+.radio-button:selected .dot {
+    -fx-background-color: -fx-primary-1;
+    -fx-padding: 4px;
+    -fx-translate-y: -1px;
 }
 
 .code-editor .search-box {
     -fx-padding: 0 3px 0 3px;
-    -fx-background-color: #ffffff;
+    -fx-background-color: -fx-color-bg-1;
     -fx-border-width: 0 0 1px 0;
-    -fx-border-color: -fx-gb-border-color;
+    -fx-border-color: -fx-color-border-1;
 }
 
 .code-editor .search-box .label {
@@ -25,38 +71,31 @@
 }
 
 .code-editor .search-box .button {
-    -fx-background-color: transparent;
+    -fx-background-color: -fx-color-bg-trans;
     -fx-text-fill: #6c707e;
 }
 
 .code-editor .search-box .button:disabled {
-    -fx-background-color: transparent;
+    -fx-background-color: -fx-color-bg-trans;
     -fx-text-fill: #aeb3c2;
 }
 
 .code-editor .search-box .text-field {
-    -fx-background-color: transparent;
+    -fx-background-color: -fx-color-bg-trans;
     -fx-border-width: 0;
 }
 
 .code-editor .search-box .split-pane {
-    -fx-background-color: transparent;
+    -fx-background-color: -fx-color-bg-trans;
 }
 
 .code-editor .search-box .split-pane > .split-pane-divider {
-    -fx-background-color: -fx-gb-border-color;
+    -fx-background-color: -fx-color-border-1;
     -fx-padding: 0 0.5;
 }
 
 .home-view .split-pane > .split-pane-divider {
     -fx-padding: 0 0.5;
-    -fx-background-color: -fx-gb-border-color;
+    -fx-background-color: -fx-color-border-1;
 }
 
-.home-view .check-box:selected .box {
-    -fx-background-color: -fx-gb-primary-color;
-}
-
-.home-view .check-box:selected .mark {
-    -fx-background-color: -fx-gb-text-primary-color;
-}
