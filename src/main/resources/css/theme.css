@@ -59,6 +59,11 @@
     -fx-translate-y: -1px;
 }
 
+.menu-item:hover {
+    -fx-text-fill: -fx-color-fill-1;
+    -fx-background-color: -fx-primary-1;
+}
+
 .code-editor .search-box {
     -fx-padding: 0 3px 0 3px;
     -fx-background-color: -fx-color-bg-1;
