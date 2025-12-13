@@ -134,4 +134,14 @@ public class TotalInfo {
             default:
         }
     }
+
+    /**
+     * 清空统计信息
+     */
+    public void cleanTotal() {
+        setAddTotal(0);
+        setDelTotal(0);
+        setModTotal(0);
+        setManualDelTotal(0);
+    }
 }

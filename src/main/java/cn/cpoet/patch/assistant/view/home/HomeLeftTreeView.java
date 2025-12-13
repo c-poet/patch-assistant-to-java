@@ -377,6 +377,7 @@ public class HomeLeftTreeView extends HomeTreeView {
         buildAppTreeContextMenu();
         patchTree.addEventHandler(PatchTreeView.PATCH_TREE_REFRESH, e -> refreshAppTree(AppTreeView.REFRESH_FLAG_NONE));
         appTree.addEventHandler(AppTreeView.APP_TREE_NONE_REFRESH_CALL, e -> refreshAppTree(AppTreeView.REFRESH_FLAG_NONE));
+        appTree.addEventHandler(AppTreeView.APP_TREE_REFRESH, e -> context.totalInfo.cleanTotal());
         appTree.getSelectionModel().selectedItemProperty().addListener((observableValue, oldVal, newVal)
                 -> selectedLink(appTree, patchTree));
         appTree.setOnMouseClicked(this::onMouseClicked);
