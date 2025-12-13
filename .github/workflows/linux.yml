@@ -2,7 +2,10 @@ name: Linux
 
 on:
   push:
-    tags: [ * ]
+    branches:
+      - master
+    tags:
+      - '*'
 
 jobs:
   build:

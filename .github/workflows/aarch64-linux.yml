@@ -2,7 +2,10 @@ name: Embedded - AArch64 Linux
 
 on:
   push:
-    tags: [ * ]
+    branches:
+      - master
+    tags:
+      - '*'
 
 jobs:
   build:

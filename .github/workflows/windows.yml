@@ -2,7 +2,10 @@ name: Windows
 
 on:
   push:
-    tags: [ * ]
+    branches:
+      - master
+    tags:
+      - '*'
 
 jobs:
   build:

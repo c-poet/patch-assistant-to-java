@@ -2,7 +2,10 @@ name: macOS AArch64
 
 on:
   push:
-    tags: [ * ]
+    branches:
+      - master
+    tags:
+      - '*'
 
 jobs:
   build:
