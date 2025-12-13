@@ -2,8 +2,6 @@ name: macOS x86_64
 
 on:
   push:
-    branches:
-      - master
     tags:
       - '*'
 
