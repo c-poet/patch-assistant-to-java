@@ -8,7 +8,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.Properties;
 
 /**
  * 国际化工具
@@ -73,6 +75,24 @@ public abstract class I18nUtil {
         return message == null || message.isBlank() ? message : String.format(message, params);
     }
 
+    /**
+     * 获取系统语言
+     *
+     * @return 系统语言
+     */
+    public static I18NEnum getSysLanguage() {
+        String language = Locale.getDefault().getLanguage();
+        if ("en".equals(language)) {
+            return I18NEnum.EN_US;
+        }
+        return I18NEnum.ZH_CN;
+    }
+
+    /**
+     * 获取配置语言
+     *
+     * @return 配置语言
+     */
     public static I18NEnum getLanguage() {
         String language = Configuration.getInstance().getGenera().getLanguage();
         return I18NEnum.ofCode(language);

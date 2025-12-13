@@ -1,7 +1,7 @@
 package cn.cpoet.patch.assistant.core;
 
-import cn.cpoet.patch.assistant.constant.I18NEnum;
 import cn.cpoet.patch.assistant.constant.ThemeEnum;
+import cn.cpoet.patch.assistant.util.I18nUtil;
 
 /**
  * 普通配置
@@ -13,7 +13,7 @@ public class GeneraConf implements Cloneable {
     /**
      * 当前使用的语言
      */
-    private String language = I18NEnum.EN_US.getCode();
+    private String language = I18nUtil.getSysLanguage().getCode();
 
     /**
      * 当前使用的主题
