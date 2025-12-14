@@ -32,7 +32,7 @@ public abstract class AbsClassDecompiler<T extends AbsClassDecompiler<T>> extend
         classBytesMap = new HashMap<>();
         File[] classFiles = new File[innerBytes.size() + 1];
         for (int i = 0; i < classFiles.length; ++i) {
-            classFiles[i] = FileTempUtil.createTempFile(SingleClassDecompiler.class.getName(), FileExtConst.DOT_CLASS);
+            classFiles[i] = FileTempUtil.createTempFile(AbsClassDecompiler.class.getName(), FileExtConst.DOT_CLASS);
             classBytesMap.put(classFiles[i].getPath(), i == 0 ? bytes : innerBytes.get(i - 1));
         }
         try {

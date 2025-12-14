@@ -33,10 +33,6 @@
     -fx-background-color: -fx-primary-1;
 }
 
-.tree-cell:selected {
-    -fx-background-color: -fx-primary-1;
-}
-
 .tree-cell:selected .title {
     -fx-text-fill: -fx-color-fill-1;
 }

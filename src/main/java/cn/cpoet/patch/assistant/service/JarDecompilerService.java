@@ -134,15 +134,14 @@ public class JarDecompilerService {
 
     public void doDecompile(ProgressContext context, TreeNode node, File file) {
         File srcFile = new File(file, JarInfoConst.SOURCE_SRC);
-        FileClassDecompiler decompiler = new FileClassDecompiler(srcFile, Collections.emptyMap());
-        doDecompile(context, decompiler, srcFile, node);
+        doDecompile(context, srcFile, srcFile, node);
     }
 
-    public void doDecompile(ProgressContext context, FileClassDecompiler decompiler, File parent, TreeNode node) {
+    public void doDecompile(ProgressContext context, File srcFile, File parent, TreeNode node) {
         if (node.isDir()) {
             if (CollectionUtil.isNotEmpty(node.getChildren())) {
                 for (TreeNode child : node.getChildren()) {
-                    doDecompile(context, decompiler, new File(parent, child.getName()), child);
+                    doDecompile(context, srcFile, new File(parent, child.getName()), child);
                 }
             }
             return;
@@ -161,6 +160,6 @@ public class JarDecompilerService {
             }
         }
         context.step("Decompile: " + node.getName());
-        decompiler.decompile(TreeNodeUtil.readNodeBytes(node), innerBytes);
+        new FileClassDecompiler(srcFile, Collections.emptyMap()).decompile(TreeNodeUtil.readNodeBytes(node), innerBytes);
     }
 }
