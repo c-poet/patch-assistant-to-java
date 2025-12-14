@@ -1,6 +1,7 @@
 package cn.cpoet.patch.assistant.util;
 
 import cn.cpoet.patch.assistant.common.InputBufConsumer;
+import cn.cpoet.patch.assistant.constant.FileExtConst;
 import cn.cpoet.patch.assistant.constant.IConConst;
 import cn.cpoet.patch.assistant.constant.JarInfoConst;
 import cn.cpoet.patch.assistant.constant.SpringConst;
@@ -162,7 +163,8 @@ public abstract class TreeNodeUtil {
         if (!node.isDir()) {
             totalInfo.incrTotal(type);
         }
-        if (CollectionUtil.isNotEmpty(node.getChildren())) {
+        // 目录和Class内联的情况下才统计子级
+        if ((node.isDir() || node.getName().endsWith(FileExtConst.DOT_CLASS)) && CollectionUtil.isNotEmpty(node.getChildren())) {
             node.getChildren().forEach(child -> countNodeType(totalInfo, child, type));
         }
     }
@@ -179,7 +181,7 @@ public abstract class TreeNodeUtil {
         if (!node.isDir()) {
             UIUtil.runUI(() -> totalInfo.incrTotal(type));
         }
-        if (CollectionUtil.isNotEmpty(node.getChildren())) {
+        if ((node.isDir() || node.getName().endsWith(FileExtConst.DOT_CLASS)) && CollectionUtil.isNotEmpty(node.getChildren())) {
             node.getChildren().forEach(child -> countAndSetNodeType(totalInfo, child, type));
         }
     }
