@@ -146,10 +146,16 @@ public abstract class HomeTreeView {
     }
 
     protected void saveProject(CustomTreeView<?> treeView) {
+        Configuration configuration = Configuration.getInstance();
         DirectoryChooser directoryChooser = new DirectoryChooser();
         directoryChooser.setTitle(I18nUtil.t("app.view.tree.select-project-dir"));
+        File dir = FileUtil.getExistsDirOrFile(configuration.getLastJarDecompilePath());
+        if (dir != null && dir.isDirectory()) {
+            directoryChooser.setInitialDirectory(dir);
+        }
         File file = directoryChooser.showDialog(stage);
         if (file != null) {
+            configuration.setLastJarDecompilePath(file.getPath());
             new ProgressView(I18nUtil.t("app.view.tree.save-to-project"))
                     .showDialog(stage, context -> JarDecompilerService.INSTANCE.decompile(context, treeView.getSingleSelectedNode(), file));
         }

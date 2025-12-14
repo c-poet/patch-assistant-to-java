@@ -138,6 +138,11 @@ public class Configuration {
     private String lastSavePackPath;
 
     /**
+     * 反编译包最后保存的路径
+     */
+    private String lastJarDecompilePath;
+
+    /**
      * 聚焦状态
      */
     @JacksonXmlProperty
@@ -336,6 +341,14 @@ public class Configuration {
 
     public void setLastSavePackPath(String lastSavePackPath) {
         this.lastSavePackPath = lastSavePackPath;
+    }
+
+    public String getLastJarDecompilePath() {
+        return lastJarDecompilePath;
+    }
+
+    public void setLastJarDecompilePath(String lastJarDecompilePath) {
+        this.lastJarDecompilePath = lastJarDecompilePath;
     }
 
     public Integer getFocusTreeStatus() {
