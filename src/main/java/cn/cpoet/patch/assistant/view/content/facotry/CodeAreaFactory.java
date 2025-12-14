@@ -1,6 +1,5 @@
 package cn.cpoet.patch.assistant.view.content.facotry;
 
-import cn.cpoet.patch.assistant.constant.StyleConst;
 import cn.cpoet.patch.assistant.control.code.CodeEditor;
 import cn.cpoet.patch.assistant.core.Configuration;
 import cn.cpoet.patch.assistant.core.ContentConf;
@@ -141,10 +140,6 @@ public abstract class CodeAreaFactory {
         CodeArea codeArea = codeEditor.getCodeArea();
         codeArea.setEditable(false);
         codeArea.setParagraphGraphicFactory(LineNumberFactory.get(codeArea));
-        String codeAreaStylePath = FileUtil.getResourceAndExternalForm(StyleConst.STYLE_FILE_CODE_AREA);
-        if (codeAreaStylePath != null) {
-            codeEditor.getStylesheets().add(codeAreaStylePath);
-        }
         String styleSheetPath = getStyleSheetPath();
         if (!StringUtil.isBlank(styleSheetPath)) {
             String stylesheetPath = FileUtil.getResourceAndExternalForm(styleSheetPath);

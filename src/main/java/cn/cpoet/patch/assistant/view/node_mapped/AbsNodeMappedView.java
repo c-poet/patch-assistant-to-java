@@ -3,7 +3,6 @@ package cn.cpoet.patch.assistant.view.node_mapped;
 import cn.cpoet.patch.assistant.constant.AppConst;
 import cn.cpoet.patch.assistant.constant.ChangeTypeEnum;
 import cn.cpoet.patch.assistant.constant.FileExtConst;
-import cn.cpoet.patch.assistant.constant.StyleConst;
 import cn.cpoet.patch.assistant.control.code.CodeEditor;
 import cn.cpoet.patch.assistant.control.tree.TreeNodeType;
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
@@ -58,14 +57,6 @@ public abstract class AbsNodeMappedView {
         codeEditor.setPadding(Insets.EMPTY);
         CodeArea codeArea = codeEditor.getCodeArea();
         codeArea.setParagraphGraphicFactory(LineNumberFactory.get(codeArea));
-        String codeAreaStylePath = FileUtil.getResourceAndExternalForm(StyleConst.STYLE_FILE_CODE_AREA);
-        if (codeAreaStylePath != null) {
-            codeEditor.getStylesheets().add(codeAreaStylePath);
-        }
-        codeAreaStylePath = FileUtil.getResourceAndExternalForm(StyleConst.STYLE_FILE_README);
-        if (codeAreaStylePath != null) {
-            codeEditor.getStylesheets().add(codeAreaStylePath);
-        }
         CodeEditor.applyHighlighting(codeArea, this::computeHighlighting);
         return codeEditor;
     }
