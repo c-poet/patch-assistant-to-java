@@ -32,14 +32,4 @@ public interface StyleConst {
      * 灰色（详情）
      */
     Color COLOR_GRAY_1 = Color.web("#6c707e");
-
-    /**
-     * CodeArea全局样式文件
-     */
-    String STYLE_FILE_CODE_AREA = "/css/code-area.css";
-
-    /**
-     * 说明文件样式
-     */
-    String STYLE_FILE_README = "/css/readme.css";
 }

@@ -1,7 +1,6 @@
 .root {
     -fx-primary-1: #3574f0;
     -fx-primary-2: #4080ff;
-    -fx-primary-3: #a6d2ff;
     -fx-color-fill-1: #f7f8fa;
     -fx-color-fill-2: #f2f3f5;
     -fx-color-text-1: #1d2129;
@@ -99,6 +98,41 @@
 .code-editor .search-box .split-pane > .split-pane-divider {
     -fx-background-color: -fx-color-border-1;
     -fx-padding: 0 0.5;
+}
+
+.code-area {
+    -fx-font-family: monospace;
+    -fx-font-size: 14px;
+    -fx-background-color: #ffffff;
+}
+
+.code-area .lineno {
+    -fx-font-size: 14px;
+    -fx-text-fill: #aeb3c2;
+    -fx-background-color: #ffffff;
+    -fx-border-color: #ebecf0;
+    -fx-border-width: 0 1px 0 0;
+}
+
+.styled-text-area .selection {
+    -fx-fill: #a6d2ff;
+}
+
+.code-area .add {
+    -fx-fill: #4fc75c;
+}
+
+.code-area .mod {
+    -fx-fill: #4c89fb;
+}
+
+.code-area .del {
+    -fx-fill: #979797;
+    -fx-font-weight: bold;
+}
+
+.code-area .ignore {
+    -fx-fill: #f8a055;
 }
 
 .home-view .split-pane > .split-pane-divider {
