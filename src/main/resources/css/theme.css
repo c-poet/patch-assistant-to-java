@@ -1,6 +1,7 @@
 .root {
     -fx-primary-1: #3574f0;
     -fx-primary-2: #4080ff;
+    -fx-primary-3: #a6d2ff;
     -fx-color-fill-1: #f7f8fa;
     -fx-color-fill-2: #f2f3f5;
     -fx-color-text-1: #1d2129;
@@ -33,10 +34,6 @@
     -fx-background-color: -fx-primary-1;
 }
 
-.tree-cell:selected {
-    -fx-background-color: -fx-primary-1;
-}
-
 .tree-cell:selected .title {
     -fx-text-fill: -fx-color-fill-1;
 }
@@ -57,6 +54,11 @@
     -fx-background-color: -fx-primary-1;
     -fx-padding: 4px;
     -fx-translate-y: -1px;
+}
+
+.menu-item:focused {
+    -fx-background-color: -fx-primary-2;
+    -fx-text-fill: white;
 }
 
 .menu-item:hover {

@@ -11,3 +11,7 @@
     -fx-border-color: #ebecf0;
     -fx-border-width: 0 1px 0 0;
 }
+
+.styled-text-area .selection {
+    -fx-fill: -fx-primary-3;
+}
