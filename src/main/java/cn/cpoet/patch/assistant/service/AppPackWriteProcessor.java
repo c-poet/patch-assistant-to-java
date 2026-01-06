@@ -105,18 +105,19 @@ public class AppPackWriteProcessor {
 
     private void doWrite(TreeNode rootNode, ZipOutputStream zipOut) throws IOException {
         progressContext.step("Start write");
-        TreeNode metaInfoNode = null;
+        boolean isWritePathSign = false;
         if (rootNode.getChildren() != null) {
             progressContext.step("Application pack name:" + rootNode.getName());
             for (TreeNode child : rootNode.getChildren()) {
-                writeTreeNode2Pack(zipOut, child);
-                if (JarInfoConst.META_INFO_DIR.equals(child.getPath())) {
-                    metaInfoNode = child;
+                if (JarInfoConst.META_INFO_DIR.equals(child.getPath()) && isWritePatchSign()) {
+                    writePatchSign(zipOut, child);
+                    isWritePathSign = true;
                 }
+                writeTreeNode2Pack(zipOut, child);
             }
         }
-        if (isWritePatchSign()) {
-            writePatchSign(zipOut, metaInfoNode);
+        if (!isWritePathSign && isWritePatchSign()) {
+            writePatchSign(zipOut, null);
         }
         zipOut.finish();
         progressContext.step("Write finished");
