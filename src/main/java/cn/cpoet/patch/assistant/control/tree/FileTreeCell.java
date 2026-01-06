@@ -17,7 +17,6 @@ import javafx.scene.layout.HBox;
 
 import java.io.File;
 import java.util.List;
-import java.util.Stack;
 import java.util.stream.Collectors;
 
 /**
@@ -65,7 +64,6 @@ public class FileTreeCell extends TreeCell<TreeNode> {
 
     private List<File> getDragFiles(List<TreeNode> patchNodes, FileTreeCellDragInfo dragInfo) {
         File dragTempDir = FileUtil.mkdir(AppContext.getInstance().getTempDir(), UUIDUtil.random32());
-        dragInfo.addTempFile(dragTempDir);
         return patchNodes.stream().map(patchNode -> {
             if (patchNode.isDir()) {
                 File file = FileUtil.mkdir(dragTempDir, patchNode.getName());
@@ -134,12 +132,6 @@ public class FileTreeCell extends TreeCell<TreeNode> {
             return;
         }
         DRAG_INFO_TL.remove();
-        UIUtil.runNotUI(() -> {
-            Stack<File> tempFileStack = dragInfo.getTempFileStack();
-            while (!tempFileStack.empty()) {
-                FileTempUtil.deleteTempFile(tempFileStack.pop());
-            }
-        });
         event.consume();
     }
 
@@ -151,7 +143,6 @@ public class FileTreeCell extends TreeCell<TreeNode> {
     }
 
     private void updateCellDragInfo(FileTreeCellDragInfo dragInfo, TreeNode node, File file) {
-        dragInfo.addTempFile(file);
         if (node.getMappedNode() != null) {
             dragInfo.setHasMappedNode(true);
         } else if (TreeNodeType.README.equals(node.getType())) {
@@ -222,7 +213,6 @@ public class FileTreeCell extends TreeCell<TreeNode> {
             String dateTime = DateUtil.formatDateTime(node.getModifyTime());
             Label fileDetailLbl = new Label("\t" + dateTime + "  " + sizeReadability + "  " + node.getMd5OrInit());
             fileDetailLbl.getStyleClass().add("detail");
-            fileDetailLbl.setTextFill(StyleConst.COLOR_GRAY_1);
             box.getChildren().add(fileDetailLbl);
         }
     }

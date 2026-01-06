@@ -27,9 +27,4 @@ public interface StyleConst {
      * 灰色
      */
     Color COLOR_GRAY = Color.web("#979797");
-
-    /**
-     * 灰色（详情）
-     */
-    Color COLOR_GRAY_1 = Color.web("#6c707e");
 }

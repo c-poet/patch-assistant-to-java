@@ -2,9 +2,7 @@ package cn.cpoet.patch.assistant.control.tree;
 
 import cn.cpoet.patch.assistant.control.tree.node.TreeNode;
 
-import java.io.File;
 import java.util.List;
-import java.util.Stack;
 
 /**
  * Cell拖动信息
@@ -33,10 +31,6 @@ public class FileTreeCellDragInfo {
      */
     private List<TreeNode> treeNodes;
 
-    /**
-     * 临时文件栈
-     */
-    private Stack<File> tempFileStack;
 
     public CustomTreeView<?> getOriginTree() {
         return originTree;
@@ -68,16 +62,5 @@ public class FileTreeCellDragInfo {
 
     public void setTreeNodes(List<TreeNode> treeNodes) {
         this.treeNodes = treeNodes;
-    }
-
-    public void addTempFile(File file) {
-        if (tempFileStack == null) {
-            tempFileStack = new Stack<>();
-        }
-        tempFileStack.add(file);
-    }
-
-    public Stack<File> getTempFileStack() {
-        return tempFileStack;
     }
 }

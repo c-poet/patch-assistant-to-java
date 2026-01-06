@@ -1,6 +1,7 @@
 .root {
     -fx-primary-1: #3574f0;
     -fx-primary-2: #4080ff;
+    -fx-primary-3: #a6d2ff;
     -fx-color-fill-1: #f7f8fa;
     -fx-color-fill-2: #f2f3f5;
     -fx-color-text-1: #1d2129;
@@ -18,6 +19,10 @@
 
 .titled-pane, .scroll-pane, .split-pane, .dialog-pane {
     -fx-background-color: -fx-color-bg-1;
+}
+
+.text-field {
+    -fx-highlight-fill: -fx-primary-3;
 }
 
 .tree-view {
@@ -38,6 +43,27 @@
 }
 
 .tree-cell:selected .detail {
+    -fx-text-fill: -fx-color-fill-2;
+}
+
+.list-view {
+    -fx-focus-color: transparent;
+    -fx-background-color: transparent;
+}
+
+.list-cell:focused {
+    -fx-background-color: -fx-color-bg-white;
+}
+
+.list-cell:selected {
+    -fx-background-color: -fx-primary-1;
+}
+
+.list-cell:selected .title {
+    -fx-text-fill: -fx-color-fill-1;
+}
+
+.list-cell:selected .detail {
     -fx-text-fill: -fx-color-fill-2;
 }
 
@@ -115,7 +141,7 @@
 }
 
 .styled-text-area .selection {
-    -fx-fill: #a6d2ff;
+    -fx-fill: -fx-primary-3;
 }
 
 .code-area .add {

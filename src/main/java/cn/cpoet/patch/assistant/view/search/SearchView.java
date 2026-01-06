@@ -248,6 +248,7 @@ public class SearchView {
         dialog.setResizable(true);
         dialog.setTitle(I18nUtil.t("app.view.search.title"));
         DialogPane dialogPane = new DialogPurePane();
+        dialogPane.getStyleClass().add("search-view");
         dialogPane.setContent(build());
         Configuration configuration = Configuration.getInstance();
         dialogPane.setPrefSize(configuration.getSearchWidth(), configuration.getSearchHeight());
@@ -306,9 +307,10 @@ public class SearchView {
             HBox box = new HBox();
             box.setSpacing(10);
             Label nameLbl = new Label(item.getName());
+            nameLbl.getStyleClass().add("title");
             box.getChildren().add(nameLbl);
             Label pathLbl = new Label(item.getPath());
-            pathLbl.setTextFill(StyleConst.COLOR_GRAY_1);
+            pathLbl.getStyleClass().add("detail");
             box.getChildren().add(pathLbl);
             Region region = new Region();
             HBox.setHgrow(region, Priority.ALWAYS);
@@ -325,7 +327,7 @@ public class SearchView {
         private void addSearchHisInfo(HBox box, SearchHisItem item) {
             if (item.getSearchTime() != null) {
                 Label timeLbl = new Label(DateUtil.formatDateTime(item.getSearchTime()));
-                timeLbl.setTextFill(StyleConst.COLOR_GRAY_1);
+                timeLbl.getStyleClass().add("detail");
                 box.getChildren().add(timeLbl);
                 ImageView icon = getImageView(ImageUtil.loadImageCache(IConConst.TIME));
                 box.getChildren().add(icon);

@@ -5,13 +5,10 @@ import cn.cpoet.patch.assistant.control.tree.AppTreeView;
 import cn.cpoet.patch.assistant.control.tree.PatchTreeView;
 import cn.cpoet.patch.assistant.control.tree.TotalInfo;
 import cn.cpoet.patch.assistant.core.Configuration;
-import cn.cpoet.patch.assistant.core.StartUpInfo;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
-
-import java.io.File;
 
 /**
  * 上下文
@@ -29,42 +26,8 @@ public class HomeContext {
     protected final PatchTreeView patchTree = new PatchTreeView();
 
     public HomeContext() {
-        focusTreeStatus = new SimpleIntegerProperty(getInitFocusTreeStatus());
-        showPatchInfo = new SimpleBooleanProperty(getInitShowPatchInfo());
-    }
-
-    private int getInitFocusTreeStatus() {
-        return StartUpInfo.consume(sci -> {
-            int status = Configuration.getInstance().getFocusTreeStatus() == null ? FocusTreeStatusConst.ALL
-                    : Configuration.getInstance().getFocusTreeStatus();
-            File appFile = sci.getAppFile();
-            File patchFile = sci.getPatchFile();
-            if (appFile != null && patchFile != null) {
-                if (sci.isArgAppFile() || sci.isArgPatchFile()) {
-                    status = FocusTreeStatusConst.ALL;
-                }
-            } else if (appFile == null && patchFile != null) {
-                if (status == FocusTreeStatusConst.APP) {
-                    status = FocusTreeStatusConst.ALL;
-                } else if (sci.isArgPatchFile()) {
-                    status = FocusTreeStatusConst.PATCH;
-                }
-            } else if (appFile != null) {
-                if (status == FocusTreeStatusConst.PATCH) {
-                    status = FocusTreeStatusConst.ALL;
-                } else if (sci.isArgAppFile()) {
-                    status = FocusTreeStatusConst.APP;
-                }
-            }
-            return status;
-        });
-    }
-
-    private boolean getInitShowPatchInfo() {
-        if (focusTreeStatus.get() == FocusTreeStatusConst.APP) {
-            return false;
-        }
-        return Boolean.TRUE.equals(Configuration.getInstance().getShowPatchInfo());
+        focusTreeStatus = new SimpleIntegerProperty(Configuration.getInstance().getFocusTreeStatus() == null ? FocusTreeStatusConst.ALL : Configuration.getInstance().getFocusTreeStatus());
+        showPatchInfo = new SimpleBooleanProperty(Boolean.TRUE.equals(Configuration.getInstance().getShowPatchInfo()));
     }
 
     public TotalInfo getTotalInfo() {
