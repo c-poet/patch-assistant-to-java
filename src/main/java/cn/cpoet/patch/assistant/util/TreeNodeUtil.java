@@ -206,9 +206,6 @@ public abstract class TreeNodeUtil {
      */
     @SuppressWarnings("unchecked")
     public static <T extends TreeNode> void buildNode(TreeItem<T> rootItem, T treeNode, Predicate<T> filter) {
-        rootItem.setValue(treeNode);
-        rootItem.setExpanded(treeNode.isExpanded());
-        treeNode.setTreeItem((TreeItem<TreeNode>) rootItem);
         bindTreeNodeAndItem(treeNode, (TreeItem<TreeNode>) rootItem);
         buildNodeChildren(rootItem, treeNode, filter);
     }
