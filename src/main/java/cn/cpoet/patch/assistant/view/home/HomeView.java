@@ -248,8 +248,9 @@ public class HomeView extends HomeContext {
                 FXUtil.pre(new Label(), lbl -> lbl.textProperty().bind(totalInfo.manualDelTotalProperty().asString())),
                 FXUtil.pre(new Region(), node -> HBox.setHgrow(node, Priority.ALWAYS)),
                 FXUtil.pre(new Button(), btn -> {
-                    btn.setDisable(appTree.getRoot() == null);
-                    appTree.addEventHandler(AppTreeView.APP_TREE_REFRESH, e -> btn.setDisable(appTree.getRoot() == null));
+                    btn.setDisable(appTree.getRoot() == null || isLoading());
+                    appTree.addEventHandler(AppTreeView.APP_TREE_REFRESH, e -> btn.setDisable(appTree.getRoot() == null || isLoading()));
+                    loadStatus.addListener((observableValue, oldVal, newVal) -> btn.setDisable(appTree.getRoot() == null || isLoading()));
                     btn.setText(I18nUtil.t("app.view.home.save"));
                     btn.setOnAction(e -> handleSaveAppPack());
                 })
@@ -278,7 +279,10 @@ public class HomeView extends HomeContext {
                     e.consume();
                 }
                 if (e.getCode() == KeyCode.S) {
-                    handleSaveAppPack();
+                    // 如果处于加载中不允许保存
+                    if (!isLoading()) {
+                        handleSaveAppPack();
+                    }
                     e.consume();
                 }
             }

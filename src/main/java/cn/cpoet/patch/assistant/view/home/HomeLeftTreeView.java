@@ -2,6 +2,7 @@ package cn.cpoet.patch.assistant.view.home;
 
 import cn.cpoet.patch.assistant.constant.FileExtConst;
 import cn.cpoet.patch.assistant.constant.FocusTreeStatusConst;
+import cn.cpoet.patch.assistant.constant.LoadStatusConst;
 import cn.cpoet.patch.assistant.control.menu.MenuItemClaim;
 import cn.cpoet.patch.assistant.control.tree.*;
 import cn.cpoet.patch.assistant.control.tree.node.CompressNode;
@@ -41,6 +42,7 @@ public class HomeLeftTreeView extends HomeTreeView {
 
     public HomeLeftTreeView(Stage stage, HomeContext context) {
         super(stage, context, new FastSearchControl(context.appTree));
+        loadingFlag.addListener((observableValue, oldVal, newVal) -> context.updateLoadStatus(newVal, LoadStatusConst.APP_TREE_LOADING));
     }
 
     private boolean isAcceptManualDel() {
