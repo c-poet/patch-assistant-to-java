@@ -566,6 +566,8 @@ public class HomeRightTreeView extends HomeTreeView {
             patchTree.addEventHandler(PatchTreeView.PATCH_TREE_REFRESH, e -> updatePatchPathLabel(node));
             node.textProperty().addListener((observableValue, oldVal, newVal) -> Configuration.getInstance().setLastPatchPackPath(newVal));
         }));
+        patchPackPathBox.setOnDragOver(this::onDragOver);
+        patchPackPathBox.setOnDragDropped(this::onDragDropped);
     }
 
     private void addSelectBtn(HBox patchPackPathBox) {

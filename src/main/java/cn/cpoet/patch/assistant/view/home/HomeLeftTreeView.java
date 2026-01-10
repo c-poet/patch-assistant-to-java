@@ -413,6 +413,8 @@ public class HomeLeftTreeView extends HomeTreeView {
             appTree.addEventHandler(AppTreeView.APP_TREE_REFRESH, e -> updatePackPathLabel(node));
             node.textProperty().addListener((observableValue, oldVal, newVal) -> Configuration.getInstance().setLastAppPackPath(newVal));
         }));
+        appPackPathBox.setOnDragOver(this::onDragOver);
+        appPackPathBox.setOnDragDropped(this::onDragDropped);
     }
 
     private void addSelectBtn(HBox appPackPathBox) {
