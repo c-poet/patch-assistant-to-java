@@ -40,7 +40,9 @@ public class TotalInfo {
     }
 
     public void setAddTotal(int addTotal) {
-        this.addTotal.set(addTotal);
+        if (addTotal >= 0) {
+            this.addTotal.set(addTotal);
+        }
     }
 
     public int getModTotal() {
@@ -52,7 +54,9 @@ public class TotalInfo {
     }
 
     public void setModTotal(int modTotal) {
-        this.modTotal.set(modTotal);
+        if (modTotal >= 0) {
+            this.modTotal.set(modTotal);
+        }
     }
 
     public int getDelTotal() {
@@ -64,7 +68,9 @@ public class TotalInfo {
     }
 
     public void setDelTotal(int delTotal) {
-        this.delTotal.set(delTotal);
+        if (delTotal >= 0) {
+            this.delTotal.set(delTotal);
+        }
     }
 
     public int getManualDelTotal() {
@@ -76,7 +82,9 @@ public class TotalInfo {
     }
 
     public void setManualDelTotal(int manualDelTotal) {
-        this.manualDelTotal.set(manualDelTotal);
+        if (manualDelTotal >= 0) {
+            this.manualDelTotal.set(manualDelTotal);
+        }
     }
 
     /**
