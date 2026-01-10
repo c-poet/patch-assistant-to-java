@@ -183,6 +183,7 @@ public class AppPackWriteProcessor {
         AppPackSign appPackSign = treeInfo.getAppPackSign();
         patchUpSign.setOriginAppMd5(appPackSign.getMd5());
         patchUpSign.setOriginAppSha1(appPackSign.getSha1());
+        patchUpSign.setOriginAppPath(appPackSign.getPath());
         patchUpSign.setOriginAppSize(treeInfo.getRootNode().getSize());
         patchUpSign.setDelInfos(delInfos);
         patchUpSign.setAddInfos(addInfos);

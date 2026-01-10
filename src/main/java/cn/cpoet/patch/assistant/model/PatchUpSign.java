@@ -49,6 +49,11 @@ public class PatchUpSign extends PatchSign {
     private Long originAppSize;
 
     /**
+     * 源应用包路径
+     */
+    private String originAppPath;
+
+    /**
      * 打补丁的时间
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
@@ -135,6 +140,14 @@ public class PatchUpSign extends PatchSign {
         this.originAppSize = originAppSize;
     }
 
+    public String getOriginAppPath() {
+        return originAppPath;
+    }
+
+    public void setOriginAppPath(String originAppPath) {
+        this.originAppPath = originAppPath;
+    }
+
     public Date getOperTime() {
         return operTime;
     }
@@ -190,6 +203,7 @@ public class PatchUpSign extends PatchSign {
         patchUpSign.setMd5(patchSign.getMd5());
         patchUpSign.setSha1(patchSign.getSha1());
         patchUpSign.setReadme(patchSign.getReadme());
+        patchUpSign.setPath(patchSign.getPath());
         return patchUpSign;
     }
 }

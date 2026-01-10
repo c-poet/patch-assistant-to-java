@@ -399,6 +399,7 @@ public class PatchPackService extends BasePackService {
         rootNode.setType(TreeNodeType.ROOT);
         PatchSign patchSign = new PatchSign();
         patchSign.setName(rootNode.getName());
+        patchSign.setPath(file.getPath());
         if (file.isDirectory()) {
             doGetTreeNodeWithDir(file, rootNode);
         } else {

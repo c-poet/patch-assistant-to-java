@@ -30,6 +30,11 @@ public class PatchSign {
     private String sha1;
 
     /**
+     * 补丁包所在路径
+     */
+    private String path;
+
+    /**
      * 补丁readme文件内容
      */
     private String readme;
@@ -64,6 +69,14 @@ public class PatchSign {
 
     public void setSha1(String sha1) {
         this.sha1 = sha1;
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
     }
 
     public String getReadme() {

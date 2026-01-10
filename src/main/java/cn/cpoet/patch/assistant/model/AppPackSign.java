@@ -7,14 +7,19 @@ package cn.cpoet.patch.assistant.model;
  */
 public class AppPackSign {
     /**
-     * 补丁md5值
+     * 应用包md5值
      */
     private String md5;
 
     /**
-     * 补丁sha1值
+     * 应用包sha1值
      */
     private String sha1;
+
+    /**
+     * 应用包所在路径
+     */
+    private String path;
 
     public String getMd5() {
         return md5;
@@ -30,5 +35,13 @@ public class AppPackSign {
 
     public void setSha1(String sha1) {
         this.sha1 = sha1;
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
     }
 }

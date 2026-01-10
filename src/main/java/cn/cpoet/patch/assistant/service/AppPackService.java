@@ -50,6 +50,7 @@ public class AppPackService extends BasePackService {
         AppPackSign appPackSign = new AppPackSign();
         appPackSign.setMd5(hashInfo.getMd5());
         appPackSign.setSha1(hashInfo.getSha1());
+        appPackSign.setPath(file.getPath());
         treeInfo.setAppPackSign(appPackSign);
         try (InputStream in = new FileInputStream(file)) {
             getTreeNode(in, rootNode);
